@@ -106,13 +106,42 @@ return false;}
 
 function save(){archiveDay();try{localStorage.setItem(key,JSON.stringify(state));}catch{ $('storage-note')?.remove();}}
 function notify(text){recordProgram();cancelComposition();daily().variant++;current().recent=text;presetIndex=null;save();render();refreshDialog();}
+// Decorative mentor motion follows the actual local message lifecycle.
+// A short minimum hold lets each shape read clearly even across rapid updates.
+let mentorTimer=null,mentorToken=0,mentorMode='idle',mentorShape='clover',mentorChangedAt=0;
+function syncMentorMotion(mode){
+  mentorMode=mode;clearTimeout(mentorTimer);mentorTimer=null;const token=++mentorToken;
+  const card=$('.ai-top'),symbol=$('#mentor-symbol');
+  if(!card||!symbol)return;
+  card.setAttribute('data-mentor-state',mode);
+  card.setAttribute('data-mentor-paused',document.visibilityState==='hidden'?'true':'false');
+  if(document.visibilityState==='hidden')return;
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const shapes=mode==='speaking'?['plus','times','minus','divide']:mode==='thinking'?['divide']:['clover'];
+  let index=0;
+  function show(){
+    if(token!==mentorToken||document.visibilityState==='hidden')return;
+    mentorShape=shapes[index%shapes.length];mentorChangedAt=Date.now();
+    symbol.setAttribute('data-shape',mentorShape);index++;
+    if(mode==='speaking'&&!reduced)mentorTimer=setTimeout(show,1000);
+  }
+  if(reduced){show();return;}
+  const hold=mentorShape==='clover'?0:Math.max(0,900-(Date.now()-mentorChangedAt));
+  if(hold)mentorTimer=setTimeout(show,hold);else show();
+}
+function setAIState(label){
+  aiState=label;$('#ai-state').textContent=label;
+  syncMentorMotion(label==='생각 중'?'thinking':label==='반응 중'?'speaking':'idle');
+}
+document.addEventListener('visibilitychange',()=>syncMentorMotion(mentorMode));
+matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change',()=>syncMentorMotion(mentorMode));
 function animateMessage(){
 const msg=current().presentationPending&&!composing?'맞춤 학습이 준비됐어요. 첫 번째 학습부터 시작해 볼까요?':composing?'진단 결과를 바탕으로 필요한 학습을 골라 맞춤 프로그램을 구성하고 있어요.':M.message(state),signature=state.grade+':'+state.index+':'+msg;
 if(signature===lastMessage)return;lastMessage=signature;clearTimeout(thinkTimer);clearTimeout(animTimer);
-const el=$('#ai-message');el.textContent='';el.classList.remove('generating');el.setAttribute('aria-busy','true');aiState='생각 중';$('#ai-state').textContent=aiState;
-const finish=()=>{el.classList.remove('generating');el.setAttribute('aria-busy','false');aiState='대기';$('#ai-state').textContent=aiState;};
+const el=$('#ai-message');el.textContent='';el.classList.remove('generating');el.setAttribute('aria-busy','true');setAIState('생각 중');
+const finish=()=>{el.classList.remove('generating');el.setAttribute('aria-busy','false');setAIState('대기');};
 if(matchMedia('(prefers-reduced-motion: reduce)').matches){el.textContent=msg;finish();return;}
-thinkTimer=setTimeout(()=>{aiState='반응 중';$('#ai-state').textContent=aiState;el.classList.add('generating');let i=0;
+thinkTimer=setTimeout(()=>{setAIState('반응 중');el.classList.add('generating');let i=0;
 function type(){if(lastMessage!==signature)return;i++;el.textContent=msg.slice(0,i);if(i===msg.length){finish();return;}const char=msg[i-1],delay=/[.!?]/.test(char)?170:/[,，]/.test(char)?95:char===' '?35:22+(i%4)*8;animTimer=setTimeout(type,delay);}type();
 },350);
 }

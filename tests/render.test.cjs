@@ -45,3 +45,34 @@ click('program',0);assert.equal(node('#learning').open,true);
 click('close-learning');click('mypage');assert.equal(node('main').hidden,true);
 console.log('Direct-view storage adapter and original prototype button interactions passed');
 
+// The decorative morph follows real typing, and stale timers cannot restart it.
+vm.runInContext("state=M.create();lastMessage='';render()",c);
+assert.equal(node('.ai-top')['data-mentor-state'],'thinking');
+vm.runInContext('thinkTimer',c).fn();
+assert.equal(node('.ai-top')['data-mentor-state'],'speaking');
+vm.runInContext('mentorTimer',c).fn();
+assert.equal(node('#mentor-symbol')['data-shape'],'plus');
+for(const shape of ['times','minus','divide']){
+  vm.runInContext('mentorTimer',c).fn();
+  assert.equal(node('#mentor-symbol')['data-shape'],shape);
+}
+const staleMorph=vm.runInContext('mentorTimer',c);
+for(let guard=0;guard<300&&vm.runInContext('aiState',c)==='반응 중';guard++)vm.runInContext('animTimer',c).fn();
+assert.equal(node('.ai-top')['data-mentor-state'],'idle');
+assert.equal(node('#ai-message')['aria-busy'],'false');
+const idleMorph=vm.runInContext('mentorTimer',c);staleMorph.fn();
+assert.equal(vm.runInContext('mentorTimer',c),idleMorph);
+idleMorph.fn();assert.equal(node('#mentor-symbol')['data-shape'],'clover');
+vm.runInContext("setAIState('반응 중')",c);
+const hiddenMorph=vm.runInContext('mentorTimer',c);
+c.document.visibilityState='hidden';listeners.visibilitychange();
+assert.equal(vm.runInContext('mentorTimer',c),null);hiddenMorph.fn();
+assert.equal(vm.runInContext('mentorTimer',c),null);
+assert.equal(node('.ai-top')['data-mentor-paused'],'true');
+c.document.visibilityState='visible';listeners.visibilitychange();
+assert.equal(node('.ai-top')['data-mentor-paused'],'false');
+c.matchMedia=()=>({matches:true});vm.runInContext("setAIState('대기');setAIState('반응 중')",c);
+assert.equal(node('#mentor-symbol')['data-shape'],'plus');assert.equal(vm.runInContext('mentorTimer',c),null);
+vm.runInContext("setAIState('대기')",c);assert.equal(node('#mentor-symbol')['data-shape'],'clover');
+console.log('Mentor message lifecycle, arithmetic cycle, stale timer cancellation, hidden-tab pause and reduced-motion checks passed');
+

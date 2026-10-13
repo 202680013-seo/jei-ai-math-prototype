@@ -180,3 +180,42 @@ dialog.sky-dialog{background:#13221b;color:#edf8e7;box-shadow:none}
 @media(max-width:650px){main{width:calc(100% - 40px);padding:76px 0 112px}.my-trigger{right:20px;top:18px;min-height:36px;font-size:12px}.ai{max-width:none;gap:10px}.ai-top,.recommend,.constellation-trigger{border-radius:18px}.ai-top{padding:14px 18px;gap:14px}.ai p{font-size:15px}.recommend{padding:12px 18px;gap:4px}.recommend button{font-size:15px}.heading{margin:30px 0 20px}.heading h1{font-size:23px;line-height:1.5}.grid{gap:12px}.grid>.card{min-height:218px;padding:17px;border-radius:18px;gap:13px}.grid>.program-card.is-current,.grid>.program-card.is-introduced{padding:16px}.grid>.card strong{font-size:16px}.card-top{gap:5px}.card .badge{font-size:10px;padding:4px 7px}#diagnosis-slot>.diagnostic{padding:20px;min-height:112px;gap:14px;border-radius:20px}#diagnosis-slot>.diagnostic::before{flex-basis:44px;width:44px;height:48px;border-radius:14px;background-size:27px}#diagnosis-slot>.diagnostic strong{font-size:19px}#diagnosis-slot>.diagnostic small{font-size:12px}.groups-trigger{bottom:24px;left:12px;border-radius:999px;padding:11px 15px;font-size:17px;gap:10px}.groups-trigger span{writing-mode:horizontal-tb;letter-spacing:0;font-size:12px}.settings-trigger{bottom:24px;right:18px}.panel{max-width:calc(100% - 14px)}.panel-head,.panel-content{padding:20px}dialog{padding:24px;border-radius:24px}.diagnosis-screen-top{padding:14px}.diagnosis-screen-top strong{font-size:14px}.diagnosis-screen-body{padding:24px 18px}.diagnosis-intro h1{font-size:25px}.diagnosis-intro p{font-size:15px}.diagnosis-screen .lesson-question{padding:22px;border-radius:22px}.diagnosis-screen .lesson-question h1{font-size:23px}.question-choices>button{min-height:104px}#mypage{padding:24px 20px 90px}.my-profile,.my-card{padding:22px;border-radius:22px}.calendar-grid{gap:5px}.sky-top{padding:16px}.sky-event-bar{border-radius:12px}.sky-zone-map{border-radius:10px}}
 @media(max-width:380px){.grid{gap:10px}.grid>.card{padding:14px;min-height:208px}.grid>.program-card.is-current,.grid>.program-card.is-introduced{padding:13px}.grid>.card strong{font-size:15px}.card-top>small{min-width:24px;height:24px;font-size:10px}.card .badge{font-size:9px;padding:4px 6px}#diagnosis-slot>.diagnostic{padding:18px;gap:12px}#diagnosis-slot>.diagnostic::before{display:none}.heading h1{font-size:22px}.calendar-grid button{width:34px;height:34px}.calendar-grid{gap:3px}}
 @media(prefers-reduced-motion:reduce){button{transition:none}button:active:not(:disabled){transform:none}}
+
+/* V3.1: four soft pieces morph into arithmetic symbols without swapping images. */
+@property --mentor-ring-angle{syntax:'<angle>';inherits:false;initial-value:0deg}
+.ai-top{position:relative;isolation:isolate;border-color:#d1e6c3;box-shadow:0 2px 12px #71ad4310;padding-top:14px;padding-bottom:14px}
+.ai-top::before{content:'';position:absolute;inset:-1px;padding:1.5px;border-radius:inherit;pointer-events:none;background:conic-gradient(from var(--mentor-ring-angle),#d8ebce 0deg,#c6e6b3 50deg,#73be43 92deg,#d0f8b7 123deg,#59992f 153deg,#d8ebce 218deg,#d8ebce 300deg,#badba7 340deg,#d8ebce 360deg);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;filter:drop-shadow(0 0 3px #8ad75240);animation:mentor-ring-flow 8s linear infinite;opacity:.8;transition:opacity .6s}
+.ai-top[data-mentor-state=thinking]::before,.ai-top[data-mentor-state=speaking]::before{opacity:1}
+@keyframes mentor-ring-flow{to{--mentor-ring-angle:360deg}}
+.ai-top>.symbol,.ai-top>div:last-child{position:relative;z-index:1}
+.ai-top .symbol{width:56px;min-width:56px;gap:3px}
+.mentor-stage{position:relative;display:block;width:52px;height:52px;flex:none;pointer-events:none}
+.mentor-float{position:absolute;inset:0;display:block;animation:mentor-float 4.8s ease-in-out infinite;will-change:transform}
+.mentor-morph{position:absolute;inset:0;display:block;transform:rotate(0deg);transition:transform .8s cubic-bezier(.22,.72,.2,1);filter:drop-shadow(0 2px 2px #36691c18)}
+.mentor-piece,.mentor-core{position:absolute;display:block;left:50%;top:50%;width:var(--piece-w,22px);height:var(--piece-h,22px);border-radius:var(--piece-r,46%);background:linear-gradient(145deg,#c8f5a9 2%,#9fe870 42%,#76ba49 100%);transform:translate(-50%,-50%) translate(var(--piece-x,0px),var(--piece-y,0px)) scale(var(--piece-scale,1));opacity:var(--piece-opacity,1);transition:width .75s cubic-bezier(.22,.72,.2,1),height .75s cubic-bezier(.22,.72,.2,1),transform .75s cubic-bezier(.22,.72,.2,1),border-radius .75s,opacity .5s}
+.mentor-core{width:10px;height:9px;border-radius:3px;background:#9fe870}
+.mentor-piece.north{--piece-x:-9px;--piece-y:-9px}
+.mentor-piece.east{--piece-x:9px;--piece-y:-9px}
+.mentor-piece.south{--piece-x:9px;--piece-y:9px}
+.mentor-piece.west{--piece-x:-9px;--piece-y:9px}
+.mentor-morph:is([data-shape=plus],[data-shape=times]) .mentor-piece{--piece-r:6px}
+.mentor-morph:is([data-shape=plus],[data-shape=times]) .north{--piece-x:0px;--piece-y:-9px;--piece-w:10px;--piece-h:24px}
+.mentor-morph:is([data-shape=plus],[data-shape=times]) .east{--piece-x:9px;--piece-y:0px;--piece-w:24px;--piece-h:10px}
+.mentor-morph:is([data-shape=plus],[data-shape=times]) .south{--piece-x:0px;--piece-y:9px;--piece-w:10px;--piece-h:24px}
+.mentor-morph:is([data-shape=plus],[data-shape=times]) .west{--piece-x:-9px;--piece-y:0px;--piece-w:24px;--piece-h:10px}
+.mentor-morph[data-shape=times]{transform:rotate(45deg)}
+.mentor-morph:is([data-shape=minus],[data-shape=divide]) .mentor-piece{--piece-r:6px;--piece-y:0px;--piece-w:24px;--piece-h:9px}
+.mentor-morph:is([data-shape=minus],[data-shape=divide]) .east{--piece-x:8px}
+.mentor-morph:is([data-shape=minus],[data-shape=divide]) .west{--piece-x:-8px}
+.mentor-morph:is([data-shape=minus],[data-shape=divide]) :is(.north,.south){--piece-x:0px;--piece-w:8px;--piece-h:8px}
+.mentor-morph[data-shape=minus] :is(.north,.south){--piece-scale:.3;--piece-opacity:0}
+.mentor-morph[data-shape=divide] .north{--piece-y:-15px}
+.mentor-morph[data-shape=divide] .south{--piece-y:15px}
+.mentor-shadow{position:absolute;bottom:0;left:13px;width:26px;height:4px;border-radius:50%;background:radial-gradient(ellipse,#65904730,transparent 72%);animation:mentor-shadow 4.8s ease-in-out infinite}
+@keyframes mentor-float{0%,100%{transform:translateY(1px) rotate(-2deg)}50%{transform:translateY(-4px) rotate(2deg)}}
+@keyframes mentor-shadow{0%,100%{transform:scaleX(1);opacity:.7}50%{transform:scaleX(.76);opacity:.35}}
+.ai-top[data-mentor-paused=true]::before,.ai-top[data-mentor-paused=true] .mentor-float,.ai-top[data-mentor-paused=true] .mentor-shadow{animation-play-state:paused}
+.heading #group-title{font-weight:800}
+.constellation-trigger .star-glyph{height:32px}
+@media(max-width:650px){.ai-top .symbol{width:52px;min-width:52px}.ai-top{padding-top:13px;padding-bottom:13px}}
+@media(prefers-reduced-motion:reduce){.ai-top::before,.mentor-float,.mentor-shadow{animation:none}.mentor-float{transform:none}.mentor-morph,.mentor-piece,.mentor-core{transition:none}.ai-top::before{--mentor-ring-angle:120deg;opacity:.8;transition:none}}
