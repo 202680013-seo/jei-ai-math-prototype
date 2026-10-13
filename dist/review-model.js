@@ -21,7 +21,7 @@
     return {mode:params.get('view')==='compare'?'compare':'single',left,right,device:Object.hasOwn(devices,params.get('device'))?params.get('device'):'tablet',zoom:['100','75','50'].includes(params.get('zoom'))?params.get('zoom'):'fit',scenario:['0','3','4','5'].includes(params.get('scenario'))?params.get('scenario'):'keep'};
   }
   function query(state){const p=new URLSearchParams({view:state.mode,left:state.left,device:state.device,zoom:state.zoom});if(state.mode==='compare')p.set('right',state.right);if(state.scenario!=='keep')p.set('scenario',state.scenario);return p.toString();}
-  function previewUrl(id,scenario='keep'){const p=new URLSearchParams({version:id});if(scenario!=='keep')p.set('scenario',scenario);return 'preview.html?'+p.toString();}
+  function previewUrl(id,scenario='keep'){if(!/^(working|v[1-9]\d*)$/.test(id))throw new Error('잘못된 버전입니다.');const p=new URLSearchParams();if(scenario!=='keep')p.set('scenario',scenario);return 'views/'+id+'.html'+(p.size?'?'+p.toString():'');}
   function scale(width,device,zoom){return zoom==='fit'?Math.max(.08,Math.min(1,width/devices[device].width)):Number(zoom)/100;}
   const api={devices,validate,entries,get,normalize,query,previewUrl,scale};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.ReviewModel=api;
 })(typeof window!=='undefined'?window:globalThis);

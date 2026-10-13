@@ -18,19 +18,30 @@ test('workspace controls switch between saved V1 and working, resize, and produc
   let copied;const document={querySelector:s=>nodes.get(s)||null,querySelectorAll:s=>s==='.preview-pane'?grid.children:grid.querySelectorAll(s),createElement:element,createElementNS:(ns,tag)=>element(tag),addEventListener:(k,f)=>events[k]=f};
   const c=vm.createContext({document,window:{addEventListener:(k,f)=>events[k]=f},location,history,navigator:{clipboard:{writeText:async x=>{copied=x;}}},ReviewModel:R,fetch:async()=>({ok:true,json:async()=>structuredClone(registry)}),URLSearchParams,ResizeObserver:class{observe(){}disconnect(){}},requestAnimationFrame:fn=>fn(),getComputedStyle:()=>({paddingLeft:'22px',paddingRight:'22px'}),setTimeout:()=>1,clearTimeout(){},console});
   await vm.runInContext(fs.readFileSync(path.join(dist,'workspace.js'),'utf8'),c);
-  assert.equal(grid.children.length,1);assert.equal(nodes.get('#view-title').textContent,'현재 작업본');assert.equal(grid.children[0].querySelector('iframe').src,'preview.html?version=working');
-  nodes.get('#compare-mode').events.click();assert.equal(grid.children.length,2);assert.equal(nodes.get('#compare-note').hidden,false);assert.equal(grid.children[0].querySelector('iframe').src,'preview.html?version=v1');assert.equal(grid.children[1].querySelector('iframe').src,'preview.html?version=working');
+  assert.equal(grid.children.length,1);assert.equal(nodes.get('#view-title').textContent,'현재 작업본');assert.equal(grid.children[0].querySelector('iframe').src,'views/working.html');
+  nodes.get('#compare-mode').events.click();assert.equal(grid.children.length,2);assert.equal(nodes.get('#compare-note').hidden,false);assert.equal(grid.children[0].querySelector('iframe').src,'views/v1.html');assert.equal(grid.children[1].querySelector('iframe').src,'views/working.html');
   nodes.get('#device').events.change({target:{value:'mobile'}});assert.equal(grid.children[0].querySelector('iframe').style.width,'390px');assert.equal(grid.children[1].querySelector('iframe').style.width,'390px');
-  nodes.get('#scenario').events.change({target:{value:'4'}});assert.ok(grid.children.every(p=>p.querySelector('iframe').src.endsWith('&scenario=4')));
-  const select=grid.children[0].querySelector('select');select.value='working';select.events.change();assert.ok(grid.children[1].querySelector('iframe').src.includes('version=v1'));assert.ok(grid.children[0].querySelector('iframe').src.includes('version=working'));
+  nodes.get('#scenario').events.change({target:{value:'4'}});assert.ok(grid.children.every(p=>p.querySelector('iframe').src.endsWith('?scenario=4')));
+  const select=grid.children[0].querySelector('select');select.value='working';select.events.change();assert.ok(grid.children[1].querySelector('iframe').src.includes('views/v1.html'));assert.ok(grid.children[0].querySelector('iframe').src.includes('views/working.html'));
   await nodes.get('#copy-link').events.click();assert.ok(copied.includes('view=compare'));assert.ok(copied.includes('device=mobile'));
   nodes.get('#single-mode').events.click();assert.equal(grid.children.length,1);assert.equal(nodes.get('#view-title').textContent,'V1 · 대리님 원본');
 });
-test('preview loader preserves source files while injecting the version state adapter and resource base',async()=>{
-  const source=fs.readFileSync(path.join(dist,'versions/v1/index.html'),'utf8'),frame=element('iframe'),status=element(),events={};frame.contentWindow={};
-  const location={search:'?version=v1&scenario=4',href:'https://review.example/preview.html?version=v1&scenario=4',origin:'https://review.example'};let requested=[];
-  const c=vm.createContext({document:{querySelector:s=>s==='#status'?status:frame,createElement:element},window:{addEventListener:(k,f)=>events[k]=f},location,ReviewModel:R,URL,URLSearchParams,fetch:async url=>{requested.push(String(url));return {ok:true,json:async()=>structuredClone(registry),text:async()=>source};},setTimeout:()=>1,clearTimeout(){}});
-  await vm.runInContext(fs.readFileSync(path.join(dist,'preview.js'),'utf8'),c);
-  assert.equal(requested[1],'https://review.example/versions/v1/index.html');assert.ok(frame.srcdoc.includes('<base href="https://review.example/versions/v1/">'));assert.ok(frame.srcdoc.includes('window.__JEI_REVIEW__={"id":"v1","scenario":"4"}'));assert.ok(frame.srcdoc.indexOf('preview-runtime.js')<frame.srcdoc.indexOf('src="catalog.js"'));assert.ok(frame.srcdoc.indexOf('preview-controls.js')>frame.srcdoc.indexOf('src="app.js"'));assert.equal(frame.hidden,false);
-  events.message({origin:location.origin,source:frame.contentWindow,data:{type:'jei-review-ready'}});assert.equal(status.hidden,true);
+test('direct view documents contain the real UI, share the catalog, and have no readiness overlay',()=>{
+  const shared=[];
+  for(const id of ['working','v1']){
+    const html=fs.readFileSync(path.join(dist,'views',id+'.html'),'utf8');
+    assert.ok(html.includes('data-action="diagnosis"'));
+    assert.ok(html.includes('data-action="groups"'));
+    assert.ok(html.includes('data-version="'+id+'"'));
+    assert.ok(!html.includes('<iframe'));
+    assert.ok(!html.includes('srcdoc'));
+    assert.ok(!html.includes('id="status"'));
+    assert.ok(html.indexOf('preview-runtime.js')<html.indexOf('src="app.js'));
+    assert.ok(html.indexOf('preview-controls.js')>html.indexOf('src="app.js'));
+    shared.push(html.match(/src="(\/shared\/catalog-[a-f0-9]+\.js)"/)[1]);
+    const source=fs.readFileSync(path.join(dist,id==='v1'?'versions/v1':'working','catalog.js'));
+    assert.deepEqual(fs.readFileSync(path.join(dist,shared.at(-1))),source);
+  }
+  assert.equal(shared[0],shared[1]);
+  assert.ok(!fs.readFileSync(path.join(dist,'preview-controls.js'),'utf8').includes('postMessage('));
 });

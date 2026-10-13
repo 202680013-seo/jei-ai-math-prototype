@@ -9,5 +9,6 @@
 - Review workspace changes alone do not create a new design V-number. Sites deployment version numbers are independent of design V-numbers.
 - Preserve `SOURCE_BASELINE.json`. Its original `dist/*` hashes now correspond to `dist/versions/v1/*`.
 - Run `node --test tests/*.test.cjs` before publishing. Existing math tests target `dist/working/`; review tests verify snapshot integrity and independent preview state.
+- Run `node scripts/build-review-views.mjs` after source or preview adapter edits, before tests/packaging. It generates direct `dist/views/*.html` entrypoints and shared catalog assets; the save-design-version script also runs it. Do not reintroduce srcdoc, nested preview frames, or readiness overlays.
 - Do not add version controls or technical implementation details inside the learner-facing prototype. Review controls belong in the outer workspace.
 - All UI is buildless; publish `dist/` via the Sites source workflow. Reuse this site.

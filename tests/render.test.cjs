@@ -3,7 +3,12 @@ const vm=require('node:vm'),fs=require('node:fs'),assert=require('node:assert/st
 const nodes=new Map(),timers=[],listeners={};
 function node(key){if(nodes.has(key))return nodes.get(key);const classes=new Set();const n={style:{},hidden:false,disabled:false,innerHTML:'',textContent:'',value:8,offsetWidth:1,children:[],classList:{add(...a){a.forEach(x=>classes.add(x));},remove(...a){a.forEach(x=>classes.delete(x));},contains(x){return classes.has(x);}},setAttribute(k,v){this[k]=v;},getBoundingClientRect(){return {left:0,top:0,width:240,height:240};},append(x){if(x.parent)x.parent.children=x.parent.children.filter(y=>y!==x);this.children.push(x);x.parent=this;},prepend(x){if(x.parent)x.parent.children=x.parent.children.filter(y=>y!==x);this.children.unshift(x);x.parent=this;},animate(){},focus(){},close(){this.open=false;},showModal(){this.open=true;},addEventListener(){},querySelectorAll(){return [];}};nodes.set(key,n);return n;}
 const c=vm.createContext({console,SkyModel:require('../dist/working/sky.js').SkyModel,window:{innerWidth:1200,innerHeight:800,scrollY:0,scrollTo(){}},MathModel:require('../dist/working/model.js').MathModel,document:{querySelector:node,addEventListener(k,f){listeners[k]=f;},body:node('body')},localStorage:{getItem(){return null;},setItem(){}},matchMedia:()=>({matches:false}),setTimeout:(fn,ms)=>{const t={fn,ms};timers.push(t);return t;},clearTimeout:t=>{if(t)t.cancelled=true;},setInterval:()=>0,clearInterval(){}});
+// Real-document adapter runs before the application's original event handlers.
+c.innerWidth=1200;c.innerHeight=800;c.scrollY=0;c.scrollTo=()=>{};c.window=c;
+c.document.currentScript={dataset:{version:'working'}};c.location={search:'',origin:'https://review.example'};c.URLSearchParams=URLSearchParams;
+vm.runInContext(fs.readFileSync('dist/preview-runtime.js','utf8'),c);
 vm.runInContext(fs.readFileSync('dist/working/app.js','utf8'),c);
+vm.runInContext(fs.readFileSync('dist/preview-controls.js','utf8'),c);
 assert.equal(node('#diagnostic').parent,node('#diagnosis-slot'));
 vm.runInContext('M.preset(state,3);render()',c);assert.equal(node('#programs').children[0],node('#diagnostic'));assert.equal(node('#diagnosis-section').hidden,true);
 vm.runInContext('M.preset(state,0);render();beginComposition(8)',c);assert.equal(node('#programs').hidden,true);assert.equal(node('#composition').hidden,false);assert.equal(node('#diagnostic').disabled,true);assert.equal(vm.runInContext('current().programs.length',c),0);
@@ -29,3 +34,11 @@ vm.runInContext('state.ui.testControls=true;refreshDialog()',c);assert(node('#le
 vm.runInContext('select(3,1);current().diagnosis="idle";current().programs=[];render()',c);click('diagnosis');assert(!node('#learning').innerHTML.includes('diagnosis-begin'));for(const answer of [0,1,1]){click('diagnosis-answer',answer);click('diagnosis-next');}assert(node('#learning').innerHTML.includes('훌륭해요'));assert(node('#learning').classList.contains('diagnosis-screen'));click('diagnosis-leave');click('diagnosis');assert(node('#learning').innerHTML.includes('실력 확인 결과'));assert(!node('#learning').classList.contains('diagnosis-screen'));
 click('close-learning');click('replay-first');assert.equal(vm.runInContext('composing.total',c),3400);assert.equal(vm.runInContext('current().presentationPending',c),undefined);for(const t of [...timers])if(!t.cancelled&&t.ms===1500)t.fn();assert(node('#composition').innerHTML.includes('님을 위한 학습'));for(const t of [...timers])if(!t.cancelled&&t.ms===3400)t.fn();assert(node('#programs').innerHTML.includes('여기부터 시작해요'));assert.equal(vm.runInContext('state.ui.prescriptionSeen',c),true);click('replay-repeat');assert.equal(vm.runInContext('composing.total',c),1800);for(const t of [...timers])if(!t.cancelled&&t.ms===1800)t.fn();click('program',0);assert.equal(vm.runInContext('current().presentationPending',c),false);assert(!node('#programs').innerHTML.includes('여기부터 시작해요'));
 console.log('UI state-flow, diagnosis result and clean learner-view checks passed (DOM substitute)');
+
+// Preset loading uses the original app without replacing its click listeners.
+vm.runInContext("window.__JEI_REVIEW__.scenario='4'",c);
+vm.runInContext(fs.readFileSync('dist/preview-controls.js','utf8'),c);
+assert.equal(vm.runInContext('current().programs[0].status',c),'active');
+click('program',0);assert.equal(node('#learning').open,true);
+click('close-learning');click('mypage');assert.equal(node('main').hidden,true);
+console.log('Direct-view storage adapter and original prototype button interactions passed');

@@ -1,8 +1,10 @@
 (function(){
   'use strict';
   // Isolate simulation state without changing the saved prototype source.
-  const config=window.__JEI_REVIEW__,prefix=`jei-review:${config.id}:`,memory=new Map();let native;
-  window.addEventListener?.('error',()=>{config.hasError=true;},true);
+  const id=document.currentScript.dataset.version;
+  if(!/^(working|v[1-9]\d*)$/.test(id))throw new Error('Unknown design version.');
+  const scenario=new URLSearchParams(location.search).get('scenario');
+  const config=window.__JEI_REVIEW__={id,scenario:['0','3','4','5'].includes(scenario)?scenario:'keep'},prefix=`jei-review:${id}:`,memory=new Map();let native;
   try{native=window.localStorage;}catch{}
   if(config.id==='working'&&native){try{const marker='jei-review:migrated:working',key='ai-math-prototype-diagnosis-v1';if(!native.getItem(marker)){const legacy=native.getItem(key);if(legacy!=null&&native.getItem(prefix+key)==null)native.setItem(prefix+key,legacy);native.setItem(marker,'1');}}catch{}}
   const keys=()=>{if(!native)return [...memory.keys()];try{return Array.from({length:native.length},(_,i)=>native.key(i)).filter(k=>k?.startsWith(prefix)).map(k=>k.slice(prefix.length));}catch{return [...memory.keys()];}};

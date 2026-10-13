@@ -27,9 +27,10 @@
 node scripts/save-design-version.mjs --title "좌측 탭 개선" --change "탭 곡선과 아이콘 영역 조정"
 ```
 
-4. 테스트를 실행합니다.
+4. 직접 로드할 시안을 생성하고 테스트를 실행합니다.
 
 ```sh
+node scripts/build-review-views.mjs
 node --test tests/*.test.cjs
 ```
 
@@ -39,7 +40,10 @@ node --test tests/*.test.cjs
 
 - `dist/index.html`, `workspace.css`, `workspace.js`: 버전 선택·비교 작업 공간
 - `dist/versions.json`: 버전 목록, 날짜, 설명과 변경 사항
-- `dist/preview.html`, `preview*.js`: 보관한 파일을 그대로 읽으며 버전별 테스트 상태를 분리하는 미리보기
+- `dist/views/*.html`: 시안을 한 번에 직접 로드하는 생성된 진입 화면
+- `dist/preview-runtime.js`, `preview-controls.js`: 버전별 테스트 상태 분리와 프리셋 적용
+- `dist/shared/`: 내용이 동일한 대용량 카탈로그 공통 파일
+- `dist/preview.html`, `preview.js`: 이전 공유 링크를 직접 보기 주소로 연결
 - `dist/working/`: 이후 수정할 실제 수학 UI
 - `dist/versions/v1/`: 변경하지 않는 원본 화면과 해시 기록
 - `SOURCE_BASELINE.json`: 전달받은 원본 12개 파일의 해시. 원래 `dist/` 파일은 현재 `dist/versions/v1/`에 대응합니다.

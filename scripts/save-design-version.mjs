@@ -3,6 +3,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
+import { buildReviewViews } from './build-review-views.mjs';
 
 // Run after making a meaningful design change. Existing snapshots are immutable.
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),dist=join(root,'dist');
@@ -32,5 +33,6 @@ try{
   const version={id,label:'V'+next,title,path:`versions/${id}/`,date,changes};registry.versions.push(version);Object.assign(registry.working,{basedOn:id,title:`V${next} 기준 · 최신 작업본`,date,matchesBaseline:true,changes:[`V${next} 시안과 같은 화면이에요.`,'다음 수정은 현재 작업본에서 이어갑니다.']});Review.validate(registry);
   renameSync(temporary,destination);writeFileSync(registryPath,JSON.stringify(registry,null,2)+'\n');
   const log=join(root,'CHANGELOG.md');writeFileSync(log,readFileSync(log,'utf8')+`\n## 디자인 V${next} — ${title} · ${date}\n\n${changes.map(x=>'- '+x).join('\n')}\n`);
+  buildReviewViews(root);
   console.log(JSON.stringify({id,title,path:version.path,files:Object.keys(files).length}));
 }catch(error){if(existsSync(temporary))rmSync(temporary,{recursive:true});throw error;}
