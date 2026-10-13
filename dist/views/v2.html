@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ko">
+<head><base href="../versions/v2/"><script src="/preview-runtime.js?r=8a3a1b7b4a73c972" data-version="v2"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#e6edf2">
+  <title>재능스스로AI수학 | 나의 학습</title>
+  <meta name="description" content="실력을 알아보고, 나에게 맞는 수학을 차근차근 배워요.">
+  <link rel="stylesheet" href="style.css?r=b3744d2102d6fb6f">
+  <link rel="stylesheet" href="theme.css?r=7fc99eaa59345106">
+</head>
+<body>
+  <button class="settings-trigger" data-action="test" aria-label="테스트 패널 열기" title="테스트 패널 열기"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m9 3-1 3-3 1 1 3-2 2 2 2-1 3 3 1 1 3h6l1-3 3-1-1-3 2-2-2-2 1-3-3-1-1-3Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+  <main>
+    <section class="ai" aria-label="AI 인터랙션">
+      <div class="ai-top">
+        <div class="symbol"><svg viewBox="0 0 48 56" aria-hidden="true"><path fill="currentColor" d="M24 2c2 0 2 10 8 16s16 6 16 8-10 2-16 8-6 16-8 16-2-10-8-16S0 28 0 26s10-2 16-8S22 2 24 2Z"/><ellipse fill="#dce3e9" cx="24" cy="54" rx="12" ry="2"/></svg><small id="ai-state" class="sr-only">대기</small></div>
+        <div class="greeting-bubble"><p id="ai-message" aria-live="polite" aria-atomic="true" aria-busy="false"></p></div>
+      </div>
+      <div class="recommend"><span><span aria-hidden="true">✦</span> AI 추천 활동</span><button id="recommend" data-action="recommend"></button></div>
+      <button class="my-trigger" data-action="mypage" aria-label="내 학습 열기" title="내 학습"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M16 12 11 7c-2-3 7-6 9-2l2 7 1-9c1-4 12-1 11 3l-6 7 8-5c3-2 7 3 3 5l-9 4c8 5 12 13 9 21-2 7-9 8-17 8S7 43 6 37c-2-8 3-16 10-20l-5-1v-4Z"/><path fill="white" d="m24 22 2.8 5.5 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L15 28.4l6.2-.9Z"/></svg><span class="sr-only">내 학습</span></button>
+      <button class="constellation-trigger" data-action="constellation" aria-label="나의 별자리 보상 화면 열기" title="나의 별자리">
+        <span class="star-glyph" aria-hidden="true"><svg viewBox="0 0 80 80"><path d="m18 29 33-13M18 29l16 29 28 4" fill="none" stroke="white" stroke-width="1.4"/><g fill="white"><circle cx="18" cy="29" r="3.5"/><circle cx="34" cy="58" r="3.5"/><circle cx="62" cy="62" r="3.5"/><path d="m51 9 2.2 5.2 5.7.5-4.3 3.7 1.3 5.5-4.9-2.8-4.9 2.8 1.3-5.5-4.3-3.7 5.7-.5Z"/></g></svg></span>
+        <span>나의 별자리</span><span id="star-balance">조각 0</span>
+      </button>
+    </section>
+    <section class="learning-board" aria-label="나의 맞춤 학습">
+      <section class="heading sr-only"><div><h1 id="group-title"></h1><div id="summary"></div></div></section>
+      <section id="diagnosis-section">
+        <div id="diagnosis-slot">
+          <svg class="diagnosis-art" viewBox="0 0 240 220" fill="none" aria-hidden="true">
+            <path d="M39 19c2 0 2 8 5 11s11 3 11 5-8 2-11 5-3 11-5 11-2-8-5-11-11-3-11-5 8-2 11-5 3-11 5-11Z" fill="#e6edf2"/>
+            <circle cx="211" cy="90" r="9" fill="#e6edf2"/><circle cx="24" cy="154" r="9" fill="#e6edf2"/>
+            <path d="M76 54h64l42 42v92a12 12 0 0 1-12 12H76a12 12 0 0 1-12-12V66a12 12 0 0 1 12-12Z" fill="#e9f0f5" transform="translate(18 -2)"/>
+            <path d="M158 52v34a8 8 0 0 0 8 8h34Z" fill="#bec9d3"/>
+            <path d="M106 114h52M106 136h52M106 158h32" stroke="#c8d2db" stroke-width="12" stroke-linecap="round"/>
+            <circle cx="168" cy="165" r="26" fill="#e9f0f5" stroke="#00b7ac" stroke-width="10"/>
+            <path d="m188 185 23 23" stroke="#00b7ac" stroke-width="10" stroke-linecap="round"/>
+          </svg>
+          <span class="diagnosis-eyebrow" id="diagnosis-eyebrow">실력알기</span>
+          <h2 id="diagnosis-title"></h2>
+          <p id="diagnosis-description" class="sr-only"></p>
+          <button class="diagnostic" data-action="diagnosis" id="diagnostic"></button>
+        </div>
+      </section>
+      <div id="programs" class="grid"></div>
+    </section>
+  </main>
+  <section id="mypage" hidden></section>
+  <div id="sky-transition" hidden aria-hidden="true">☆</div>
+  <button class="groups-trigger" data-action="groups" aria-label="진단 그룹 목록 열기" title="진단 그룹 목록"><svg viewBox="0 0 32 40" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="2" y="2" width="27" height="35" rx="4"/><circle cx="9" cy="11" r="2"/><circle cx="9" cy="20" r="2"/><circle cx="9" cy="29" r="2"/><path d="M16 11h7M16 20h7M16 29h4" stroke-linecap="round"/></svg><span class="sr-only">진단 그룹</span><svg class="group-chevron" viewBox="0 0 12 20" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="m3 4 6 6-6 6"/></svg></button>
+  <div id="overlay" hidden></div>
+  <aside id="group-panel" class="panel" hidden></aside>
+  <aside id="test-panel" class="panel test" hidden></aside>
+  <dialog id="learning"></dialog>
+  <dialog id="prescription" class="prescription-dialog"><section id="composition" class="composition" hidden aria-live="polite" aria-label="맞춤 프로그램 구성 중"></section></dialog>
+  <dialog id="help"></dialog>
+  <dialog id="activity"></dialog>
+  <script src="/shared/catalog-742f16551eb158b5.js"></script><script src="model.js?r=b1d26b7d36a71c32"></script><script src="sky.js?r=0839e3db0daf10e9"></script><script src="app.js?r=97eb0f7308cde297"></script>
+<script src="/preview-controls.js?r=a36c5109867e2286"></script></body>
+</html>

@@ -13,7 +13,7 @@
 
 ## 두 종류의 버전
 
-**디자인 버전**은 화면 안에서 선택하는 V1, V2 등입니다. 현재 V1은 대리님에게 받은 원본이며 `dist/versions/v1/`에 보관합니다. 현재 작업본은 아직 V1과 같은 화면입니다.
+**디자인 버전**은 화면 안에서 선택하는 V1, V2 등입니다. V1은 대리님에게 받은 원본이며 `dist/versions/v1/`에 보관합니다. V2는 두 참고 화면을 바탕으로 적용한 민트 디자인이며 `dist/versions/v2/`에 보관합니다. 현재 작업본은 V2에서 이어집니다.
 
 **Sites 게시 버전**은 비교 도구와 모든 시안을 합친 사이트 전체의 배포 이력입니다. 비교 도구만 수정한 경우에도 게시 버전은 증가하지만 새 디자인 시안은 만들지 않습니다.
 
@@ -46,6 +46,8 @@ node --test tests/*.test.cjs
 - `dist/preview.html`, `preview.js`: 이전 공유 링크를 직접 보기 주소로 연결
 - `dist/working/`: 이후 수정할 실제 수학 UI
 - `dist/versions/v1/`: 변경하지 않는 원본 화면과 해시 기록
+- `dist/versions/v2/`: 회청색 배경·민트 카드 디자인과 해시 기록
+- `dist/working/theme.css`: V2 공통 색상, 화면 크기별 배치, 기능 화면 스타일
 - `SOURCE_BASELINE.json`: 전달받은 원본 12개 파일의 해시. 원래 `dist/` 파일은 현재 `dist/versions/v1/`에 대응합니다.
 - `tests/`: 학습·별자리·UI 흐름과 버전 보관·상태 분리 검증
 - `.openai/hosting.json`: 의정 작업본의 Sites 연결 정보

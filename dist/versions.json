@@ -1,6 +1,42 @@
 {
   "schema": 1,
   "project": "재능 AI 수학",
-  "working": {"id":"working","label":"현재 작업본","title":"V1 기반 · 수정 준비","path":"working/","basedOn":"v1","date":"2026-10-13","matchesBaseline":true,"changes":["V1 원본과 같은 화면에서 시작해요.","이후 수정할 디자인을 여기에서 확인할 수 있어요."]},
-  "versions": [{"id":"v1","label":"V1","title":"대리님 원본","path":"versions/v1/","date":"2026-10-13","changes":["전달받은 화면과 기능을 그대로 보관했어요.","진단 · 학습 · 별자리 흐름을 확인할 수 있어요."]}]
+  "working": {
+    "id": "working",
+    "label": "현재 작업본",
+    "title": "V2 기준 · 최신 작업본",
+    "path": "working/",
+    "basedOn": "v2",
+    "date": "2026-10-13",
+    "matchesBaseline": true,
+    "changes": [
+      "V2 시안과 같은 화면이에요.",
+      "다음 수정은 현재 작업본에서 이어갑니다."
+    ]
+  },
+  "versions": [
+    {
+      "id": "v1",
+      "label": "V1",
+      "title": "대리님 원본",
+      "path": "versions/v1/",
+      "date": "2026-10-13",
+      "changes": [
+        "전달받은 화면과 기능을 그대로 보관했어요.",
+        "진단 · 학습 · 별자리 흐름을 확인할 수 있어요."
+      ]
+    },
+    {
+      "id": "v2",
+      "label": "V2",
+      "title": "민트 학습 화면",
+      "path": "versions/v2/",
+      "date": "2026-10-13",
+      "changes": [
+        "참고 화면의 회청색 배경, 둥근 흰색 학습판과 그라데이션 AI 말풍선 적용",
+        "진단 시작 화면과 진행·완료·잠금 학습 카드 디자인 적용",
+        "학습 시작·추천 활동·내 학습·별자리 기능을 유지하고 작은 화면 배치 조정"
+      ]
+    }
+  ]
 }

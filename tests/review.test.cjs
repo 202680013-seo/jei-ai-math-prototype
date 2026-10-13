@@ -16,7 +16,7 @@ test('version storage is isolated; clearing V1 cannot clear working or legacy st
   function load(id){const window={__JEI_REVIEW__:{id},localStorage:native};vm.runInNewContext(fs.readFileSync(path.join(dist,'preview-runtime.js'),'utf8'),{window,document:{currentScript:{dataset:{version:id}}},location:{search:''},URLSearchParams,Map,Object,Array,String});return window.localStorage;}
   const a=load('v1'),b=load('working');assert.equal(a.getItem('ai-math-prototype-diagnosis-v1'),null);assert.equal(b.getItem('ai-math-prototype-diagnosis-v1'),'legacy');a.setItem('state','one');b.setItem('state','two');assert.equal(a.getItem('state'),'one');assert.equal(b.getItem('state'),'two');a.clear();assert.equal(a.getItem('state'),null);assert.equal(b.getItem('state'),'two');assert.equal(backing.get('ai-math-prototype-diagnosis-v1'),'legacy');
 });
-test('saving V2 preserves V1 and rejects an unchanged duplicate',()=>{
+test('saving the next design version preserves V1 and rejects an unchanged duplicate',()=>{
   const temp=fs.mkdtempSync(path.join(os.tmpdir(),'jeimath-version-'));
   try{fs.cpSync(dist,path.join(temp,'dist'),{recursive:true});fs.mkdirSync(path.join(temp,'scripts'));fs.copyFileSync(path.join(root,'scripts/save-design-version.mjs'),path.join(temp,'scripts/save-design-version.mjs'));fs.copyFileSync(path.join(root,'scripts/build-review-views.mjs'),path.join(temp,'scripts/build-review-views.mjs'));fs.writeFileSync(path.join(temp,'CHANGELOG.md'),'# History\n');
     const run=()=>cp.spawnSync(process.execPath,['scripts/save-design-version.mjs','--title','Test change','--change','Changed only the working title'],{cwd:temp,encoding:'utf8'});
