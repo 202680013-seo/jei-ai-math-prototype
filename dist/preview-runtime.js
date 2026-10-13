@@ -1,0 +1,15 @@
+(function(){
+  'use strict';
+  // Isolate simulation state without changing the saved prototype source.
+  const config=window.__JEI_REVIEW__,prefix=`jei-review:${config.id}:`,memory=new Map();let native;
+  window.addEventListener?.('error',()=>{config.hasError=true;},true);
+  try{native=window.localStorage;}catch{}
+  if(config.id==='working'&&native){try{const marker='jei-review:migrated:working',key='ai-math-prototype-diagnosis-v1';if(!native.getItem(marker)){const legacy=native.getItem(key);if(legacy!=null&&native.getItem(prefix+key)==null)native.setItem(prefix+key,legacy);native.setItem(marker,'1');}}catch{}}
+  const keys=()=>{if(!native)return [...memory.keys()];try{return Array.from({length:native.length},(_,i)=>native.key(i)).filter(k=>k?.startsWith(prefix)).map(k=>k.slice(prefix.length));}catch{return [...memory.keys()];}};
+  const scoped={
+    getItem(key){key=String(key);try{const value=native?.getItem(prefix+key);if(value!=null)return value;}catch{}return memory.get(key)??null;},
+    setItem(key,value){key=String(key);value=String(value);memory.set(key,value);try{native?.setItem(prefix+key,value);}catch{}},
+    removeItem(key){key=String(key);memory.delete(key);try{native?.removeItem(prefix+key);}catch{}},
+    clear(){for(const key of keys())this.removeItem(key);},key(index){return keys()[index]??null;},get length(){return keys().length;}
+  };Object.defineProperty(window,'localStorage',{configurable:true,value:scoped});
+})();
