@@ -44,3 +44,50 @@ assert.equal(vm.runInContext('current().programs[0].status',c),'active');
 click('program',0);assert.equal(node('#learning').open,true);
 click('close-learning');click('mypage');assert.equal(node('main').hidden,true);
 console.log('Direct-view storage adapter and original prototype button interactions passed');
+
+// Clean-pass handoff: actual diagnosis answers, preserved results, and cancellable navigation.
+function position(){return vm.runInContext('state.grade+":"+state.index',c);}
+function completeClean(g,i){
+  vm.runInContext(`cancelCleanMove();state=M.create();state.ui={diagnosisIntroSeen:true};select(${g},${i});`,c);
+  click('diagnosis');for(const answer of [0,1,1]){click('diagnosis-answer',answer);click('diagnosis-next');}
+  assert(node('#learning').innerHTML.includes('훌륭해요!'));
+}
+function flushMoves(ms=760){for(const t of [...timers])if(t.ms===ms&&!t.cancelled&&!t.fired){t.fired=true;t.fn();}}
+completeClean(3,0);
+assert.equal(position(),'3:0','celebration must not navigate before the learner continues');
+assert(node('#learning').innerHTML.includes('다음 실력알기로 넘어가기'));
+assert(!node('#learning').innerHTML.includes('E등급으로 넘어가기'));
+click('clean-result');assert(node('#learning').innerHTML.includes('실력 확인 결과'));assert.equal(position(),'3:0');
+click('clean-summary');assert(node('#learning').innerHTML.includes('훌륭해요!'));
+const resultBefore=vm.runInContext('JSON.stringify(current().diagnosticResult)',c);
+click('clean-continue');click('clean-continue');
+assert.equal(timers.filter(t=>t.ms===760&&!t.cancelled&&!t.fired).length,1,'double clicks must schedule only one move');
+assert.throws(()=>c.__JEI_REVIEW_BRIDGE__.capture(),/화면 전환이 끝난 뒤/);
+assert.equal(position(),'3:0','the displayed origin stays selected during the handoff');
+flushMoves();assert.equal(position(),'3:1');assert.equal(node('#learning').open,false);
+assert.equal(vm.runInContext('JSON.stringify(state.grades[3][0].diagnosticResult)',c),resultBefore);
+assert.equal(vm.runInContext('state.grades[3][0].diagnosis',c),'done');
+assert.equal(vm.runInContext('current().diagnosis',c),'idle','arrival must not start the next diagnosis automatically');
+assert.equal(vm.runInContext('state.daily.timerRunning',c),false);
+assert.equal(node('#learning-arrival').hidden,false);assert(node('#learning-arrival').innerHTML.includes('다음 실력알기로 넘어왔어요'));
+assert.equal(c.__JEI_REVIEW_BRIDGE__.capture().appState.ui.cleanArrival.toIndex,1);
+click('diagnosis');assert.equal(node('#learning-arrival').hidden,true);click('close-learning');click('diagnosis-leave');
+
+const lastD=vm.runInContext('state.grades[3].length-1',c);
+completeClean(3,lastD);assert(node('#learning').innerHTML.includes('E등급으로 넘어가기'));
+// Advancing must never reset existing progress at the destination.
+vm.runInContext('state.grades[4][0].diagnosis="done";state.grades[4][0].programs=M.programs(1,4,0);state.grades[4][0].programs[0].status="active";M.setProgress(state.grades[4][0].programs[0],40)',c);
+const destinationBefore=vm.runInContext('JSON.stringify(state.grades[4][0])',c);
+click('clean-continue');flushMoves();assert.equal(position(),'4:0');
+assert.equal(vm.runInContext('JSON.stringify(current())',c),destinationBefore);
+assert(node('#learning-arrival').innerHTML.includes('E등급으로 넘어왔어요'));
+click('clean-dismiss');assert.equal(node('#learning-arrival').hidden,true);
+
+completeClean(3,lastD);click('clean-continue');click('close-learning');flushMoves();assert.equal(position(),'3:'+lastD);assert.equal(node('#learning').open,false);
+assert.equal(vm.runInContext('current().diagnosis',c),'done','leaving preserves the completed result');
+completeClean(3,lastD);click('clean-continue');vm.runInContext('select(2,0)',c);flushMoves();assert.equal(position(),'2:0','a cancelled timer cannot later override a different selection');
+const lastJ=vm.runInContext('state.grades[9].length-1',c);completeClean(9,lastJ);
+assert(!node('#learning').innerHTML.includes('data-action="clean-continue"'));click('clean-continue');flushMoves();assert.equal(position(),'9:'+lastJ);click('diagnosis-leave');
+c.matchMedia=()=>({matches:true});completeClean(3,lastD);click('clean-continue');flushMoves(0);assert.equal(position(),'4:0','reduced motion retains navigation without an animation delay');
+c.matchMedia=()=>({matches:false});
+console.log('Clean-pass next-group/grade handoff, result retention, cancellation, final grade and reduced motion passed');
