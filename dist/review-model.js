@@ -8,9 +8,11 @@
       if(!/^(working|v[1-9]\d*)$/.test(item.id)||ids.has(item.id))throw new Error('중복되거나 잘못된 버전입니다.');
       if(item.path!==(item.id==='working'?'working/':`versions/${item.id}/`))throw new Error('버전 경로가 올바르지 않습니다.');
       if(!item.label||!item.title||!Array.isArray(item.changes))throw new Error('버전 설명이 없습니다.');
+      if(item.family&&(!/^v[1-9]\d*$/.test(item.family)||!Number.isInteger(item.revision)||item.revision<0))throw new Error('수정 이력 정보가 올바르지 않습니다.');
       ids.add(item.id);
     }
     if(!ids.has(data.working.basedOn)||data.working.basedOn==='working')throw new Error('기준 버전이 없습니다.');
+    if(data.versions.some(item=>item.family&&!ids.has(item.family)))throw new Error('수정 이력의 원본 버전이 없습니다.');
     return data;
   }
   const entries=data=>[data.working,...[...data.versions].reverse()];

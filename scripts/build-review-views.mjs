@@ -10,16 +10,18 @@ export function buildReviewViews(root=defaultRoot){
   const registry=Review.validate(JSON.parse(readFileSync(join(dist,'versions.json'),'utf8'))),out=join(dist,'views'),shared=join(dist,'shared');mkdirSync(out,{recursive:true});mkdirSync(shared,{recursive:true});
   const hash=bytes=>createHash('sha256').update(bytes).digest('hex').slice(0,16);
   const runtimeHash=hash(readFileSync(join(dist,'preview-runtime.js'))),controlsHash=hash(readFileSync(join(dist,'preview-controls.js')));
+  const historyModelHash=hash(readFileSync(join(dist,'history-model.js'))),historyUiHash=hash(readFileSync(join(dist,'history-ui.js'))),historyCssHash=hash(readFileSync(join(dist,'history-ui.css')));
   for(const version of Review.entries(registry)){
     const source=join(dist,version.path);let html=readFileSync(join(source,'index.html'),'utf8');
     if(!/<head[\s>]/i.test(html)||!/<\/body>/i.test(html))throw new Error('Expected a complete HTML prototype.');
     // Real same-origin documents, loaded directly. No srcdoc, intermediate fetch or loading overlay.
-    html=html.replace(/<head([^>]*)>/i,`<head$1><base href="../${version.path}"><script src="/preview-runtime.js?r=${runtimeHash}" data-version="${version.id}"></script>`);
+    const designId=version.id==='working'&&version.matchesBaseline?version.basedOn:version.id;
+    html=html.replace(/<head([^>]*)>/i,`<head$1><base href="../${version.path}"><script src="/history-model.js?r=${historyModelHash}"></script><script src="/preview-runtime.js?r=${runtimeHash}" data-version="${version.id}" data-design-id="${designId}"></script><link rel="stylesheet" href="/history-ui.css?r=${historyCssHash}">`);
     // Large identical catalog payloads are requested from one content-addressed URL.
     const catalog=join(source,'catalog.js');if(existsSync(catalog)){const bytes=readFileSync(catalog),name=`catalog-${hash(bytes)}.js`;writeFileSync(join(shared,name),bytes);html=html.replace(/src=(['"])catalog\.js\1/g,`src="/shared/${name}"`);}
     // Refresh changed working assets without making all requests uncacheable.
     html=html.replace(/\b(src|href)=(['"])([^'"?#]+\.(?:js|css))\2/g,(match,attr,quote,file)=>{if(file.startsWith('/')||file.includes('..')||file.includes(':'))return match;const local=join(source,file);return existsSync(local)?`${attr}=${quote}${file}?r=${hash(readFileSync(local))}${quote}`:match;});
-    html=html.replace(/<\/body>/i,`<script src="/preview-controls.js?r=${controlsHash}"></script></body>`);writeFileSync(join(out,version.id+'.html'),html);
+    html=html.replace(/<\/body>/i,`<script src="/preview-controls.js?r=${controlsHash}"></script><script src="/history-ui.js?r=${historyUiHash}"></script></body>`);writeFileSync(join(out,version.id+'.html'),html);
   }
   return {views:Review.entries(registry).length};
 }

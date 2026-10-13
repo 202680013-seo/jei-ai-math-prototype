@@ -19,12 +19,16 @@ test('workspace controls switch between the saved baseline and working, resize, 
   const c=vm.createContext({document,window:{addEventListener:(k,f)=>events[k]=f},location,history,navigator:{clipboard:{writeText:async x=>{copied=x;}}},ReviewModel:R,fetch:async()=>({ok:true,json:async()=>structuredClone(registry)}),URLSearchParams,ResizeObserver:class{observe(){}disconnect(){}},requestAnimationFrame:fn=>fn(),getComputedStyle:()=>({paddingLeft:'22px',paddingRight:'22px'}),setTimeout:()=>1,clearTimeout(){},console});
   await vm.runInContext(fs.readFileSync(path.join(dist,'workspace.js'),'utf8'),c);
   assert.equal(grid.children.length,1);assert.equal(nodes.get('#view-title').textContent,'현재 작업본');assert.equal(grid.children[0].querySelector('iframe').src,'views/working.html');
-  nodes.get('#compare-mode').events.click();assert.equal(grid.children.length,2);assert.equal(nodes.get('#compare-note').hidden,false);assert.equal(grid.children[0].querySelector('iframe').src,'views/'+registry.working.basedOn+'.html');assert.equal(grid.children[1].querySelector('iframe').src,'views/working.html');
+  nodes.get('#compare-mode').events.click();assert.equal(grid.children.length,2);assert.equal(nodes.get('#compare-note').hidden,!registry.working.matchesBaseline);assert.equal(grid.children[0].querySelector('iframe').src,'views/'+registry.working.basedOn+'.html');assert.equal(grid.children[1].querySelector('iframe').src,'views/working.html');
   nodes.get('#device').events.change({target:{value:'mobile'}});assert.equal(grid.children[0].querySelector('iframe').style.width,'390px');assert.equal(grid.children[1].querySelector('iframe').style.width,'390px');
   nodes.get('#scenario').events.change({target:{value:'4'}});assert.ok(grid.children.every(p=>p.querySelector('iframe').src.endsWith('?scenario=4')));
   const select=grid.children[0].querySelector('select');select.value='working';select.events.change();assert.ok(grid.children[1].querySelector('iframe').src.includes('views/'+registry.working.basedOn+'.html'));assert.ok(grid.children[0].querySelector('iframe').src.includes('views/working.html'));
   await nodes.get('#copy-link').events.click();assert.ok(copied.includes('view=compare'));assert.ok(copied.includes('device=mobile'));
   nodes.get('#single-mode').events.click();assert.equal(grid.children.length,1);assert.equal(nodes.get('#view-title').textContent,R.get(registry,registry.working.basedOn).label+' · '+R.get(registry,registry.working.basedOn).title);
+  const before=grid.children[0].querySelector('iframe').src,source={};grid.children[0].querySelector('iframe').contentWindow=source;
+  events.message({origin:'https://untrusted.example',source,data:{type:'jei-history-navigate',versionId:'v2',checkpoint:'cp-test'}});assert.equal(grid.children[0].querySelector('iframe').src,before);
+  events.message({origin:location.origin,source:{},data:{type:'jei-history-navigate',versionId:'v2',checkpoint:'cp-test'}});assert.equal(grid.children[0].querySelector('iframe').src,before);
+  events.message({origin:location.origin,source,data:{type:'jei-history-navigate',versionId:'v2',checkpoint:'cp-test'}});assert.equal(grid.children[0].querySelector('iframe').src,'views/v2.html?checkpoint=cp-test');assert.equal(nodes.get('#view-title').textContent,'V2 · 민트 학습 화면');assert.equal(nodes.get('#scenario').value,'keep');
 });
 test('direct view documents contain the real UI, share the catalog, and have no readiness overlay',()=>{
   const shared=[];
@@ -38,6 +42,8 @@ test('direct view documents contain the real UI, share the catalog, and have no 
     assert.ok(!html.includes('id="status"'));
     assert.ok(html.indexOf('preview-runtime.js')<html.indexOf('src="app.js'));
     assert.ok(html.indexOf('preview-controls.js')>html.indexOf('src="app.js'));
+    assert.ok(html.indexOf('history-model.js')<html.indexOf('preview-runtime.js'));
+    assert.ok(html.indexOf('history-ui.js')>html.indexOf('preview-controls.js'));
     shared.push(html.match(/src="(\/shared\/catalog-[a-f0-9]+\.js)"/)[1]);
     const source=fs.readFileSync(path.join(dist,R.get(registry,id).path,'catalog.js'));
     assert.deepEqual(fs.readFileSync(path.join(dist,shared.at(-1))),source);
