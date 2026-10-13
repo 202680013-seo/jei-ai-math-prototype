@@ -11,6 +11,14 @@ export function buildReviewViews(root=defaultRoot){
   const hash=bytes=>createHash('sha256').update(bytes).digest('hex').slice(0,16);
   const runtimeHash=hash(readFileSync(join(dist,'preview-runtime.js'))),controlsHash=hash(readFileSync(join(dist,'preview-controls.js')));
   const historyModelHash=hash(readFileSync(join(dist,'history-model.js'))),historyUiHash=hash(readFileSync(join(dist,'history-ui.js'))),historyCssHash=hash(readFileSync(join(dist,'history-ui.css')));
+  const typographyHash=hash(readFileSync(join(shared,'typography.css')));
+  function applyTypography(html){
+    // Apply the user's global font choice without rewriting immutable snapshots.
+    // Avoid fetching superseded fonts (e.g. V3's original Pretendard preload).
+    html=html.replace(/<link\b(?=[^>]*\brel=["']preload["'])(?=[^>]*\bas=["']font["'])[^>]*>/gi,'');
+    html=html.replace(/<link\b(?=[^>]*\bdata-jei-typography\b)[^>]*>/gi,'');
+    return html.replace(/<\/head>/i,`<link data-jei-typography rel="preload" href="/shared/fonts/NanumSquareRoundR.woff2" as="font" type="font/woff2" crossorigin><link data-jei-typography rel="stylesheet" href="/shared/typography.css?r=${typographyHash}"></head>`);
+  }
   for(const version of Review.entries(registry)){
     const source=join(dist,version.path);let html=readFileSync(join(source,'index.html'),'utf8');
     if(!/<head[\s>]/i.test(html)||!/<\/body>/i.test(html))throw new Error('Expected a complete HTML prototype.');
@@ -21,8 +29,9 @@ export function buildReviewViews(root=defaultRoot){
     const catalog=join(source,'catalog.js');if(existsSync(catalog)){const bytes=readFileSync(catalog),name=`catalog-${hash(bytes)}.js`;writeFileSync(join(shared,name),bytes);html=html.replace(/src=(['"])catalog\.js\1/g,`src="/shared/${name}"`);}
     // Refresh changed working assets without making all requests uncacheable.
     html=html.replace(/\b(src|href)=(['"])([^'"?#]+\.(?:js|css))\2/g,(match,attr,quote,file)=>{if(file.startsWith('/')||file.includes('..')||file.includes(':'))return match;const local=join(source,file);return existsSync(local)?`${attr}=${quote}${file}?r=${hash(readFileSync(local))}${quote}`:match;});
-    html=html.replace(/<\/body>/i,`<script src="/preview-controls.js?r=${controlsHash}"></script><script src="/history-ui.js?r=${historyUiHash}"></script></body>`);writeFileSync(join(out,version.id+'.html'),html);
+    html=html.replace(/<\/body>/i,`<script src="/preview-controls.js?r=${controlsHash}"></script><script src="/history-ui.js?r=${historyUiHash}"></script></body>`);writeFileSync(join(out,version.id+'.html'),applyTypography(html));
   }
+  for(const name of ['index.html','preview.html']){const file=join(dist,name);writeFileSync(file,applyTypography(readFileSync(file,'utf8')));}
   return {views:Review.entries(registry).length};
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url))console.log(JSON.stringify(buildReviewViews()));

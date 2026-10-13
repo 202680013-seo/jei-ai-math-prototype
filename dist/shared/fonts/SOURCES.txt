@@ -1,0 +1,18 @@
+NanumSquareRound — NAVER official font distribution
+Source page: https://hangeul.naver.com/font/nanum
+CSS: https://hangeul.pstatic.net/hangeul_static/css/nanum-square-round.css
+Original package: https://hangeul.naver.com/hangeul_static/webfont/zips/nanum-square-round.zip
+Downloaded 2026-10-13; binaries copied without modification.
+
+https://hangeul.pstatic.net/hangeul_static/webfont/NanumSquareRound/NanumSquareRoundB.woff2
+SHA-256 4e8692a08d6c323f1bffb3641c7276d9c4bc8fa2891d78b02acc972776228600
+
+https://hangeul.pstatic.net/hangeul_static/webfont/NanumSquareRound/NanumSquareRoundEB.woff2
+SHA-256 31257cefdd0cec677b8278086e1d43fdfffb004ab40f96bd1aceda2e8d2f8e42
+
+https://hangeul.pstatic.net/hangeul_static/webfont/NanumSquareRound/NanumSquareRoundL.woff2
+SHA-256 6d7749f24a9b3a6bc1d7456e48c15eec1b89a1283b88e8ca11b7b891f046625f
+
+https://hangeul.pstatic.net/hangeul_static/webfont/NanumSquareRound/NanumSquareRoundR.woff2
+SHA-256 3127eb6b4cf10a0a840d204d613f610bbbd7f8a7ce82c0f81d04713760f81758
+

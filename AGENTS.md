@@ -14,3 +14,4 @@
 - User-requested revisions within V2 use `--family v2` when saving, producing labels V2.1, V2.2, etc. Internal IDs remain immutable sequential `vN` directories. Existing snapshots are never rewritten.
 - Manual save records pin an immutable design ID plus learner state in this browser. Explain browser-local scope in the UI. Design source changes are recorded by publication, not by the manual save button.
 - All UI is buildless; publish `dist/` via the Sites source workflow. Reuse this site.
+- The user requested NanumSquareRound across all versions. `dist/shared/typography.css` and its locally hosted font files are injected last by `build-review-views.mjs` into every generated version view and the review workspace. Preserve this global font choice on future designs; do not rewrite immutable snapshots just to update shared display typography.

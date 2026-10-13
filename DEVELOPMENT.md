@@ -117,3 +117,11 @@ node scripts/save-design-version.mjs --family v2 --title "변경 제목" --chang
 - PretendardVariable.woff2를 공식 배포본에서 내려받아 자체 제공하고 OFL 라이선스를 함께 저장했습니다. font-display:swap으로 글꼴 다운로드 중에도 버튼과 텍스트가 표시됩니다. 원본: https://github.com/orioncactus/pretendard (packages/pretendard/dist/web/variable/woff2/PretendardVariable.woff2).
 - V2.51 자동 전환 회귀 검증은 `tests/v2-transition.test.cjs`에서 저장된 v8을 대상으로 실행합니다. 최신 작업본 검증은 V1의 원래 학습 흐름을 대상으로 합니다. 기존 버전과 학습 기록 저장·복원 도구는 유지합니다.
 - 검증 범위: Node DOM 대체 환경의 학습/진단/별자리 동작, 저장·복원, 전체 스냅샷 SHA-256 무결성. control-browser가 제공되지 않아 실제 브라우저의 레이아웃·폰트 렌더링은 확인하지 못했습니다.
+
+## 모든 버전의 공통 글꼴
+
+- 사용자 요청에 따라 현재 보이는 모든 버전의 글꼴을 나눔스퀘어라운드로 통일했습니다. V3의 최초 제작 기록에 있는 Pretendard보다 이 공통 표시 설정이 우선합니다.
+- `dist/shared/typography.css`를 모든 `dist/views/*.html`, 버전 관리 홈, 이전 미리보기 링크의 이동 화면에 마지막으로 연결합니다. 학습 영역·폼·SVG 텍스트·변경 기록 패널에 적용되며 크기·행간·색상은 각 시안을 유지합니다.
+- 원본 보관용 `dist/versions/v*/`와 현재 작업본 소스의 해시를 보존하므로 디자인 번호는 추가하지 않습니다. 모든 사용자용 열기·비교·복원 링크는 공통 글꼴이 적용된 `views/` 문서를 사용합니다.
+- Light 300, Regular 400, Bold 700, Extra Bold 800 WOFF2를 NAVER 공식 CDN에서 내려받아 동일한 공통 URL로 제공합니다. Regular만 미리 불러오고 다른 굵기는 필요할 때 로드합니다. font-display:swap으로 글꼴 때문에 텍스트나 버튼 표시가 늦어지지 않습니다. V3의 기존 Pretendard 미리 불러오기는 생성 화면에서 제거합니다.
+- 전체 17개 동작 검증과 12개 HTML 문서의 글꼴 연결·폰트 파일 존재 여부를 확인했습니다. control-browser가 없어 실제 브라우저 렌더링은 확인하지 못했습니다.
