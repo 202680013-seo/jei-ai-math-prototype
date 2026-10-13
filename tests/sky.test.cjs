@@ -1,0 +1,6 @@
+const assert=require('node:assert/strict'),K=require('../dist/sky.js').SkyModel;let n=0;const eq=(a,b)=>{assert.deepEqual(a,b);n++;};
+for(let k=0;k<13;k++){const state={};const s=K.scenario(state,k);eq(s.items.length,32);assert(s.items.every((x,i)=>x.stars>=0&&x.stars<=K.defs[i].points.length));n++;if(s.pending){const expected=s.pending.final.map(x=>({...x}));const steps=s.pending.steps;steps.forEach(step=>K.applyStep(s,step));K.finish(s);eq(s.items,expected);eq(s.pending,null);}}
+let state={},s=K.ensure(state);eq(K.current(s),0);eq(K.status(s,0),'active');eq(K.status(s,1),'idle');eq(K.seen(s,1),false);K.addPieces(s,4);eq(s.items[0].pieces,4);K.addPieces(s,1);eq(s.items[0].stars,1);eq(s.items[0].pieces,0);K.addPieces(s,15);eq(K.status(s,0),'unseen');eq(K.current(s),1);eq(K.seen(s,0),true);eq(K.status(s,0),'seen');eq(K.search(s,'北'),[]);eq(K.search(s,'북')[0].id,0);eq(K.search(s,'두칠성'),[]);
+s=K.scenario(state,9);K.finish(s);eq(K.current(s),-1);eq(s.items.filter((x,i)=>x.stars===K.defs[i].points.length).length,32);
+s=K.scenario(state,7);assert(s.pending.steps.some(x=>x.kind==='zone'));n++;assert(s.pending.steps.filter(x=>x.kind==='batch').every(x=>x.duration===500));n++;
+console.log(n+' sample sky scenario assertions passed');
