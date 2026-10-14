@@ -3,6 +3,21 @@
   const icon={working:'<path d="m14 4 6 6M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15Z"/>',saved:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/>'};
   function el(tag,cls,text){const node=document.createElement(tag);if(cls)node.className=cls;if(text!==undefined)node.textContent=text;return node;}
   function glyph(content){const node=document.createElementNS('http://www.w3.org/2000/svg','svg');node.setAttribute('viewBox','0 0 24 24');node.setAttribute('aria-hidden','true');node.innerHTML=content;return node;}
+  let sidebarOpen=false,sidebarSmall=false,desktopSidebarOpen=true;
+  const sidebarPreference='jei-review-sidebar-desktop';
+  function smallScreen(){return window.matchMedia?.('(max-width: 650px)').matches??(window.innerWidth||1200)<=650;}
+  function savedSidebarOpen(){try{return window.localStorage?.getItem(sidebarPreference)!=='closed';}catch{return true;}}
+  function setSidebar(open,{persist=true,focus=false}={}){
+    sidebarOpen=!!open;const small=smallScreen(),sidebar=$('#sidebar'),toggle=$('#menu-toggle');
+    sidebar.hidden=!sidebarOpen;sidebar.inert=!sidebarOpen;sidebar.classList.toggle('is-open',sidebarOpen);sidebar.setAttribute('aria-hidden',String(!sidebarOpen));
+    $('.app-layout').classList.toggle('sidebar-collapsed',!small&&!sidebarOpen);
+    toggle.setAttribute('aria-expanded',String(sidebarOpen));toggle.setAttribute('aria-label',sidebarOpen?'버전 관리 패널 닫기':'버전 관리 패널 열기');
+    $('#sidebar-backdrop').hidden=!(small&&sidebarOpen);
+    if(persist&&!small){desktopSidebarOpen=sidebarOpen;try{window.localStorage?.setItem(sidebarPreference,sidebarOpen?'open':'closed');}catch{}}
+    if(focus)(sidebarOpen?$('#close-sidebar'):toggle).focus?.({preventScroll:true});
+    // Resize existing frames only: toggling the panel must never reload an in-progress lesson.
+    requestAnimationFrame(sizeFrames);
+  }
   function toast(message){clearTimeout(toastTimer);$('#toast').textContent=message;$('#toast').hidden=false;toastTimer=setTimeout(()=>$('#toast').hidden=true,3200);}
   function activeId(){return state.mode==='compare'?state.right:state.left;}
   function updateUrl(push=false){history[push?'pushState':'replaceState'](null,'','?'+R.query(state));}
@@ -28,6 +43,7 @@
   }
   try{
     const response=await fetch('versions.json',{cache:'no-store'});if(!response.ok)throw new Error('버전 목록을 가져올 수 없어요.');data=R.validate(await response.json());state=R.normalize(data,new URLSearchParams(location.search));
+    sidebarSmall=smallScreen();desktopSidebarOpen=savedSidebarOpen();setSidebar(sidebarSmall?false:desktopSidebarOpen,{persist:false});
     window.addEventListener('message',event=>{
       if(event.origin!==location.origin||event.data?.type!=='jei-history-navigate'||!data.versions.some(v=>v.id===event.data.versionId))return;
       const pane=[...document.querySelectorAll('.preview-pane')].find(p=>p.querySelector('iframe').contentWindow===event.source);if(!pane)return;
@@ -35,7 +51,7 @@
       const side=pane.dataset.side,other=side==='left'?'right':'left';if(state[other]===event.data.versionId)state[other]=state[side];state[side]=event.data.versionId;state.scenario='keep';
       if(checkpoint)pendingRoutes[side]=R.previewUrl(state[side])+'?checkpoint='+encodeURIComponent(checkpoint);render(true);
     });
-    $('#version-list').addEventListener('click',event=>{const button=event.target.closest('button[data-version]');if(!button)return;const target=state.mode==='compare'?'right':'left',other=target==='left'?'right':'left';if(state[other]===button.dataset.version)state[other]=state[target];state[target]=button.dataset.version;$('#sidebar').classList.remove('is-open');$('#menu-toggle').setAttribute('aria-expanded','false');render(true);});
+    $('#version-list').addEventListener('click',event=>{const button=event.target.closest('button[data-version]');if(!button)return;const target=state.mode==='compare'?'right':'left',other=target==='left'?'right':'left';if(state[other]===button.dataset.version)state[other]=state[target];state[target]=button.dataset.version;if(smallScreen())setSidebar(false,{focus:true});render(true);});
     $('#single-mode').addEventListener('click',()=>{if(state.mode==='single')return;state.left=state.right;state.right=R.entries(data).find(v=>v.id!==state.left).id;state.mode='single';render(true);});
     $('#compare-mode').addEventListener('click',()=>{if(state.mode==='compare')return;const selected=state.left;state.left=selected==='working'?data.working.basedOn:selected;state.right=selected==='working'?'working':data.working.id;state.mode='compare';render(true);});
     for(const key of ['device','zoom'])$('#'+key).addEventListener('change',event=>{state[key]=event.target.value;updateUrl();$('#preview-grid').classList.toggle('is-mobile',state.device==='mobile');sizeFrames();});
@@ -46,6 +62,19 @@
     $('#theme-hex').addEventListener('change',event=>{if(!changeTheme(event.target.value)){syncThemeControls();toast('#과 6자리 색상 코드를 입력해 주세요.');}});
     $('#theme-reset').addEventListener('click',()=>changeTheme(T.DEFAULT));
     $('#copy-link').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(location.href);toast('현재 보기 링크를 복사했어요.');}catch{$('#link-input').value=location.href;$('#link-dialog').showModal();$('#link-input').select();}});$('#close-link-dialog').addEventListener('click',()=>$('#link-dialog').close());
-    $('#menu-toggle').addEventListener('click',()=>{const opened=$('#sidebar').classList.toggle('is-open');$('#menu-toggle').setAttribute('aria-expanded',String(opened));});document.addEventListener('keydown',event=>{if(event.key==='Escape'){$('#sidebar').classList.remove('is-open');$('#menu-toggle').setAttribute('aria-expanded','false');}});window.addEventListener('popstate',()=>{state=R.normalize(data,new URLSearchParams(location.search));render();});render();
+    $('#menu-toggle').addEventListener('click',()=>setSidebar(!sidebarOpen,{focus:true}));
+    $('#close-sidebar').addEventListener('click',()=>setSidebar(false,{focus:true}));
+    $('#sidebar-backdrop').addEventListener('click',()=>setSidebar(false,{focus:true}));
+    document.addEventListener('keydown',event=>{
+      if(event.key==='Escape'&&sidebarOpen&&!$('#link-dialog').open){event.preventDefault?.();setSidebar(false,{focus:true});}
+      if(event.key==='Tab'&&sidebarOpen&&smallScreen()){
+        const items=Array.from($('#sidebar').querySelectorAll('button:not(:disabled),a[href],select,input:not(:disabled)'));
+        if(!items.length)return;
+        if(event.shiftKey&&document.activeElement===items[0]){event.preventDefault();items.at(-1).focus();}
+        else if(!event.shiftKey&&document.activeElement===items.at(-1)){event.preventDefault();items[0].focus();}
+      }
+    });
+    window.addEventListener('resize',()=>{const small=smallScreen();if(small!==sidebarSmall){sidebarSmall=small;setSidebar(small?false:desktopSidebarOpen,{persist:false});}else requestAnimationFrame(sizeFrames);});
+    window.addEventListener('popstate',()=>{state=R.normalize(data,new URLSearchParams(location.search));render();});render();
   }catch(error){const card=el('div','error-card');card.append(el('h2','','시안을 불러오지 못했어요'),el('p','',error.message));const retry=el('button','','다시 시도');retry.addEventListener('click',()=>location.reload());card.append(retry);$('#preview-grid').replaceChildren(card);}
 })();

@@ -13,10 +13,11 @@ function element(tag='div'){
   return node;
 }
 test('workspace controls switch between the saved baseline and working, resize, and produce valid comparison links',async()=>{
-  const selectors=['#version-list','#version-count','#detail-title','#detail-date','#detail-changes','.sidebar-note strong','#toast','#single-mode','#compare-mode','#view-title','#view-description','#device','#zoom','#scenario','#compare-note','#compare-note span:last-child','#preview-grid','#viewport-label','#reload','#copy-link','#link-input','#link-dialog','#close-link-dialog','#menu-toggle','#sidebar','#theme-preset','#theme-color','#theme-hex','#theme-reset'];
+  const selectors=['#version-list','#version-count','#detail-title','#detail-date','#detail-changes','.sidebar-note strong','#toast','#single-mode','#compare-mode','#view-title','#view-description','#device','#zoom','#scenario','#compare-note','#compare-note span:last-child','#preview-grid','#viewport-label','#reload','#copy-link','#link-input','#link-dialog','#close-link-dialog','#menu-toggle','#sidebar','.app-layout','#close-sidebar','#sidebar-backdrop','#theme-preset','#theme-color','#theme-hex','#theme-reset'];
   const nodes=new Map(selectors.map(x=>[x,element()]));const grid=nodes.get('#preview-grid'),events={},location={origin:'https://review.example',pathname:'/',search:'',href:'https://review.example/'},history={replaceState(a,b,url){location.search=url;location.href=location.origin+'/'+url;},pushState(a,b,url){this.replaceState(a,b,url);}};
+  const stored=new Map(),screen={matches:false};
   let copied;const document={querySelector:s=>nodes.get(s)||null,querySelectorAll:s=>s==='.preview-pane'?grid.children:grid.querySelectorAll(s),createElement:element,createElementNS:(ns,tag)=>element(tag),addEventListener:(k,f)=>events[k]=f};
-  const c=vm.createContext({document,window:{addEventListener:(k,f)=>events[k]=f},location,history,navigator:{clipboard:{writeText:async x=>{copied=x;}}},ReviewModel:R,JeiTheme:require('../dist/theme-model.js'),fetch:async()=>({ok:true,json:async()=>structuredClone(registry)}),URLSearchParams,ResizeObserver:class{observe(){}disconnect(){}},requestAnimationFrame:fn=>fn(),getComputedStyle:()=>({paddingLeft:'22px',paddingRight:'22px'}),setTimeout:()=>1,clearTimeout(){},console});
+  const c=vm.createContext({document,window:{addEventListener:(k,f)=>events[k]=f,matchMedia:()=>screen,localStorage:{getItem:k=>stored.get(k),setItem:(k,v)=>stored.set(k,v)}},location,history,navigator:{clipboard:{writeText:async x=>{copied=x;}}},ReviewModel:R,JeiTheme:require('../dist/theme-model.js'),fetch:async()=>({ok:true,json:async()=>structuredClone(registry)}),URLSearchParams,ResizeObserver:class{observe(){}disconnect(){}},requestAnimationFrame:fn=>fn(),getComputedStyle:()=>({paddingLeft:'22px',paddingRight:'22px'}),setTimeout:()=>1,clearTimeout(){},console});
   await vm.runInContext(fs.readFileSync(path.join(dist,'workspace.js'),'utf8'),c);
   assert.equal(grid.children.length,1);assert.equal(nodes.get('#view-title').textContent,'현재 작업본');assert.equal(grid.children[0].querySelector('iframe').src,'views/working.html');
   nodes.get('#compare-mode').events.click();assert.equal(grid.children.length,2);assert.equal(nodes.get('#compare-note').hidden,!registry.working.matchesBaseline);assert.equal(grid.children[0].querySelector('iframe').src,'views/'+registry.working.basedOn+'.html');assert.equal(grid.children[1].querySelector('iframe').src,'views/working.html');
@@ -25,6 +26,30 @@ test('workspace controls switch between the saved baseline and working, resize, 
   const select=grid.children[0].querySelector('select');select.value='working';select.events.change();assert.ok(grid.children[1].querySelector('iframe').src.includes('views/'+registry.working.basedOn+'.html'));assert.ok(grid.children[0].querySelector('iframe').src.includes('views/working.html'));
   await nodes.get('#copy-link').events.click();assert.ok(copied.includes('view=compare'));assert.ok(copied.includes('device=mobile'));
   nodes.get('#single-mode').events.click();assert.equal(grid.children.length,1);assert.equal(nodes.get('#view-title').textContent,R.get(registry,registry.working.basedOn).label+' · '+R.get(registry,registry.working.basedOn).title);
+  // Management panel visibility resizes the existing iframe, without reloading learner state.
+  const liveFrame=grid.children[0].querySelector('iframe'),liveRoute=liveFrame.src;
+  assert.equal(nodes.get('#sidebar').hidden,false);
+  assert.equal(nodes.get('#menu-toggle').attrs['aria-expanded'],'true');
+  nodes.get('#close-sidebar').events.click();
+  assert.equal(nodes.get('#sidebar').hidden,true);assert.equal(nodes.get('#sidebar').inert,true);
+  assert(nodes.get('.app-layout').classList.contains('sidebar-collapsed'));
+  assert.equal(nodes.get('#menu-toggle').attrs['aria-label'],'버전 관리 패널 열기');
+  assert.equal(stored.get('jei-review-sidebar-desktop'),'closed');
+  assert.equal(grid.children[0].querySelector('iframe'),liveFrame);assert.equal(liveFrame.src,liveRoute);
+  nodes.get('#menu-toggle').events.click();
+  assert.equal(nodes.get('#sidebar').hidden,false);assert.equal(nodes.get('#sidebar').inert,false);
+  assert.equal(stored.get('jei-review-sidebar-desktop'),'open');
+  events.keydown({key:'Escape'});assert.equal(nodes.get('#sidebar').hidden,true);
+  nodes.get('#menu-toggle').events.click();
+  screen.matches=true;events.resize();
+  assert.equal(nodes.get('#sidebar').hidden,true); // small screens start with the drawer closed
+  nodes.get('#menu-toggle').events.click();assert.equal(nodes.get('#sidebar-backdrop').hidden,false);
+  nodes.get('#sidebar-backdrop').events.click();assert.equal(nodes.get('#sidebar').hidden,true);
+  assert.equal(nodes.get('#sidebar-backdrop').hidden,true);
+  assert.equal(stored.get('jei-review-sidebar-desktop'),'open'); // mobile does not overwrite the desktop preference
+  screen.matches=false;events.resize();assert.equal(nodes.get('#sidebar').hidden,false);
+  assert.equal(grid.children[0].querySelector('iframe'),liveFrame);assert.equal(liveFrame.src,liveRoute);
+
   // Live theme changes keep the iframe and learner session in place.
   const frame=grid.children[0].querySelector('iframe'),originalRoute=frame.src,messages=[];
   frame.contentWindow={postMessage:(data,origin)=>messages.push({data,origin})};
