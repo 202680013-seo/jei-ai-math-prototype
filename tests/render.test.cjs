@@ -192,3 +192,17 @@ assert.equal(node('.ai-top')['data-bubble-phase'],'holding');
 assert.equal(node('#ai-message').textContent,message);
 assert.equal(node('#ai-message')['aria-busy'],'false');
 console.log('V3.4 speech measurement, reading hold, collapse, replay, hidden-tab pause and reduced-motion passed');
+
+// A long message stays at one-line height even in a narrow mentor slot.
+for(const width of [210,460]){
+  node('.ai-top').getBoundingClientRect=()=>({width,height:44});
+  for(const length of [30,160]){
+    const longMessage='학습 안내 '.repeat(length);
+    node('#ai-message').textContent=longMessage;
+    vm.runInContext("setBubblePhase('holding')",c);
+    assert.equal(node('#mentor-bubble').style.height,'40px');
+    assert(parseFloat(node('#mentor-bubble').style.width)<=width-56);
+    assert.equal(node('#ai-message').textContent,longMessage); // full content remains readable by horizontal scrolling
+  }
+}
+console.log('Long mentor messages keep fixed one-line height without losing their full content');

@@ -1,17 +1,17 @@
 {
   "id": "v15",
   "date": "2026-10-14",
-  "updatedAt": "2026-10-14T02:33:06.501939+00:00",
-  "revisionNote": "User explicitly requested overwriting V3.4.2 with equal-height controls and the floating speech label.",
+  "updatedAt": "2026-10-14T02:44:26.927785+00:00",
+  "revisionNote": "User explicitly requested overwriting both V3.4.2 and V3.4.3 with one-line bubbles, icon-left shortcuts and a top-right count badge.",
   "files": {
-    "app.js": "8914c3dd87b66a9946c0453b13b8d1dc9498881f6727387b87ab0c8df3fb4724",
+    "app.js": "da6c415d89b8d2a20743297aa02912dd380c909159c5dcf8a52be4a154d45139",
     "catalog.js": "742f16551eb158b5651a65391ec595cbffa1e1fb3912266c3588f52a1d26c517",
     "fonts/OFL.txt": "82e9c8a4b203261f10ddba1296422d64914ff3d4b7bd8a12896d03f0f088d70a",
     "fonts/PretendardVariable.woff2": "9599f12fd42fc0bce1cd50b47a0c022e108d7aa64dd0d1bb0ed44f3282d900b4",
-    "index.html": "0eb3553ee91b91ad2ea67b7c948b69524454bff3550648fde41e8715e4f7c7de",
+    "index.html": "c8845ebbbdb6cd77879233d69c67cf01eb27402027d6c57662782f6af02e92ce",
     "model.js": "b1d26b7d36a71c323188e9ee302b12af58bcb248737e0762204e905e47e4795a",
     "sky.js": "0839e3db0daf10e9ce3dcac4220419aa401ba8b578d1bd5c2c7b07ee02aa180b",
     "style.css": "b3744d2102d6fb6f9ce40fff7bfb7b21b5bc39bd51b7a84d6eec64099725642e",
-    "theme.css": "8882a16f46474027f6fd9efde00cfeee8d2fc7a7535fd19b19aba631cd4a19a7"
+    "theme.css": "c6dc59405ec9cc73a5944b53809f33cbecf85927b56b3872099917e51964c4b1"
   }
 }

@@ -355,6 +355,15 @@ main{padding-top:40px}
 .mentor-cluster .recommend button::after{content:'›';position:absolute;right:0;top:50%;transform:translateY(-50%);font-size:24px;font-weight:400;line-height:1}
 @media(max-width:650px){:root{--top-action-height:36px}.mentor-cluster{row-gap:26px}.mentor-cluster>.recommend{padding:4px 12px}.mentor-cluster .recommend-label{top:-15px}.mentor-cluster .recommend button{font-size:11px;line-height:13px}}
 
+/* Explicit shared revision for V3.4.2 and V3.4.3: single-line speech and reversed shortcuts. */
+.ai #ai-message{width:100%;min-width:0;flex:1;white-space:nowrap;overflow-wrap:normal;word-break:normal;line-height:22px;padding:8px 16px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+.ai #ai-message::-webkit-scrollbar{display:none}
+#mentor-measure{max-width:none;white-space:nowrap;overflow-wrap:normal;word-break:normal;line-height:22px}
+.mentor-cluster .recommend-label{white-space:nowrap}
+.mentor-cluster .recommend button{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:28px}
+#star-balance{left:auto;right:-7px}
+@media(max-width:650px){.mentor-cluster .recommend button{line-height:26px}}
+
 /* V3.4.3 alternative: a quiet boundary between guidance and learning. */
 .ai{padding-bottom:24px;border-bottom:1px solid var(--jei-c-dce7d2,#dce7d2)}
 .heading{margin-top:28px}
