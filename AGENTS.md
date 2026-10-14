@@ -4,6 +4,7 @@
 - `dist/index.html`, `workspace.*`, `preview*`, and `review-model.js` implement the review workspace.
 - Edit the actual math UI only under `dist/working/`.
 - `dist/versions/v*/` are immutable design snapshots, each with a SHA-256 `snapshot.json`. Never edit, overwrite, or delete them during normal design revisions.
+- One explicit user-authorized exception on 2026-10-14: overwrite V3.4.2 (`v15`) with the equal-height recommendation card and overlapping speech label, updating its snapshot hashes and registry; keep the section-separation alternative as a new V3.4.3. This does not authorize future snapshot overwrites.
 - After a meaningful user-requested design revision, run `node scripts/save-design-version.mjs --title "짧은 시안 이름" --change "변경 내용"` (repeat `--change` as needed). It copies the current prototype into the next unused V-number, updates the menu, and records the change. It rejects unchanged duplicates.
 - During unfinished changes, update working metadata (`matchesBaseline: false`, title, date, changes) in `dist/versions.json`. Once a snapshot is created, the script updates it to the new baseline.
 - Review workspace changes alone do not create a new design V-number. Sites deployment version numbers are independent of design V-numbers.
