@@ -35,10 +35,10 @@ click('mypage');assert.equal(node('main').hidden,true);assert(node('#mypage').in
 click('sky-case',3);assert(node('#activity').innerHTML.includes('건너뛰기'));click('sky-skip');assert.equal(vm.runInContext('state.sky.items[0].stars',c),3);assert.equal(vm.runInContext('state.sky.pending',c),null);click('sky-detail',0);assert(node('#activity').innerHTML.includes('보상 확인'));for(const t of [...timers])if(!t.cancelled&&t.ms===700)t.fn();assert(node('#activity').innerHTML.includes('번째 별'));click('sky-detail-back');click('close-activity');
 click('sky-case',10);click('sky-detail',0);for(const t of [...timers])if(!t.cancelled&&t.ms===1000)t.fn();assert(node('#activity').innerHTML.includes('이야기'));assert.equal(vm.runInContext('state.sky.items[0].viewed',c),true);click('sky-detail-back');click('sky-search');assert(node('#activity').innerHTML.includes('이름을 알려주세요'));click('close-activity');
 vm.runInContext('state=M.create();editing=null;render()',c);click('diagnosis');assert.equal(vm.runInContext('current().diagnosis',c),'idle');assert(node('#learning').classList.contains('diagnosis-screen'));assert(node('#learning').innerHTML.includes('어디를 더 공부하면'));click('diagnosis-begin');assert.equal(vm.runInContext('current().diagnosis',c),'active');assert(!node('#learning').innerHTML.includes('테스트 전용'));assert(!node('#learning').innerHTML.includes('data-action="diag-start"'));
-click('diagnosis-answer',0);click('diagnosis-next');click('close-learning');assert(node('#learning').innerHTML.includes('지금까지 푼 내용은 저장'));click('diagnosis-stay');assert(node('#learning').innerHTML.includes('문항 2 / 3'));click('close-learning');click('diagnosis-leave');assert.equal(node('#learning').open,false);assert.equal(vm.runInContext('state.daily.timerRunning',c),false);click('diagnosis');assert(node('#learning').innerHTML.includes('문항 2 / 3'));assert(!node('#learning').innerHTML.includes('diagnosis-begin'));click('diagnosis-answer',0);click('diagnosis-next');click('diagnosis-answer',0);click('diagnosis-next');assert.equal(node('#prescription').open,true);assert(node('#composition').innerHTML.includes('수고했어요'));for(const t of [...timers])if(!t.cancelled&&t.ms===600)t.fn();assert(node('#composition').innerHTML.includes('더 익힐 내용을'));for(const t of [...timers])if(!t.cancelled&&(t.ms===3400||t.ms===1800))t.fn();assert.equal(node('#prescription').open,false);assert.equal(vm.runInContext('current().diagnosticResult.incorrect',c),2);click('diagnosis');assert(node('#learning').innerHTML.includes('실력 확인 결과'));assert(!node('#learning').classList.contains('diagnosis-screen'));assert(node('#learning').innerHTML.includes('결손 학습 목표'));assert(!node('#learning').innerHTML.includes('data-action="diag-prescribe"'));click('close-learning');click('program',0);assert.equal(vm.runInContext('current().programs[0].status',c),'active');assert(!node('#learning').innerHTML.includes('data-action="program-start"'));assert(node('#learning').innerHTML.includes('data-action="learner-next"'));click('learner-answer',0);click('learner-next');assert.equal(vm.runInContext('current().programs[0].completedFrames',c),1);
+click('diagnosis-answer',0);click('diagnosis-next');click('close-learning');assert(node('#learning').innerHTML.includes('지금까지 푼 내용은 저장'));click('diagnosis-stay');assert(node('#learning').innerHTML.includes('문항 2 / 3'));click('close-learning');click('diagnosis-leave');assert.equal(node('#learning').open,false);assert.equal(vm.runInContext('state.daily.timerRunning',c),false);click('diagnosis');assert(node('#learning').innerHTML.includes('문항 2 / 3'));assert(!node('#learning').innerHTML.includes('diagnosis-begin'));click('diagnosis-answer',0);click('diagnosis-next');click('diagnosis-answer',0);click('diagnosis-next');assert.equal(node('#prescription').open,true);assert(node('#composition-title').textContent.includes('수고했어요'));for(const t of [...timers])if(!t.cancelled&&t.ms===600)t.fn();assert(node('#composition-copy').textContent.includes('더 익힐 내용을'));for(const t of [...timers])if(!t.cancelled&&(t.ms===3400||t.ms===1800))t.fn();assert.equal(node('#prescription').open,false);assert.equal(vm.runInContext('current().diagnosticResult.incorrect',c),2);click('diagnosis');assert(node('#learning').innerHTML.includes('실력 확인 결과'));assert(!node('#learning').classList.contains('diagnosis-screen'));assert(node('#learning').innerHTML.includes('결손 학습 목표'));assert(!node('#learning').innerHTML.includes('data-action="diag-prescribe"'));click('close-learning');click('program',0);assert.equal(vm.runInContext('current().programs[0].status',c),'active');assert(!node('#learning').innerHTML.includes('data-action="program-start"'));assert(node('#learning').innerHTML.includes('data-action="learner-next"'));click('learner-answer',0);click('learner-next');assert.equal(vm.runInContext('current().programs[0].completedFrames',c),1);
 vm.runInContext('state.ui.testControls=true;refreshDialog()',c);assert(node('#learning').innerHTML.includes('테스트 전용'));assert(node('#learning').innerHTML.includes('data-action="program-pass"'));
 vm.runInContext('select(3,1);current().diagnosis="idle";current().programs=[];render()',c);click('diagnosis');assert(!node('#learning').innerHTML.includes('diagnosis-begin'));for(const answer of [0,1,1]){click('diagnosis-answer',answer);click('diagnosis-next');}assert(node('#learning').innerHTML.includes('훌륭해요'));assert(node('#learning').classList.contains('diagnosis-screen'));click('diagnosis-leave');click('diagnosis');assert(node('#learning').innerHTML.includes('실력 확인 결과'));assert(!node('#learning').classList.contains('diagnosis-screen'));
-click('close-learning');click('replay-first');assert.equal(vm.runInContext('composing.total',c),3400);assert.equal(vm.runInContext('current().presentationPending',c),undefined);for(const t of [...timers])if(!t.cancelled&&t.ms===1500)t.fn();assert(node('#composition').innerHTML.includes('님을 위한 학습'));for(const t of [...timers])if(!t.cancelled&&t.ms===3400)t.fn();assert(node('#programs').innerHTML.includes('여기부터 시작해요'));assert.equal(vm.runInContext('state.ui.prescriptionSeen',c),true);click('replay-repeat');assert.equal(vm.runInContext('composing.total',c),1800);for(const t of [...timers])if(!t.cancelled&&t.ms===1800)t.fn();click('program',0);assert.equal(vm.runInContext('current().presentationPending',c),false);assert(!node('#programs').innerHTML.includes('여기부터 시작해요'));
+click('close-learning');click('replay-first');assert.equal(vm.runInContext('composing.total',c),3400);assert.equal(vm.runInContext('current().presentationPending',c),undefined);for(const t of [...timers])if(!t.cancelled&&t.ms===1500)t.fn();assert(node('#composition-title').textContent.includes('님을 위한 학습'));for(const t of [...timers])if(!t.cancelled&&t.ms===3400)t.fn();assert(node('#programs').innerHTML.includes('여기부터 시작해요'));assert.equal(vm.runInContext('state.ui.prescriptionSeen',c),true);click('replay-repeat');assert.equal(vm.runInContext('composing.total',c),1800);for(const t of [...timers])if(!t.cancelled&&t.ms===1800)t.fn();click('program',0);assert.equal(vm.runInContext('current().presentationPending',c),false);assert(!node('#programs').innerHTML.includes('여기부터 시작해요'));
 console.log('UI state-flow, diagnosis result and clean learner-view checks passed (DOM substitute)');
 
 // Preset loading uses the original app without replacing its click listeners.
@@ -321,3 +321,51 @@ assert.equal(node('#group-panel').hidden,true);
 assert.equal(node('#overlay').hidden,true);
 assert(!node('body').classList.contains('panel-open'));
 console.log('Side drawer open/exit, backdrop, Escape, interrupted reopen, render continuity, group selection and reduced-motion passed');
+
+// V3.4.5 overwrite: scanning graphic stays mounted during typing, and card reveal is a single handoff.
+c.matchMedia=()=>({matches:false});c.document.visibilityState='visible';
+vm.runInContext("cancelComposition();state=M.create();editing=null;$('#learning').close();$('#activity').close();render()",c);
+let compositionMarkup=node('#composition').innerHTML,mountWrites=0;
+Object.defineProperty(node('#composition'),'innerHTML',{configurable:true,get(){return compositionMarkup;},set(value){compositionMarkup=value;mountWrites++;}});
+vm.runInContext('beginComposition(2)',c);
+assert.equal(mountWrites,1);
+assert(node('#composition').innerHTML.includes('search-lens'));
+assert.equal(node('#composition-title').textContent,'수고했어요!');
+assert.equal(node('#composition-caret').hidden,true);
+vm.runInContext("composing.step=2;composing.text='여기';renderComposition()",c);
+assert.equal(node('#composition-copy').textContent,'여기');
+assert.equal(node('#composition-caret').hidden,false);
+vm.runInContext("composing.text='여기부터';renderComposition();renderComposition()",c);
+assert.equal(mountWrites,1); // typing cannot restart the looping lens animation
+c.document.visibilityState='hidden';listeners.visibilitychange();
+assert.equal(node('#composition')['data-compose-paused'],'true');
+c.document.visibilityState='visible';listeners.visibilitychange();
+assert.equal(node('#composition')['data-compose-paused'],'false');
+vm.runInContext('composeTimers.find(t=>t.ms===3400)',c).fn();
+assert.equal(node('#prescription').open,false);
+assert.equal(vm.runInContext('current().programs.length',c),2);
+assert(node('#programs').classList.contains('reveal'));
+const oldCardEnd=vm.runInContext('cardRevealTimer',c);
+// Starting a new composition cancels the prior reveal; its end cannot hide the newer animation.
+vm.runInContext("beginComposition(1,'repeat')",c);
+assert.equal(mountWrites,2);
+assert(!node('#programs').classList.contains('reveal'));
+vm.runInContext('composeTimers.find(t=>t.ms===1800)',c).fn();
+assert(node('#programs').classList.contains('reveal'));
+const latestCardEnd=vm.runInContext('cardRevealTimer',c);
+oldCardEnd.fn();assert(node('#programs').classList.contains('reveal'));
+latestCardEnd.fn();assert(!node('#programs').classList.contains('reveal'));
+vm.runInContext('render()',c);assert(!node('#programs').classList.contains('reveal')); // no replay on state refresh
+vm.runInContext("beginComposition(1,'repeat')",c);vm.runInContext('composeTimers.find(t=>t.ms===1800)',c).fn();
+const cancelledCardEnd=vm.runInContext('cardRevealTimer',c);
+vm.runInContext('select(3,1)',c);cancelledCardEnd.fn();
+assert.equal(vm.runInContext('current().programs.length',c),0);
+assert(!node('#programs').classList.contains('reveal'));
+// Reduced motion retains all prescription content and suppresses the card movement.
+c.matchMedia=()=>({matches:true});
+vm.runInContext("beginComposition(3,'repeat')",c);vm.runInContext('composeTimers.find(t=>t.ms===1800)',c).fn();
+assert.equal(vm.runInContext('current().programs.length',c),3);
+assert.equal(vm.runInContext('cardRevealTimer',c),null);
+assert(!node('#programs').classList.contains('reveal'));
+assert.equal(node('#prescription').open,false);
+console.log('Prescription scan mount continuity, typing, hidden pause, one-time reveal, interrupted replay, selection and reduced-motion passed');

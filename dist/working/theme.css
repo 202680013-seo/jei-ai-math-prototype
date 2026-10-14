@@ -394,3 +394,20 @@ main{padding-top:40px}
 #overlay[data-panel-kind=groups][data-panel-phase=open]{opacity:1}
 @media(max-width:650px){#group-panel{border-radius:0 22px 22px 0}}
 @media(prefers-reduced-motion:reduce){#group-panel,#group-panel .panel-head,#group-panel .panel-content,#overlay[data-panel-kind=groups]{transition:none}}
+
+/* User-authorized V3.4.5 overwrite: scan for useful learning, then lift and settle the cards. */
+.prescription-search{width:200px;height:120px;margin:0 auto 18px;color:var(--forest)}
+.prescription-search svg{display:block;width:100%;height:100%;overflow:visible}
+.prescription-search .search-guides{stroke:var(--jei-c-d6ebc5,#d6ebc5)}
+.prescription-search .search-lens{transform-box:view-box;transform-origin:96px 50px;animation:prescription-lens-scan 2.4s ease-in-out infinite}
+.prescription-search .lens-glass{fill:var(--jei-c-eef8e6,#eef8e6);fill-opacity:.8;stroke:currentColor;stroke-width:6}
+.prescription-search .lens-handle{stroke:currentColor;stroke-width:9;stroke-linecap:round}
+.prescription-search .lens-shine{stroke:#fff;stroke-width:4;stroke-linecap:round;opacity:.95}
+#composition[data-compose-paused=true] .search-lens{animation-play-state:paused}
+#composition-title{margin:12px 0 10px}
+#composition-caret[hidden]{display:none}
+#programs.reveal>.card:not(.grid-diagnostic){animation:prescription-card-settle .7s both;animation-delay:var(--prescription-delay,0ms)}
+@keyframes prescription-lens-scan{0%,100%{transform:translate(28px,-5px) rotate(-6deg)}25%{transform:translate(-27px,-12px) rotate(5deg)}50%{transform:translate(-30px,12px) rotate(8deg)}75%{transform:translate(26px,17px) rotate(-5deg)}}
+@keyframes prescription-card-settle{0%{opacity:0;transform:translateY(30px) scale(.985);animation-timing-function:cubic-bezier(.2,.65,.3,1)}55%{opacity:1;transform:translateY(-10px) scale(1.006);animation-timing-function:cubic-bezier(.4,0,.6,1)}80%{opacity:1;transform:translateY(2px) scale(1);animation-timing-function:ease-out}100%{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:650px){.prescription-search{width:180px;height:108px}}
+@media(prefers-reduced-motion:reduce){.prescription-search .search-lens{animation:none}#programs.reveal>.card:not(.grid-diagnostic){animation:none!important;opacity:1;transform:none}}
