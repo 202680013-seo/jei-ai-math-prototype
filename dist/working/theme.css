@@ -518,3 +518,42 @@ dialog.sky-dialog::backdrop{background:transparent;backdrop-filter:none}
 
 .groups-trigger[hidden]{display:none!important}
 @media(prefers-reduced-motion:reduce){.groups-trigger,.groups-trigger:hover:not(:disabled),.groups-trigger:active:not(:disabled){transition:none!important}}
+
+/* V3.4.8: grade and topic have their own roles without making the heading taller. */
+.heading{flex-direction:row;align-items:center}
+.heading-title-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;min-width:0}
+.heading-title-row #group-title{margin:0;min-width:0;line-height:1.45;overflow-wrap:anywhere}
+.grade-label{display:inline-flex;align-items:center;gap:5px;flex:none;padding:5px 10px;border-radius:10px;background:var(--jei-c-eaf5e2,#eaf5e2);color:var(--jei-c-49702e,#49702e);line-height:1.3}
+.grade-label strong{font-size:18px;font-weight:800}
+.grade-label>span{font-size:11px;font-weight:700}
+.diagnosis-screen-top .diagnosis-context{display:flex;align-items:center;justify-content:center;gap:10px;min-width:0}
+.diagnosis-grade{flex:none;padding:4px 8px;border-radius:8px;background:var(--jei-c-eaf5e2,#eaf5e2);color:var(--jei-c-49702e,#49702e);font-size:12px;line-height:1.4}
+.groups-trigger,.groups-trigger:hover:not(:disabled),.groups-trigger:active:not(:disabled){top:calc(50% - 84px);bottom:auto}
+
+/* A pale cue at the pressed star button opens into the sky at a measured pace. */
+#sky-transition{background:var(--jei-c-eef8e6,#eef8e6);border:1px solid var(--jei-c-d6ebc5,#d6ebc5);color:var(--jei-c-668853,#668853);box-shadow:0 0 20px var(--jei-c-1633000d,#1633000d);font-size:27px}
+
+/* Keep native dialog state/focus immediate while its surface and backdrop fade in and out. */
+dialog:not(.sky-dialog){opacity:0;transform:translateY(8px);transition:opacity .32s ease,transform .4s cubic-bezier(.25,.1,.25,1),display .4s allow-discrete,overlay .4s allow-discrete}
+dialog[open]:not(.sky-dialog){opacity:1;transform:translateY(0)}
+dialog:not(.sky-dialog)::backdrop{opacity:0;transition:opacity .35s ease,display .4s allow-discrete,overlay .4s allow-discrete}
+dialog[open]:not(.sky-dialog)::backdrop{opacity:1}
+@starting-style{
+  dialog[open]:not(.sky-dialog){opacity:0;transform:translateY(8px)}
+  dialog[open]:not(.sky-dialog)::backdrop{opacity:0}
+}
+.dialog-view{min-width:0;display:flow-root}
+#learning.diagnosis-screen>.dialog-view{min-height:100%}
+.sky-dialog>.sky-view{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;width:100%}
+@media(max-width:650px){
+  .heading-title-row{gap:8px;margin-bottom:8px}
+  .grade-label{gap:4px;padding:5px 7px;border-radius:9px}
+  .grade-label strong{font-size:15px}.grade-label>span{font-size:10px}
+  .diagnosis-screen-top .diagnosis-context{gap:6px;font-size:13px}
+  .diagnosis-grade{font-size:10px;padding:4px 6px}
+  .groups-trigger,.groups-trigger:hover:not(:disabled),.groups-trigger:active:not(:disabled){top:calc(50% - 73px);bottom:auto}
+}
+@media(prefers-reduced-motion:reduce){
+  dialog:not(.sky-dialog),dialog:not(.sky-dialog)::backdrop{transition:none}
+  dialog:not(.sky-dialog){transform:none}
+}

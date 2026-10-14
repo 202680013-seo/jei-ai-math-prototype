@@ -110,7 +110,8 @@ click('pass-next');assert.equal(vm.runInContext('state.grade',c),3);
 assert(node('#learning').innerHTML.includes('E등급'));
 assert.equal(vm.runInContext('state.grades[4][0].diagnosis',c),'idle');
 click('pass-begin');assert.equal(vm.runInContext('state.grade',c),4);
-assert(node('#learning').innerHTML.includes('E등급 /'));
+assert(node('#learning').innerHTML.includes('class="diagnosis-grade">E등급</span>'));
+assert(!node('#learning').innerHTML.includes('E등급 /'));
 // Existing prescribed learning resumes instead of being reset or skipped.
 vm.runInContext('state=M.create();state.ui={diagnosisIntroSeen:true};current().diagnosis="done";state.grades[3][1].diagnosis="done";state.grades[3][1].programs=M.programs(1,3,1);state.grades[3][1].programs[0].status="active";M.setProgress(state.grades[3][1].programs[0],40);render()',c);
 const progressBefore=vm.runInContext('state.grades[3][1].programs[0].progress',c);
@@ -597,6 +598,58 @@ const headingMarkup=refinedHTML.match(/<section class="heading">(.*?)<\/section>
 assert(headingMarkup.indexOf('heading-copy')<headingMarkup.indexOf('diagnostic-result-slot')); // visual/reading order both place the result on the right
 console.log('Stable-width sequential speech, grapheme continuity, stale-letter cancellation and shaped-tab open/close passed');
 
+// V3.4.8: meaningful view changes move gently; answer selection and repeated renders do not.
+c.matchMedia=()=>({matches:false});
+vm.runInContext("cancelComposition();state=M.create();panel=null;myOpen=false;activityKind=null;skyBusy=false;skyRun=null;editing=null;$('#learning').close();$('#activity').close();render()",c);
+assert.equal(node('#group-title').textContent,'비교와 분류');
+assert(node('#grade-badge').innerHTML.includes('<strong>D</strong>'));
+vm.runInContext('M.preset(state,3);render()',c);
+assert(node('#diagnostic').innerHTML.includes('<small>진단 결과 확인</small>'));
+assert(!node('#diagnostic').innerHTML.includes('틀린 내용 확인'));
+assert.equal(node('#diagnostic')['aria-label'],'실력알기 · 진단 결과 확인');
+vm.runInContext('state=M.create();render()',c);
+const viewMotions=[];
+node('#learning > .dialog-view').animate=(frames,timing)=>{
+  const motion={frames,timing,cancelled:false,cancel(){this.cancelled=true;},finished:Promise.resolve()};viewMotions.push(motion);return motion;
+};
+click('diagnosis');
+assert.equal(viewMotions.length,0); // a closed dialog uses its own surface entrance, without two stacked animations
+click('diagnosis-begin');assert.equal(viewMotions.length,1);
+click('diagnosis-answer',0);assert.equal(viewMotions.length,1);
+assert.equal(viewMotions[0].cancelled,true); // a new render cancels the replaced content's motion
+click('diagnosis-next');assert.equal(viewMotions.length,2);
+vm.runInContext('refreshDialog()',c);assert.equal(viewMotions.length,2);
+click('diagnosis-answer',1);click('diagnosis-next');assert.equal(viewMotions.length,3);
+assert.equal(viewMotions[1].cancelled,true);
+assert.equal(vm.runInContext('current().diagnosticSession.index',c),2);
+assert.deepEqual(Array.from(vm.runInContext('current().diagnosticSession.answers',c)),[0,1]);
+c.matchMedia=()=>({matches:true});
+click('close-learning');assert.equal(viewMotions.length,3);
+assert(node('#learning').innerHTML.includes('지금까지 푼 내용은 저장'));
+click('diagnosis-stay');click('diagnosis-answer',1);click('diagnosis-next');
+assert.equal(viewMotions.length,3);
+assert(node('#learning').innerHTML.includes('진단을 통과했어요!'));
+assert.equal(vm.runInContext('current().diagnosticResult.incorrect',c),0);
+click('diagnosis-leave');assert.equal(node('#learning').open,false);
+c.matchMedia=()=>({matches:false});
+click('diagnosis');click('pass-summary');click('pass-next');
+const beforeNextPart=viewMotions.length;
+click('pass-begin');
+assert.equal(viewMotions.length,beforeNextPart+1);
+assert.equal(viewMotions.at(-1).cancelled,false); // duplicate initialization renders keep the new-screen motion intact
+assert(node('#learning').innerHTML.includes('문항 1 / 3'));
+click('close-learning');click('diagnosis-leave');
+const pageMotions=[];
+for(const selector of ['main','#mypage'])node(selector).animate=(frames,timing)=>{pageMotions.push({selector,frames,timing});return {finished:Promise.resolve(),cancel(){}};};
+const pageState=vm.runInContext('JSON.stringify(state.grades)',c);
+click('mypage');assert.equal(node('main').hidden,true);assert.equal(pageMotions.at(-1).selector,'#mypage');
+click('back-main');assert.equal(node('main').hidden,false);assert.equal(pageMotions.at(-1).selector,'main');
+assert.equal(vm.runInContext('JSON.stringify(state.grades)',c),pageState);
+c.matchMedia=()=>({matches:true});const priorPageMotions=pageMotions.length;
+click('mypage');click('back-main');assert.equal(pageMotions.length,priorPageMotions);
+c.matchMedia=()=>({matches:false});
+console.log('Grade/topic hierarchy, result wording, rapid question changes, stable answer selection, page navigation and reduced-motion state preservation passed');
+
 require('node:test')('star transition expands and contracts at the button instead of travelling through the viewport center',async()=>{
   c.matchMedia=()=>({matches:false});
   vm.runInContext("cancelComposition();state=M.create();panel=null;myOpen=false;activityKind=null;skyBusy=false;skyRun=null;skyReturnToLearning=false;$('#learning').close();$('#help').close();$('#activity').close();render()",c);
@@ -608,7 +661,13 @@ require('node:test')('star transition expands and contracts at the button instea
   assert.equal(node('#sky-transition').style.left,'840px');
   assert.equal(node('#sky-transition').style.top,'62px');
   assert.equal(dialogFrames[0].frames[0].clipPath,'circle(28px at 840px 62px)');
-  assert.equal(dialogFrames[0].frames[1].clipPath,'circle(150vmax at 840px 62px)');
+  const endRadius=Number(dialogFrames[0].frames[1].clipPath.match(/circle\((\d+)px/)[1]);
+  const furthestCorner=Math.hypot(840,738);
+  assert(endRadius>furthestCorner&&endRadius<=furthestCorner+25); // only enough radius to cover this viewport
+  assert(dialogFrames[0].frames[1].clipPath.endsWith('at 840px 62px)'));
+  assert.equal(dialogFrames[0].frames[0].opacity,.2);
+  assert.equal(dialogFrames[0].frames[1].opacity,1);
+  assert(dialogFrames[0].timing.duration>=750&&dialogFrames[0].timing.duration<=1000);
   assert(transitionFrames[0].frames.every(f=>!/translate\([^)]*px/.test(f.transform)));
   assert.equal(vm.runInContext('skyBusy',c),false);
   assert.equal(node('#activity').open,true);
@@ -617,10 +676,27 @@ require('node:test')('star transition expands and contracts at the button instea
   node('.constellation-trigger').getBoundingClientRect=()=>({left:650,top:32,width:100,height:40});
   await vm.runInContext('skyExit()',c);
   assert.equal(dialogFrames[1].frames[1].clipPath,'circle(28px at 700px 52px)');
+  assert.equal(dialogFrames[1].frames[1].opacity,.2);
+  assert(dialogFrames[1].timing.duration>=550&&dialogFrames[1].timing.duration<=800);
   assert.equal(node('#sky-transition').style.left,'700px');
   assert.equal(node('#sky-transition').style.top,'52px');
   assert(transitionFrames[1].frames.every(f=>!/translate\([^)]*px/.test(f.transform)));
   assert.equal(node('#activity').open,false);
   assert.equal(vm.runInContext('activityKind',c),null);
   assert.equal(node('#sky-transition').hidden,true);
+});
+
+require('node:test')('reduced-motion star navigation stays immediate and restores the learning timer without animation',async()=>{
+  c.matchMedia=()=>({matches:true});
+  vm.runInContext("cancelComposition();state=M.create();panel=null;myOpen=false;activityKind=null;skyBusy=false;skyRun=null;skyReturnToLearning=false;$('#learning').close();$('#activity').close();daily().timerRunning=true;render()",c);
+  let animations=0;
+  for(const selector of ['#sky-transition','#activity'])node(selector).animate=()=>{animations++;return {finished:Promise.resolve()};};
+  const selected=vm.runInContext('current().groupId',c);
+  await vm.runInContext('skyEnter()',c);
+  assert.equal(node('#activity').open,true);assert.equal(vm.runInContext('daily().timerRunning',c),false);
+  await vm.runInContext('skyExit()',c);
+  assert.equal(animations,0);assert.equal(node('#activity').open,false);
+  assert.equal(vm.runInContext('daily().timerRunning',c),true);
+  assert.equal(vm.runInContext('current().groupId',c),selected);
+  assert.equal(vm.runInContext('skyBusy',c),false);assert.equal(node('#sky-transition').hidden,true);
 });
