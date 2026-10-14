@@ -13,10 +13,10 @@ function element(tag='div'){
   return node;
 }
 test('workspace controls switch between the saved baseline and working, resize, and produce valid comparison links',async()=>{
-  const selectors=['#version-list','#version-count','#detail-title','#detail-date','#detail-changes','.sidebar-note strong','#toast','#single-mode','#compare-mode','#view-title','#view-description','#device','#zoom','#scenario','#compare-note','#compare-note span:last-child','#preview-grid','#viewport-label','#reload','#copy-link','#link-input','#link-dialog','#close-link-dialog','#menu-toggle','#sidebar'];
+  const selectors=['#version-list','#version-count','#detail-title','#detail-date','#detail-changes','.sidebar-note strong','#toast','#single-mode','#compare-mode','#view-title','#view-description','#device','#zoom','#scenario','#compare-note','#compare-note span:last-child','#preview-grid','#viewport-label','#reload','#copy-link','#link-input','#link-dialog','#close-link-dialog','#menu-toggle','#sidebar','#theme-preset','#theme-color','#theme-hex','#theme-reset'];
   const nodes=new Map(selectors.map(x=>[x,element()]));const grid=nodes.get('#preview-grid'),events={},location={origin:'https://review.example',pathname:'/',search:'',href:'https://review.example/'},history={replaceState(a,b,url){location.search=url;location.href=location.origin+'/'+url;},pushState(a,b,url){this.replaceState(a,b,url);}};
   let copied;const document={querySelector:s=>nodes.get(s)||null,querySelectorAll:s=>s==='.preview-pane'?grid.children:grid.querySelectorAll(s),createElement:element,createElementNS:(ns,tag)=>element(tag),addEventListener:(k,f)=>events[k]=f};
-  const c=vm.createContext({document,window:{addEventListener:(k,f)=>events[k]=f},location,history,navigator:{clipboard:{writeText:async x=>{copied=x;}}},ReviewModel:R,fetch:async()=>({ok:true,json:async()=>structuredClone(registry)}),URLSearchParams,ResizeObserver:class{observe(){}disconnect(){}},requestAnimationFrame:fn=>fn(),getComputedStyle:()=>({paddingLeft:'22px',paddingRight:'22px'}),setTimeout:()=>1,clearTimeout(){},console});
+  const c=vm.createContext({document,window:{addEventListener:(k,f)=>events[k]=f},location,history,navigator:{clipboard:{writeText:async x=>{copied=x;}}},ReviewModel:R,JeiTheme:require('../dist/theme-model.js'),fetch:async()=>({ok:true,json:async()=>structuredClone(registry)}),URLSearchParams,ResizeObserver:class{observe(){}disconnect(){}},requestAnimationFrame:fn=>fn(),getComputedStyle:()=>({paddingLeft:'22px',paddingRight:'22px'}),setTimeout:()=>1,clearTimeout(){},console});
   await vm.runInContext(fs.readFileSync(path.join(dist,'workspace.js'),'utf8'),c);
   assert.equal(grid.children.length,1);assert.equal(nodes.get('#view-title').textContent,'현재 작업본');assert.equal(grid.children[0].querySelector('iframe').src,'views/working.html');
   nodes.get('#compare-mode').events.click();assert.equal(grid.children.length,2);assert.equal(nodes.get('#compare-note').hidden,!registry.working.matchesBaseline);assert.equal(grid.children[0].querySelector('iframe').src,'views/'+registry.working.basedOn+'.html');assert.equal(grid.children[1].querySelector('iframe').src,'views/working.html');
@@ -25,6 +25,21 @@ test('workspace controls switch between the saved baseline and working, resize, 
   const select=grid.children[0].querySelector('select');select.value='working';select.events.change();assert.ok(grid.children[1].querySelector('iframe').src.includes('views/'+registry.working.basedOn+'.html'));assert.ok(grid.children[0].querySelector('iframe').src.includes('views/working.html'));
   await nodes.get('#copy-link').events.click();assert.ok(copied.includes('view=compare'));assert.ok(copied.includes('device=mobile'));
   nodes.get('#single-mode').events.click();assert.equal(grid.children.length,1);assert.equal(nodes.get('#view-title').textContent,R.get(registry,registry.working.basedOn).label+' · '+R.get(registry,registry.working.basedOn).title);
+  // Live theme changes keep the iframe and learner session in place.
+  const frame=grid.children[0].querySelector('iframe'),originalRoute=frame.src,messages=[];
+  frame.contentWindow={postMessage:(data,origin)=>messages.push({data,origin})};
+  nodes.get('#theme-preset').events.change({target:{value:'mint'}});
+  assert.equal(grid.children[0].querySelector('iframe'),frame);
+  assert.equal(frame.src,originalRoute);
+  assert.equal(messages.at(-1).data.color,'#8edbb6');
+  assert.equal(messages.at(-1).origin,location.origin);
+  assert.equal(nodes.get('#theme-color').value,'#8edbb6');
+  assert.ok(grid.children[0].querySelector('.open-link').href.includes('color=%238edbb6'));
+  await nodes.get('#copy-link').events.click();assert.ok(copied.includes('color=%238edbb6'));
+  nodes.get('#theme-hex').events.change({target:{value:'javascript:bad'}});
+  assert.equal(messages.at(-1).data.color,'#8edbb6');
+  nodes.get('#theme-reset').events.click();assert.equal(messages.at(-1).data.color,null);
+  assert.ok(!location.search.includes('color='));
   const before=grid.children[0].querySelector('iframe').src,source={};grid.children[0].querySelector('iframe').contentWindow=source;
   events.message({origin:'https://untrusted.example',source,data:{type:'jei-history-navigate',versionId:'v2',checkpoint:'cp-test'}});assert.equal(grid.children[0].querySelector('iframe').src,before);
   events.message({origin:location.origin,source:{},data:{type:'jei-history-navigate',versionId:'v2',checkpoint:'cp-test'}});assert.equal(grid.children[0].querySelector('iframe').src,before);

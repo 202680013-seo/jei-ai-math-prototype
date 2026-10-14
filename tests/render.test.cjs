@@ -2,7 +2,7 @@
 const vm=require('node:vm'),fs=require('node:fs'),assert=require('node:assert/strict');
 const nodes=new Map(),timers=[],listeners={};
 function node(key){if(nodes.has(key))return nodes.get(key);const classes=new Set();const n={style:{},hidden:false,disabled:false,innerHTML:'',textContent:'',value:8,offsetWidth:1,children:[],classList:{add(...a){a.forEach(x=>classes.add(x));},remove(...a){a.forEach(x=>classes.delete(x));},contains(x){return classes.has(x);}},setAttribute(k,v){this[k]=v;},getBoundingClientRect(){return {left:0,top:0,width:240,height:240};},append(x){if(x.parent)x.parent.children=x.parent.children.filter(y=>y!==x);this.children.push(x);x.parent=this;},prepend(x){if(x.parent)x.parent.children=x.parent.children.filter(y=>y!==x);this.children.unshift(x);x.parent=this;},animate(){},focus(){},close(){this.open=false;},showModal(){this.open=true;},addEventListener(){},querySelectorAll(){return [];}};nodes.set(key,n);return n;}
-const c=vm.createContext({console,SkyModel:require('../dist/working/sky.js').SkyModel,window:{innerWidth:1200,innerHeight:800,scrollY:0,scrollTo(){}},MathModel:require('../dist/working/model.js').MathModel,document:{querySelector:node,addEventListener(k,f){listeners[k]=f;},body:node('body')},localStorage:{getItem(){return null;},setItem(){}},matchMedia:()=>({matches:false}),setTimeout:(fn,ms)=>{const t={fn,ms};timers.push(t);return t;},clearTimeout:t=>{if(t)t.cancelled=true;},setInterval:()=>0,clearInterval(){}});
+const c=vm.createContext({console,SkyModel:require('../dist/working/sky.js').SkyModel,window:{innerWidth:1200,innerHeight:800,scrollY:0,scrollTo(){}},MathModel:require('../dist/working/model.js').MathModel,document:{querySelector:node,addEventListener(k,f){const previous=listeners[k];listeners[k]=previous?e=>{previous(e);f(e);}:f;},body:node('body')},localStorage:{getItem(){return null;},setItem(){}},matchMedia:()=>({matches:false}),setTimeout:(fn,ms)=>{const t={fn,ms};timers.push(t);return t;},clearTimeout:t=>{if(t)t.cancelled=true;},setInterval:()=>0,clearInterval(){}});
 // Real-document adapter runs before the application's original event handlers.
 c.innerWidth=1200;c.innerHeight=800;c.scrollY=0;c.scrollTo=()=>{};c.window=c;
 c.document.currentScript={dataset:{version:'working'}};c.location={search:'',origin:'https://review.example'};c.URLSearchParams=URLSearchParams;
@@ -162,3 +162,33 @@ assert.equal(node('#mentor-symbol')['data-shape'],'plus');assert.equal(vm.runInC
 vm.runInContext("setAIState('대기')",c);assert.equal(node('#mentor-symbol')['data-shape'],'clover');
 console.log('Mentor message lifecycle, arithmetic cycle, stale timer cancellation, hidden-tab pause and reduced-motion checks passed');
 
+
+// V3.4: dots expand into readable speech and return without erasing the message.
+c.matchMedia=()=>({matches:false});c.document.visibilityState='visible';
+node('.ai-top').getBoundingClientRect=()=>({width:460,height:44});
+node('#mentor-measure').getBoundingClientRect=function(){const cap=parseFloat(this.style.maxWidth)||400;return {width:Math.min(cap,this.textContent.length*8),height:23*Math.max(1,Math.ceil(this.textContent.length*8/cap))};};
+vm.runInContext("state=M.create();lastMessage='';render()",c);
+assert.equal(node('.ai-top')['data-bubble-phase'],'thinking');
+assert.equal(node('#mentor-bubble').style.width,'56px');
+vm.runInContext('thinkTimer',c).fn();
+assert.equal(node('.ai-top')['data-bubble-phase'],'speaking');
+const shortWidth=parseFloat(node('#mentor-bubble').style.width);
+for(let i=0;i<300&&vm.runInContext('aiState',c)==='반응 중';i++)vm.runInContext('animTimer',c).fn();
+assert.equal(node('.ai-top')['data-bubble-phase'],'holding');
+assert(parseFloat(node('#mentor-bubble').style.width)>shortWidth);
+assert(parseFloat(node('#mentor-bubble').style.width)<=404);
+const message=node('#ai-message').textContent,oldRest=vm.runInContext('bubbleTimer',c);
+c.document.visibilityState='hidden';listeners.visibilitychange();
+assert.equal(vm.runInContext('bubbleTimer',c),null);
+c.document.visibilityState='visible';listeners.visibilitychange();
+vm.runInContext('bubbleTimer',c).fn();
+assert.equal(node('.ai-top')['data-bubble-phase'],'rest');
+assert.equal(node('#mentor-bubble').style.width,'56px');
+assert.equal(node('#ai-message').textContent,message);
+click('mentor-repeat');oldRest.fn();
+assert.equal(node('.ai-top')['data-bubble-phase'],'thinking'); // cancelled prior rest cannot hide a replay
+c.matchMedia=()=>({matches:true});click('mentor-repeat');
+assert.equal(node('.ai-top')['data-bubble-phase'],'holding');
+assert.equal(node('#ai-message').textContent,message);
+assert.equal(node('#ai-message')['aria-busy'],'false');
+console.log('V3.4 speech measurement, reading hold, collapse, replay, hidden-tab pause and reduced-motion passed');
