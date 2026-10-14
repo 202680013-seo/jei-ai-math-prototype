@@ -13,7 +13,7 @@ function element(tag='div'){
   return node;
 }
 test('workspace controls switch between the saved baseline and working, resize, and produce valid comparison links',async()=>{
-  const selectors=['#version-list','#version-count','#detail-title','#detail-date','#detail-changes','.sidebar-note strong','#toast','#single-mode','#compare-mode','#view-title','#view-description','#device','#zoom','#scenario','#compare-note','#compare-note span:last-child','#preview-grid','#viewport-label','#reload','#copy-link','#link-input','#link-dialog','#close-link-dialog','#menu-toggle','#sidebar','.app-layout','#close-sidebar','#sidebar-backdrop','#theme-preset','#theme-color','#theme-hex','#theme-reset'];
+  const selectors=['#version-list','#version-count','#detail-title','#detail-date','#detail-changes','.sidebar-note strong','#toast','#single-mode','#compare-mode','#view-title','#view-description','#device','#zoom','#scenario','#compare-note','#compare-note span:last-child','#preview-grid','#viewport-label','#reload','#copy-link','#link-input','#link-dialog','#close-link-dialog','#menu-toggle','#sidebar','.app-layout','#close-sidebar','#sidebar-backdrop','#theme-current','#theme-teal','#theme-green','#theme-description','#theme-reset'];
   const nodes=new Map(selectors.map(x=>[x,element()]));const grid=nodes.get('#preview-grid'),events={},location={origin:'https://review.example',pathname:'/',search:'',href:'https://review.example/'},history={replaceState(a,b,url){location.search=url;location.href=location.origin+'/'+url;},pushState(a,b,url){this.replaceState(a,b,url);}};
   const stored=new Map(),screen={matches:false};
   let copied;const document={querySelector:s=>nodes.get(s)||null,querySelectorAll:s=>s==='.preview-pane'?grid.children:grid.querySelectorAll(s),createElement:element,createElementNS:(ns,tag)=>element(tag),addEventListener:(k,f)=>events[k]=f};
@@ -53,18 +53,19 @@ test('workspace controls switch between the saved baseline and working, resize, 
   // Live theme changes keep the iframe and learner session in place.
   const frame=grid.children[0].querySelector('iframe'),originalRoute=frame.src,messages=[];
   frame.contentWindow={postMessage:(data,origin)=>messages.push({data,origin})};
-  nodes.get('#theme-preset').events.change({target:{value:'mint'}});
+  nodes.get('#theme-teal').events.click();
   assert.equal(grid.children[0].querySelector('iframe'),frame);
   assert.equal(frame.src,originalRoute);
-  assert.equal(messages.at(-1).data.color,'#8edbb6');
+  assert.equal(messages.at(-1).data.theme,'teal');assert.equal(messages.at(-1).data.color,null);
   assert.equal(messages.at(-1).origin,location.origin);
-  assert.equal(nodes.get('#theme-color').value,'#8edbb6');
-  assert.ok(grid.children[0].querySelector('.open-link').href.includes('color=%238edbb6'));
-  await nodes.get('#copy-link').events.click();assert.ok(copied.includes('color=%238edbb6'));
-  nodes.get('#theme-hex').events.change({target:{value:'javascript:bad'}});
-  assert.equal(messages.at(-1).data.color,'#8edbb6');
-  nodes.get('#theme-reset').events.click();assert.equal(messages.at(-1).data.color,null);
-  assert.ok(!location.search.includes('color='));
+  assert.equal(nodes.get('#theme-teal').attrs['aria-pressed'],'true');assert.equal(nodes.get('#theme-current').attrs['aria-pressed'],'false');
+  assert.ok(grid.children[0].querySelector('.open-link').href.includes('theme=teal'));
+  await nodes.get('#copy-link').events.click();assert.ok(copied.includes('theme=teal'));
+  nodes.get('#theme-green').events.click();assert.equal(messages.at(-1).data.theme,'green');
+  assert.equal(frame.src,originalRoute);assert.equal(nodes.get('#theme-green').attrs['aria-pressed'],'true');
+  nodes.get('#theme-current').events.click();assert.equal(messages.at(-1).data.theme,'current');assert.equal(nodes.get('#theme-current').attrs['aria-pressed'],'true');
+  nodes.get('#theme-teal').events.click();nodes.get('#theme-reset').events.click();assert.equal(messages.at(-1).data.theme,'current');assert.equal(messages.at(-1).data.color,null);
+  assert.ok(!location.search.includes('color='));assert.ok(!location.search.includes('theme='));
   const before=grid.children[0].querySelector('iframe').src,source={};grid.children[0].querySelector('iframe').contentWindow=source;
   events.message({origin:'https://untrusted.example',source,data:{type:'jei-history-navigate',versionId:'v2',checkpoint:'cp-test'}});assert.equal(grid.children[0].querySelector('iframe').src,before);
   events.message({origin:location.origin,source:{},data:{type:'jei-history-navigate',versionId:'v2',checkpoint:'cp-test'}});assert.equal(grid.children[0].querySelector('iframe').src,before);
