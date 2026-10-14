@@ -485,3 +485,36 @@ main{padding-top:40px}
 @media(prefers-reduced-motion:reduce){.prescription-graphics>.prescription-ready{transition:none}#composition[data-compose-step="2"] .ready-stack,#composition[data-compose-step="2"] .ready-play{animation:none}.mentor-cluster .recommend[data-recommend-state=loading]::before{animation:none}#programs.reveal>.card:not(.grid-diagnostic){animation:none!important;opacity:1;transform:none}}
 
 @media(max-width:650px){.heading-copy h1{font-size:clamp(18px,4.8vw,23px)}}
+
+/* V3.4.7: result on the right, circular recommendation loading, and steady text reveal. */
+#diagnostic-result-slot{margin-left:auto}
+.mentor-cluster .recommend-loader{gap:8px}
+.recommend-loader small{margin-left:0}
+.recommend-spinner{display:block;flex:none;width:18px;height:18px;border:2px solid var(--jei-c-d6ebc5,#d6ebc5);border-top-color:var(--jei-c-668853,#668853);border-radius:50%;animation:recommend-spinner-turn .9s linear infinite}
+.recommend[data-recommend-paused=true] .recommend-spinner{animation-play-state:paused}
+@keyframes recommend-spinner-turn{to{transform:rotate(360deg)}}
+.ai-top[data-bubble-phase=speaking] .mentor-bubble{transition:width .28s cubic-bezier(.22,.72,.2,1)}
+dialog.sky-dialog::backdrop{background:transparent;backdrop-filter:none}
+
+/* The symmetric tab tracks the drawer's outside edge with the same timing and curve. */
+:root{--group-drawer-width:min(370px,calc(100vw - 86px))}
+#group-panel{width:var(--group-drawer-width);max-width:none;transform:translateX(-100%);transition-duration:.42s}
+#group-panel[data-panel-phase=open]{transform:translateX(0)}
+#overlay[data-panel-kind=groups]{transition-duration:.42s}
+.groups-trigger,.groups-trigger:hover:not(:disabled),.groups-trigger:active:not(:disabled){left:0;bottom:26px;width:72px;height:168px;min-height:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--jei-c-668853,#668853);display:flex;align-items:center;justify-content:flex-start;gap:0;isolation:isolate;z-index:12;transform:translateX(0);transition:transform .42s cubic-bezier(.22,.72,.2,1)}
+.groups-trigger[aria-expanded=true],.groups-trigger[aria-expanded=true]:hover:not(:disabled),.groups-trigger[aria-expanded=true]:active:not(:disabled){transform:translateX(var(--group-drawer-width))}
+.groups-trigger[data-tab-phase=closing],.groups-trigger[data-tab-phase=closing]:hover:not(:disabled),.groups-trigger[data-tab-phase=closing]:active:not(:disabled){transition-timing-function:cubic-bezier(.4,0,.2,1)}
+.groups-trigger .side-tab-surface{position:absolute;inset:0;width:100%;height:100%;z-index:0;overflow:visible;filter:drop-shadow(2px 0 3px var(--jei-c-16330005,#16330005))}
+.side-tab-surface path{fill:var(--jei-c-eaf5e2,#eaf5e2);stroke:var(--jei-c-d6ebc5,#d6ebc5);stroke-width:1;transition:fill .2s}
+.groups-trigger:hover:not(:disabled) .side-tab-surface path{fill:var(--jei-c-e5f2dd,#e5f2dd)}
+.groups-trigger .side-tab-content{position:relative;z-index:1;display:flex;align-items:center;gap:6px;padding-left:13px;font-size:0;writing-mode:horizontal-tb}
+.side-tab-icon{width:26px;height:26px;flex:none}
+.side-tab-chevron{width:13px;height:13px;flex:none;transition:transform .3s ease}
+.groups-trigger[aria-expanded=true] .side-tab-chevron{transform:rotate(180deg)}
+.groups-trigger:focus-visible{outline:none}
+.groups-trigger:focus-visible .side-tab-surface path{stroke:var(--jei-c-81c357,#81c357);stroke-width:3}
+@media(max-width:650px){:root{--group-drawer-width:min(370px,calc(100vw - 76px))}.groups-trigger,.groups-trigger:hover:not(:disabled),.groups-trigger:active:not(:disabled){width:62px;height:146px;bottom:22px}.groups-trigger .side-tab-content{padding-left:10px;gap:5px}.side-tab-icon{width:24px;height:24px}}
+@media(prefers-reduced-motion:reduce){.recommend-spinner{animation:none}.ai-top[data-bubble-phase=speaking] .mentor-bubble,.groups-trigger,.side-tab-chevron{transition:none}}
+
+.groups-trigger[hidden]{display:none!important}
+@media(prefers-reduced-motion:reduce){.groups-trigger,.groups-trigger:hover:not(:disabled),.groups-trigger:active:not(:disabled){transition:none!important}}

@@ -178,7 +178,7 @@ assert.equal(node('.ai-top')['data-bubble-phase'],'speaking');
 const shortWidth=parseFloat(node('#mentor-bubble').style.width);
 for(let i=0;i<300&&vm.runInContext('aiState',c)==='반응 중';i++)vm.runInContext('animTimer',c).fn();
 assert.equal(node('.ai-top')['data-bubble-phase'],'holding');
-assert(parseFloat(node('#mentor-bubble').style.width)>shortWidth);
+assert.equal(parseFloat(node('#mentor-bubble').style.width),shortWidth); // target width stays fixed while text reveals
 assert(parseFloat(node('#mentor-bubble').style.width)<=404);
 const message=node('#ai-message').textContent,oldRest=vm.runInContext('bubbleTimer',c);
 c.document.visibilityState='hidden';listeners.visibilitychange();
@@ -559,3 +559,68 @@ vm.runInContext('composeTimers.find(t=>t.ms===8000)',c).fn();
 assert.equal(node('#diagnostic').parent,node('#diagnostic-result-slot'));
 assert.equal(vm.runInContext('cardRevealTimer',c).ms,1600);
 console.log('Prepared-learning graphic, gentle card reveal lifetime, result navigation and diagnostic/result hierarchy passed');
+
+// V3.4.7: the target width is established before a steady, grapheme-by-grapheme reveal.
+c.matchMedia=()=>({matches:false});c.document.visibilityState='visible';
+vm.runInContext("cancelComposition();panel=null;myOpen=false;activityKind=null;skyBusy=false;mentorPointerPaused=false;mentorFocusPaused=false;$('#learning').close();$('#activity').close();state=M.create();render()",c);
+vm.runInContext("animateMessage(true,'가나다 👨‍👩‍👧‍👦 끝')",c);
+vm.runInContext('thinkTimer',c).fn();
+assert.equal(node('#ai-message').textContent,'');
+assert.equal(vm.runInContext('animTimer',c).ms,300); // give the container time to expand first
+const stableSpeechWidth=node('#mentor-bubble').style.width;
+const familyCopy=['가','가나','가나다','가나다 ','가나다 👨‍👩‍👧‍👦','가나다 👨‍👩‍👧‍👦 '];
+for(const visibleCopy of familyCopy){vm.runInContext('animTimer',c).fn();assert.equal(node('#ai-message').textContent,visibleCopy);assert.equal(node('#mentor-bubble').style.width,stableSpeechWidth);assert.equal(vm.runInContext('animTimer',c).ms,48);}
+vm.runInContext('animTimer',c).fn();assert.equal(node('#ai-message').textContent,'가나다 👨‍👩‍👧‍👦 끝');
+assert.equal(node('#ai-message')['aria-busy'],'false');
+vm.runInContext("animateMessage(true,'이전 안내')",c);vm.runInContext('thinkTimer',c).fn();
+const outdatedLetter=vm.runInContext('animTimer',c);
+vm.runInContext("animateMessage(true,'새 안내')",c);outdatedLetter.fn();assert.equal(node('#ai-message').textContent,'');
+// The shaped tab is also the close control and follows every drawer phase.
+click('groups');
+assert.equal(node('.groups-trigger')['aria-expanded'],'true');
+assert.equal(node('.groups-trigger')['data-tab-phase'],'open');
+assert.equal(node('.groups-trigger')['aria-label'],'진단 그룹 목록 닫기');
+click('groups');
+assert.equal(node('.groups-trigger')['data-tab-phase'],'closing');
+assert.equal(node('.groups-trigger')['aria-expanded'],'false');
+assert.equal(node('#group-panel').hidden,false);
+assert.equal(vm.runInContext('panelMotionTimer',c).ms,420);
+vm.runInContext('panelMotionTimer',c).fn();
+assert.equal(node('#group-panel').hidden,true);
+assert.equal(node('.groups-trigger')['data-tab-phase'],'closed');
+assert.equal(node('.groups-trigger')['aria-label'],'진단 그룹 목록 열기');
+const refinedHTML=fs.readFileSync('dist/working/index.html','utf8');
+assert(refinedHTML.includes('활동을 고르고 있어요'));
+assert(!refinedHTML.includes('학습을 고르고 있어요'));
+assert(refinedHTML.includes('recommend-spinner'));
+const headingMarkup=refinedHTML.match(/<section class="heading">(.*?)<\/section>/)[1];
+assert(headingMarkup.indexOf('heading-copy')<headingMarkup.indexOf('diagnostic-result-slot')); // visual/reading order both place the result on the right
+console.log('Stable-width sequential speech, grapheme continuity, stale-letter cancellation and shaped-tab open/close passed');
+
+require('node:test')('star transition expands and contracts at the button instead of travelling through the viewport center',async()=>{
+  c.matchMedia=()=>({matches:false});
+  vm.runInContext("cancelComposition();state=M.create();panel=null;myOpen=false;activityKind=null;skyBusy=false;skyRun=null;skyReturnToLearning=false;$('#learning').close();$('#help').close();$('#activity').close();render()",c);
+  const transitionFrames=[],dialogFrames=[];
+  node('.constellation-trigger').getBoundingClientRect=()=>({left:780,top:40,width:120,height:44});
+  node('#sky-transition').animate=(frames,timing)=>{transitionFrames.push({frames,timing});return {finished:Promise.resolve()};};
+  node('#activity').animate=(frames,timing)=>{dialogFrames.push({frames,timing});return {finished:Promise.resolve()};};
+  await vm.runInContext('skyEnter()',c);
+  assert.equal(node('#sky-transition').style.left,'840px');
+  assert.equal(node('#sky-transition').style.top,'62px');
+  assert.equal(dialogFrames[0].frames[0].clipPath,'circle(28px at 840px 62px)');
+  assert.equal(dialogFrames[0].frames[1].clipPath,'circle(150vmax at 840px 62px)');
+  assert(transitionFrames[0].frames.every(f=>!/translate\([^)]*px/.test(f.transform)));
+  assert.equal(vm.runInContext('skyBusy',c),false);
+  assert.equal(node('#activity').open,true);
+  assert.equal(node('#sky-transition').hidden,true);
+  // Exit aims at the button's current position, including after a resize.
+  node('.constellation-trigger').getBoundingClientRect=()=>({left:650,top:32,width:100,height:40});
+  await vm.runInContext('skyExit()',c);
+  assert.equal(dialogFrames[1].frames[1].clipPath,'circle(28px at 700px 52px)');
+  assert.equal(node('#sky-transition').style.left,'700px');
+  assert.equal(node('#sky-transition').style.top,'52px');
+  assert(transitionFrames[1].frames.every(f=>!/translate\([^)]*px/.test(f.transform)));
+  assert.equal(node('#activity').open,false);
+  assert.equal(vm.runInContext('activityKind',c),null);
+  assert.equal(node('#sky-transition').hidden,true);
+});
