@@ -245,6 +245,36 @@ thinkTimer=setTimeout(()=>{if(generation!==bubbleGeneration)return;setAIState('�
 function type(){if(generation!==bubbleGeneration)return;i++;el.textContent=msg.slice(0,i);setBubblePhase('speaking');if(i===msg.length){finish();return;}const char=msg[i-1],delay=/[.!?]/.test(char)?170:/[,，]/.test(char)?95:char===' '?35:22+(i%4)*8;animTimer=setTimeout(type,delay);}type();
 },450);
 }
+// Local recommendation preparation motion; no extra network request is needed.
+let recommendationTimer=null,recommendationGeneration=0,recommendationSignature='',recommendationPending=false,recommendationDisabled=false;
+function finishRecommendation(generation){
+  if(generation!==recommendationGeneration||!recommendationPending||document.visibilityState==='hidden')return;
+  clearTimeout(recommendationTimer);recommendationTimer=null;recommendationPending=false;
+  $('.recommend').setAttribute('data-recommend-state','ready');$('.recommend').setAttribute('aria-busy','false');
+  $('.recommend-loader').hidden=true;$('#recommend-status').textContent='';
+  $('#recommend').disabled=recommendationDisabled;
+}
+function scheduleRecommendation(){
+  clearTimeout(recommendationTimer);recommendationTimer=null;const generation=++recommendationGeneration;
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  $('.recommend').setAttribute('data-recommend-paused',document.visibilityState==='hidden'||reduced?'true':'false');
+  if(!recommendationPending||document.visibilityState==='hidden')return;
+  if(reduced){finishRecommendation(generation);return;}
+  recommendationTimer=setTimeout(()=>finishRecommendation(generation),800);
+}
+function syncRecommendation(action){
+  const button=$('#recommend'),signature=JSON.stringify([state.grade,state.index,action,button.textContent,button.disabled]);
+  if(signature!==recommendationSignature){
+    recommendationSignature=signature;recommendationDisabled=button.disabled;recommendationPending=true;recommendationGeneration++;
+    $('.recommend').setAttribute('data-recommend-state','loading');$('.recommend').setAttribute('aria-busy','true');
+    $('.recommend-loader').hidden=false;$('#recommend-status').textContent='추천 활동 준비 중';
+    scheduleRecommendation();
+  }
+  // Unrelated re-renders must neither restart preparation nor re-enable a hidden action.
+  button.disabled=recommendationPending||recommendationDisabled;
+}
+document.addEventListener('visibilitychange',scheduleRecommendation);
+matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change',scheduleRecommendation);
 function programCard(s,p){const unlocked=M.canStudy(s,p),active=M.currentProgram(s)?.id===p.id,finished=p.progress>=100,st=unlocked?p.status:'locked',statusLabel=st==='active'&&finished?'풀이 완료':M.labels[st];
 return `<button class="card program-card ${s.presentationPending&&p.id===0&&p.status==='idle'?'is-introduced ':''}${active?'is-current':finished?'is-complete':unlocked?'is-ready':'is-locked'}" data-action="program" data-id="${p.id}" ${unlocked?'':'disabled'} aria-label="${esc(p.name)} ${statusLabel}" ${active?'aria-current="step"':''} title="${unlocked?'':p.status==='locked'?'테스트에서 잠금으로 설정된 학습':'이전 프로그램 진행률이 100%가 되면 열립니다'}"><div class="card-top"><small>${String(p.id+1).padStart(2,'0')}</small><span class="badge ${st}">${statusLabel}</span></div><strong>${esc(p.name)}</strong>${s.presentationPending&&p.id===0&&p.status==='idle'?'<span class="start-here">여기부터 시작해요 →</span>':''}${p.reviewed?'<div><span class="review">↺ 복습 완료</span></div>':''}${active?`<div class="progress-row"><span>진행률</span><span>${p.progress}%</span></div><progress max="100" value="${p.progress}"></progress>`:''}</button>`;}
 function render(){daily();const s=current(),st=M.status(s,state.policy),oldRect=$('#diagnostic').getBoundingClientRect();$('#diagnosis-slot').append($('#diagnostic'));$('#diagnostic').classList.remove('grid-diagnostic','card','clean-passed');$('#diagnosis-section').hidden=false;$('#group-title').textContent=grade(state.grade)+'등급 / '+groupName(state.index);$('#summary').innerHTML=(composing?'<span class="badge active">맞춤 프로그램 구성 중</span>':badge(st))+`<small>세트 ${state.index+1} / ${state.grades[state.grade].length}${s.testOnly?' · 테스트 세트':''}</small>`;$('#diagnostic').innerHTML=`<div><strong>실력알기</strong>${s.diagnosis==='done'?`<small>${s.programs.length?'처방 프로그램 '+s.programs.length+'개':'부족한 학습 목표 0개'}</small>`:''}</div>${badge(s.diagnosis==='done'?(s.programs.length?'passed':'clean'):s.diagnosis)}`;$('#programs').innerHTML=s.programs.map(p=>programCard(s,p)).join('');const rec=M.recommend(state);$('#recommend').textContent=rec.text;$('#recommend').disabled=!!composing||['done','locked'].includes(rec.kind);
@@ -254,7 +284,7 @@ else{$('#diagnostic').disabled=false;$('#composition').hidden=true;$('#programs'
 if(s.diagnosis==='done'&&s.programs.length){const d=$('#diagnostic');d.classList.add('grid-diagnostic','card');d.innerHTML=`<div class="card-top">${badge('passed')}</div><strong>실력알기</strong><div><small>처방 ${s.programs.length}개</small></div><span class="diagnostic-result">진단 결과 보기 →</span>`;$('#programs').prepend(d);$('#diagnosis-section').hidden=true;
 if(reveal&&!matchMedia('(prefers-reduced-motion: reduce)').matches){const r=d.getBoundingClientRect();if(d.animate)d.animate([{transform:`translate(${oldRect.left-r.left}px,${oldRect.top-r.top}px) scale(${oldRect.width/r.width},${oldRect.height/r.height})`,transformOrigin:'top left'},{transform:'none',transformOrigin:'top left'}],{duration:350,easing:'ease-out'});const card=document.querySelector('#programs [data-action="program"]');if(card?.animate){const q=card.getBoundingClientRect();card.animate([{opacity:0,transform:`translate(${reveal.left-q.left}px,${reveal.top-q.top}px) scale(.65)`},{opacity:1,transform:'none'}],{duration:450,easing:'ease-out'});}$('#programs').classList.remove('reveal');void $('#programs').offsetWidth;$('#programs').classList.add('reveal');}reveal=false;
 }}
-const pieces=skyState().items.reduce((n,x)=>n+x.pieces,0);$('#star-balance').textContent=String(pieces);$('.constellation-trigger').setAttribute('aria-label','나의 별자리 · 별 조각 '+pieces+'개');animateMessage();renderPanel();if(myOpen)renderMy();}
+const pieces=skyState().items.reduce((n,x)=>n+x.pieces,0);$('#star-balance').textContent=String(pieces);$('.constellation-trigger').setAttribute('aria-label','나의 별자리 · 별 조각 '+pieces+'개');syncRecommendation(isCleanPass(s)&&!composing?cleanPassInfo().next:rec.kind==='today'?M.learningRecommend(state):rec);animateMessage();renderPanel();if(myOpen)renderMy();}
 function cancelComposition(){composeTimers.forEach(clearTimeout);composeTimers=[];composing=null;if($('#prescription').open)$('#prescription').close();}
 function renderComposition(){if(!composing)return;const c=composing;$('#composition').innerHTML=`<div class="prescription-symbol ${c.step===1?'thinking':'ready'}" aria-hidden="true"><b>AI</b><span>···</span></div><h2>${c.step===0?'수고했어요!':c.step===1?'맞춤 학습을 구성하고 있어요':esc(c.name)+'님을 위한 학습이 준비됐어요'}</h2>${c.step===0?'<p>실력알기를 마쳤어요.</p>':c.step===1?'<p>더 익힐 내용을 모으고 있어요.</p>':`<p>${c.text||''}<span class="prescription-caret" aria-hidden="true"></span></p>`}<div class="compose-assembly step-${c.step}" aria-hidden="true">${Array.from({length:Math.min(c.count,3)},()=>'<span></span>').join('')}</div>`;}
 function beginComposition(n,mode){daily().cleanStreak=0;daily().timerRunning=false;cancelComposition();const target=current();state.ui??={testControls:false};const first=mode==='first'||(mode!=='repeat'&&!state.ui.prescriptionSeen),readyAt=first?1500:600,total=first?3400:1800;editing=null;$('#learning').close();if(panel)closePanel();composing={count:n,step:0,text:'',target,name:state.profile?.name||'재능',first,total,message:'여기부터 시작해 볼까요?'};render();$('#prescription').showModal();composeTimers.push(setTimeout(()=>{if(composing){composing.step=1;renderComposition();}},first?600:200));composeTimers.push(setTimeout(()=>{if(composing){composing.step=2;renderComposition();}},readyAt));const message=composing.message;for(let i=1;i<=message.length;i++)composeTimers.push(setTimeout(()=>{if(composing&&!composing.fastForward){composing.text=message.slice(0,i);renderComposition();}},readyAt+i*30));composeTimers.push(setTimeout(()=>{if(!composing||current()!==target)return;const origin=$('#composition').getBoundingClientRect();target.diagnosis='done';target.programs=M.programs(n,state.grade,state.index);target.reviewHistory=false;target.diagnosticSession=null;target.presentationPending=true;state.ui.prescriptionSeen=true;cancelComposition();reveal=origin;notify('진단 완료 · 맞춤 프로그램 '+n+'개 구성 완료');const card=document.querySelector('#programs [data-action="program"]');card?.focus();card?.scrollIntoView?.({block:'nearest',behavior:'auto'});},total));}

@@ -368,3 +368,17 @@ main{padding-top:40px}
 .ai{padding-bottom:24px;border-bottom:1px solid var(--jei-c-dce7d2,#dce7d2)}
 .heading{margin-top:28px}
 @media(max-width:650px){.ai{padding-bottom:20px}.heading{margin-top:24px}}
+
+/* V3.4.4: prepare the recommendation in place, then reveal it without shifting the row. */
+.mentor-cluster .recommend-label{animation:recommend-label-float 3.6s ease-in-out infinite}
+.mentor-cluster .recommend-loader{position:absolute;inset:0 12px;display:flex;align-items:center;justify-content:flex-start;gap:5px;padding:0;background:none;color:var(--jei-c-668853,#668853);pointer-events:none}
+.mentor-cluster .recommend-loader[hidden]{display:none}
+.recommend-loader i{width:5px;height:5px;border-radius:50%;background:currentColor;animation:recommend-dot-wave 1s ease-in-out infinite}
+.recommend-loader i:nth-child(2){animation-delay:.14s}.recommend-loader i:nth-child(3){animation-delay:.28s}
+.mentor-cluster .recommend[data-recommend-state=loading] button{visibility:hidden;pointer-events:none}
+.mentor-cluster .recommend[data-recommend-state=ready] button{animation:recommend-content-enter .36s cubic-bezier(.22,.72,.2,1) both}
+.recommend[data-recommend-paused=true] .recommend-label,.recommend[data-recommend-paused=true] .recommend-loader i,.recommend[data-recommend-paused=true] button{animation-play-state:paused}
+@keyframes recommend-label-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes recommend-dot-wave{0%,70%,100%{opacity:.35;transform:translateY(0) scale(.9)}35%{opacity:1;transform:translateY(-3px) scale(1)}}
+@keyframes recommend-content-enter{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.mentor-cluster .recommend-label,.recommend-loader i,.mentor-cluster .recommend[data-recommend-state=ready] button{animation:none}}

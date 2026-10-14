@@ -24,7 +24,10 @@ assert(node('#ai-message').textContent.includes('진단을 통과했어요'));as
 vm.runInContext('M.preset(state,0);render()',c);assert(!node('#ai-message').textContent);assert.equal(node('#ai-message')['aria-busy'],'true');
 vm.runInContext('M.preset(state,3);render()',c);assert(!node('#programs').innerHTML.includes('<progress'));assert(node('#programs').innerHTML.includes('is-locked'));assert(!node('#programs').innerHTML.includes('프로그램 01'));vm.runInContext('M.preset(state,4);render()',c);assert.equal((node('#programs').innerHTML.match(/<progress/g)||[]).length,1);assert.equal((node('#programs').innerHTML.match(/is-current/g)||[]).length,1);vm.runInContext('current().programs[0].progress=100;render()',c);assert(!node('#programs').innerHTML.includes('<progress'));assert(node('#programs').innerHTML.includes('풀이 완료'));vm.runInContext('M.preset(state,6);render()',c);assert(!node('#programs').innerHTML.includes('<progress'));
 vm.runInContext('state=M.create();render()',c);assert(node('#group-title').textContent.includes('비교와 분류'));assert(!node('#group-title').textContent.includes('D01'));vm.runInContext('openPanel("groups")',c);assert(node('#group-panel').innerHTML.includes('모으기와 가르기(10)'));vm.runInContext('select(0,0)',c);assert(node('#group-title').textContent.includes('모양'));
-function click(action,id=0){listeners.click({target:{closest:()=>({dataset:{action,id:String(id)},disabled:false})}});}
+function click(action,id=0,waitForRecommendation=true){
+  if(action==='recommend'&&waitForRecommendation){const t=vm.runInContext('recommendationTimer',c);if(t&&!t.cancelled)t.fn();}
+  listeners.click({target:{closest:()=>({dataset:{action,id:String(id)},disabled:action==='recommend'?node('#recommend').disabled:false})}});
+}
 click('recommend');assert.equal(node('#activity').open,true);assert(node('#activity').innerHTML.includes('목표 학습 시간'));node('#goal-minutes').value=20;click('save-goal');assert.equal(vm.runInContext('state.daily.target',c),20);assert(node('#recommend').textContent.includes('오늘의 학습'));
 click('diagnosis');click('diag-start');assert.equal(vm.runInContext('state.daily.started',c),true);click('diag-prescribe');for(const t of [...timers])if(!t.cancelled&&(t.ms===3400||t.ms===1800))t.fn();click('program',0);click('program-start');click('program-frame');assert.equal(vm.runInContext('current().programs[0].completedFrames',c),1);for(let i=0;i<5;i++)click('program-retry');assert(vm.runInContext('M.message(state)',c).includes('차분하게'));click('program-frame');assert(!vm.runInContext('M.message(state)',c).includes('차분하게'));
 node('#sky-transition').animate=undefined;node('#activity').animate=undefined;click('constellation');assert(node('#activity').innerHTML.includes('별자리'));click('close-activity');vm.runInContext('state.daily.unreadAnswers=1;render()',c);click('recommend');assert(node('#activity').innerHTML.includes('도와줘요'));click('answer-read');assert.equal(vm.runInContext('state.daily.unreadAnswers',c),0);
@@ -206,3 +209,55 @@ for(const width of [210,460]){
   }
 }
 console.log('Long mentor messages keep fixed one-line height without losing their full content');
+
+// V3.4.4: preparation follows the latest action, not every render or mentor message.
+c.matchMedia=()=>({matches:false});c.document.visibilityState='visible';
+vm.runInContext("state=M.create();editing=null;activityKind=null;$('#learning').close();$('#activity').close();render()",c);
+assert.equal(node('.recommend')['data-recommend-state'],'loading');
+assert.equal(node('.recommend')['aria-busy'],'true');
+assert.equal(node('.recommend-loader').hidden,false);
+assert.equal(node('#recommend').disabled,true);
+assert.equal(node('#recommend-status').textContent,'추천 활동 준비 중');
+const firstPreparation=vm.runInContext('recommendationTimer',c);
+assert.equal(firstPreparation.ms,800);
+click('recommend',0,false);assert.equal(node('#activity').open,false); // hidden action cannot open
+vm.runInContext('daily().variant++;render()',c);
+assert.equal(vm.runInContext('recommendationTimer',c),firstPreparation); // no restart for mentor variant
+assert.equal(node('#recommend').disabled,true);
+vm.runInContext('daily().unreadAnswers=1;render()',c);
+const latestPreparation=vm.runInContext('recommendationTimer',c);
+assert.notEqual(latestPreparation,firstPreparation);
+assert.equal(firstPreparation.cancelled,true);
+firstPreparation.fn();assert.equal(node('.recommend')['data-recommend-state'],'loading');
+latestPreparation.fn();
+assert.equal(node('.recommend')['data-recommend-state'],'ready');
+assert.equal(node('.recommend')['aria-busy'],'false');
+assert.equal(node('.recommend-loader').hidden,true);
+assert.equal(node('#recommend').disabled,false);
+assert(node('#recommend').textContent.includes('도와줘요'));
+click('recommend',0,false);assert(node('#activity').innerHTML.includes('도와줘요'));
+click('close-activity');vm.runInContext('render()',c);
+assert.equal(vm.runInContext('recommendationTimer',c),null); // unchanged ready content stays ready
+vm.runInContext('daily().unreadAnswers=0;render()',c);
+const beforeHide=vm.runInContext('recommendationTimer',c);
+c.document.visibilityState='hidden';listeners.visibilitychange();
+assert.equal(vm.runInContext('recommendationTimer',c),null);
+assert.equal(node('.recommend')['data-recommend-paused'],'true');
+beforeHide.fn();assert.equal(node('.recommend')['data-recommend-state'],'loading');
+c.document.visibilityState='visible';listeners.visibilitychange();
+const afterShow=vm.runInContext('recommendationTimer',c);
+assert.notEqual(afterShow,beforeHide);
+beforeHide.fn();assert.equal(node('.recommend')['data-recommend-state'],'loading');
+afterShow.fn();assert.equal(node('.recommend')['data-recommend-state'],'ready');
+assert.equal(node('.recommend')['data-recommend-paused'],'false');
+// A locked result remains disabled after the loading effect.
+vm.runInContext("daily().target=20;daily().started=true;current().diagnosis='done';current().programs=M.programs(1);current().programs[0].status='locked';render()",c);
+vm.runInContext('recommendationTimer',c).fn();assert.equal(node('#recommend').disabled,true);
+// Reduced motion reveals immediately; no delayed action or floating loop is required.
+c.matchMedia=()=>({matches:true});
+vm.runInContext('daily().unreadAnswers=1;render()',c);
+assert.equal(vm.runInContext('recommendationTimer',c),null);
+assert.equal(node('.recommend')['data-recommend-state'],'ready');
+assert.equal(node('#recommend').disabled,false);
+assert.equal(node('.recommend')['data-recommend-paused'],'true');
+console.log('Recommendation preparation, click gating, latest-action cancellation, stable renders, hidden-tab pause and reduced-motion passed');
