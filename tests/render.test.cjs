@@ -15,7 +15,7 @@ vm.runInContext('M.preset(state,0);render();beginComposition(8)',c);assert.equal
 for(const t of [...timers].sort((a,b)=>a.ms-b.ms)){if(!t.cancelled)t.fn();}
 assert.equal(vm.runInContext('current().programs.length',c),8);assert.equal(node('#composition').hidden,true);assert.equal(node('#diagnostic').parent,node('#programs'));assert.equal(node('#diagnostic').disabled,false);
 vm.runInContext('M.preset(state,2);render()',c);assert.equal(node('#diagnostic').parent,node('#diagnosis-slot'));assert.equal(node('#diagnosis-section').hidden,false);
-vm.runInContext('beginComposition(52);select(3,1)',c);for(const t of [...timers]){if(!t.cancelled&&(t.ms===3400||t.ms===1800))t.fn();}assert.equal(vm.runInContext('current().programs.length',c),0);
+vm.runInContext('beginComposition(52);select(3,1)',c);for(const t of [...timers]){if(!t.cancelled&&(t.ms===8000||t.ms===7000))t.fn();}assert.equal(vm.runInContext('current().programs.length',c),0);
 for(const i of [0,1,2]){vm.runInContext(`M.preset(state,${i});render()`,c);assert.equal(node('#programs').hidden,true);assert.equal(node('#programs').innerHTML,'');assert(!node('#diagnostic').innerHTML.includes('진단 열기'));}
 const html=fs.readFileSync('dist/working/index.html','utf8');for(const text of ['<footer>','선택한 그룹의 진단','id="program-heading"'])assert(!html.includes(text));
 // Accessible section names may describe AI guidance; duplicate visible headings stay absent.
@@ -29,16 +29,16 @@ function click(action,id=0,waitForRecommendation=true){
   listeners.click({target:{closest:()=>({dataset:{action,id:String(id)},disabled:action==='recommend'?node('#recommend').disabled:false})}});
 }
 click('recommend');assert.equal(node('#activity').open,true);assert(node('#activity').innerHTML.includes('목표 학습 시간'));node('#goal-minutes').value=20;click('save-goal');assert.equal(vm.runInContext('state.daily.target',c),20);assert(node('#recommend').textContent.includes('오늘의 학습'));
-click('diagnosis');click('diag-start');assert.equal(vm.runInContext('state.daily.started',c),true);click('diag-prescribe');for(const t of [...timers])if(!t.cancelled&&(t.ms===3400||t.ms===1800))t.fn();click('program',0);click('program-start');click('program-frame');assert.equal(vm.runInContext('current().programs[0].completedFrames',c),1);for(let i=0;i<5;i++)click('program-retry');assert(vm.runInContext('M.message(state)',c).includes('차분하게'));click('program-frame');assert(!vm.runInContext('M.message(state)',c).includes('차분하게'));
+click('diagnosis');click('diag-start');assert.equal(vm.runInContext('state.daily.started',c),true);click('diag-prescribe');for(const t of [...timers])if(!t.cancelled&&(t.ms===8000||t.ms===7000))t.fn();click('program',0);click('program-start');click('program-frame');assert.equal(vm.runInContext('current().programs[0].completedFrames',c),1);for(let i=0;i<5;i++)click('program-retry');assert(vm.runInContext('M.message(state)',c).includes('차분하게'));click('program-frame');assert(!vm.runInContext('M.message(state)',c).includes('차분하게'));
 node('#sky-transition').animate=undefined;node('#activity').animate=undefined;click('constellation');assert(node('#activity').innerHTML.includes('별자리'));click('close-activity');vm.runInContext('state.daily.unreadAnswers=1;render()',c);click('recommend');assert(node('#activity').innerHTML.includes('도와줘요'));click('answer-read');assert.equal(vm.runInContext('state.daily.unreadAnswers',c),0);
 click('mypage');assert.equal(node('main').hidden,true);assert(node('#mypage').innerHTML.includes('학습 캘린더'));assert(node('#mypage').innerHTML.includes('오답노트'));const prior=vm.runInContext('current().groupId',c);click('back-main');assert.equal(node('main').hidden,false);assert.equal(vm.runInContext('current().groupId',c),prior);
 click('sky-case',3);assert(node('#activity').innerHTML.includes('건너뛰기'));click('sky-skip');assert.equal(vm.runInContext('state.sky.items[0].stars',c),3);assert.equal(vm.runInContext('state.sky.pending',c),null);click('sky-detail',0);assert(node('#activity').innerHTML.includes('보상 확인'));for(const t of [...timers])if(!t.cancelled&&t.ms===700)t.fn();assert(node('#activity').innerHTML.includes('번째 별'));click('sky-detail-back');click('close-activity');
 click('sky-case',10);click('sky-detail',0);for(const t of [...timers])if(!t.cancelled&&t.ms===1000)t.fn();assert(node('#activity').innerHTML.includes('이야기'));assert.equal(vm.runInContext('state.sky.items[0].viewed',c),true);click('sky-detail-back');click('sky-search');assert(node('#activity').innerHTML.includes('이름을 알려주세요'));click('close-activity');
 vm.runInContext('state=M.create();editing=null;render()',c);click('diagnosis');assert.equal(vm.runInContext('current().diagnosis',c),'idle');assert(node('#learning').classList.contains('diagnosis-screen'));assert(node('#learning').innerHTML.includes('어디를 더 공부하면'));click('diagnosis-begin');assert.equal(vm.runInContext('current().diagnosis',c),'active');assert(!node('#learning').innerHTML.includes('테스트 전용'));assert(!node('#learning').innerHTML.includes('data-action="diag-start"'));
-click('diagnosis-answer',0);click('diagnosis-next');click('close-learning');assert(node('#learning').innerHTML.includes('지금까지 푼 내용은 저장'));click('diagnosis-stay');assert(node('#learning').innerHTML.includes('문항 2 / 3'));click('close-learning');click('diagnosis-leave');assert.equal(node('#learning').open,false);assert.equal(vm.runInContext('state.daily.timerRunning',c),false);click('diagnosis');assert(node('#learning').innerHTML.includes('문항 2 / 3'));assert(!node('#learning').innerHTML.includes('diagnosis-begin'));click('diagnosis-answer',0);click('diagnosis-next');click('diagnosis-answer',0);click('diagnosis-next');assert.equal(node('#prescription').open,true);assert(node('#composition-title').textContent.includes('수고했어요'));for(const t of [...timers])if(!t.cancelled&&t.ms===600)t.fn();assert(node('#composition-copy').textContent.includes('더 익힐 내용을'));for(const t of [...timers])if(!t.cancelled&&(t.ms===3400||t.ms===1800))t.fn();assert.equal(node('#prescription').open,false);assert.equal(vm.runInContext('current().diagnosticResult.incorrect',c),2);click('diagnosis');assert(node('#learning').innerHTML.includes('실력 확인 결과'));assert(!node('#learning').classList.contains('diagnosis-screen'));assert(node('#learning').innerHTML.includes('결손 학습 목표'));assert(!node('#learning').innerHTML.includes('data-action="diag-prescribe"'));click('close-learning');click('program',0);assert.equal(vm.runInContext('current().programs[0].status',c),'active');assert(!node('#learning').innerHTML.includes('data-action="program-start"'));assert(node('#learning').innerHTML.includes('data-action="learner-next"'));click('learner-answer',0);click('learner-next');assert.equal(vm.runInContext('current().programs[0].completedFrames',c),1);
+click('diagnosis-answer',0);click('diagnosis-next');click('close-learning');assert(node('#learning').innerHTML.includes('지금까지 푼 내용은 저장'));click('diagnosis-stay');assert(node('#learning').innerHTML.includes('문항 2 / 3'));click('close-learning');click('diagnosis-leave');assert.equal(node('#learning').open,false);assert.equal(vm.runInContext('state.daily.timerRunning',c),false);click('diagnosis');assert(node('#learning').innerHTML.includes('문항 2 / 3'));assert(!node('#learning').innerHTML.includes('diagnosis-begin'));click('diagnosis-answer',0);click('diagnosis-next');click('diagnosis-answer',0);click('diagnosis-next');assert.equal(node('#prescription').open,true);assert(node('#composition-title').textContent.includes('수고했어요'));for(const t of [...timers])if(!t.cancelled&&t.ms===2400)t.fn();assert(node('#composition-copy').textContent.includes('더 익힐 내용을'));for(const t of [...timers])if(!t.cancelled&&(t.ms===8000||t.ms===7000))t.fn();assert.equal(node('#prescription').open,false);assert.equal(vm.runInContext('current().diagnosticResult.incorrect',c),2);click('diagnosis');assert(node('#learning').innerHTML.includes('실력 확인 결과'));assert(!node('#learning').classList.contains('diagnosis-screen'));assert(node('#learning').innerHTML.includes('결손 학습 목표'));assert(!node('#learning').innerHTML.includes('data-action="diag-prescribe"'));click('close-learning');click('program',0);assert.equal(vm.runInContext('current().programs[0].status',c),'active');assert(!node('#learning').innerHTML.includes('data-action="program-start"'));assert(node('#learning').innerHTML.includes('data-action="learner-next"'));click('learner-answer',0);click('learner-next');assert.equal(vm.runInContext('current().programs[0].completedFrames',c),1);
 vm.runInContext('state.ui.testControls=true;refreshDialog()',c);assert(node('#learning').innerHTML.includes('테스트 전용'));assert(node('#learning').innerHTML.includes('data-action="program-pass"'));
 vm.runInContext('select(3,1);current().diagnosis="idle";current().programs=[];render()',c);click('diagnosis');assert(!node('#learning').innerHTML.includes('diagnosis-begin'));for(const answer of [0,1,1]){click('diagnosis-answer',answer);click('diagnosis-next');}assert(node('#learning').innerHTML.includes('훌륭해요'));assert(node('#learning').classList.contains('diagnosis-screen'));click('diagnosis-leave');click('diagnosis');assert(node('#learning').innerHTML.includes('실력 확인 결과'));assert(!node('#learning').classList.contains('diagnosis-screen'));
-click('close-learning');click('replay-first');assert.equal(vm.runInContext('composing.total',c),3400);assert.equal(vm.runInContext('current().presentationPending',c),undefined);for(const t of [...timers])if(!t.cancelled&&t.ms===1500)t.fn();assert(node('#composition-title').textContent.includes('님을 위한 학습'));for(const t of [...timers])if(!t.cancelled&&t.ms===3400)t.fn();assert(node('#programs').innerHTML.includes('여기부터 시작해요'));assert.equal(vm.runInContext('state.ui.prescriptionSeen',c),true);click('replay-repeat');assert.equal(vm.runInContext('composing.total',c),1800);for(const t of [...timers])if(!t.cancelled&&t.ms===1800)t.fn();click('program',0);assert.equal(vm.runInContext('current().presentationPending',c),false);assert(!node('#programs').innerHTML.includes('여기부터 시작해요'));
+click('close-learning');click('replay-first');assert.equal(vm.runInContext('composing.total',c),8000);assert.equal(vm.runInContext('current().presentationPending',c),undefined);for(const t of [...timers])if(!t.cancelled&&t.ms===5200)t.fn();assert(node('#composition-title').textContent.includes('님을 위한 학습'));for(const t of [...timers])if(!t.cancelled&&t.ms===8000)t.fn();assert(node('#programs').innerHTML.includes('여기부터 시작해요'));assert.equal(vm.runInContext('state.ui.prescriptionSeen',c),true);click('replay-repeat');assert.equal(vm.runInContext('composing.total',c),7000);for(const t of [...timers])if(!t.cancelled&&t.ms===7000)t.fn();click('program',0);assert.equal(vm.runInContext('current().presentationPending',c),false);assert(!node('#programs').innerHTML.includes('여기부터 시작해요'));
 console.log('UI state-flow, diagnosis result and clean learner-view checks passed (DOM substitute)');
 
 // Preset loading uses the original app without replacing its click listeners.
@@ -341,7 +341,7 @@ c.document.visibilityState='hidden';listeners.visibilitychange();
 assert.equal(node('#composition')['data-compose-paused'],'true');
 c.document.visibilityState='visible';listeners.visibilitychange();
 assert.equal(node('#composition')['data-compose-paused'],'false');
-vm.runInContext('composeTimers.find(t=>t.ms===3400)',c).fn();
+vm.runInContext('composeTimers.find(t=>t.ms===8000)',c).fn();
 assert.equal(node('#prescription').open,false);
 assert.equal(vm.runInContext('current().programs.length',c),2);
 assert(node('#programs').classList.contains('reveal'));
@@ -350,22 +350,110 @@ const oldCardEnd=vm.runInContext('cardRevealTimer',c);
 vm.runInContext("beginComposition(1,'repeat')",c);
 assert.equal(mountWrites,2);
 assert(!node('#programs').classList.contains('reveal'));
-vm.runInContext('composeTimers.find(t=>t.ms===1800)',c).fn();
+vm.runInContext('composeTimers.find(t=>t.ms===7000)',c).fn();
 assert(node('#programs').classList.contains('reveal'));
 const latestCardEnd=vm.runInContext('cardRevealTimer',c);
 oldCardEnd.fn();assert(node('#programs').classList.contains('reveal'));
 latestCardEnd.fn();assert(!node('#programs').classList.contains('reveal'));
 vm.runInContext('render()',c);assert(!node('#programs').classList.contains('reveal')); // no replay on state refresh
-vm.runInContext("beginComposition(1,'repeat')",c);vm.runInContext('composeTimers.find(t=>t.ms===1800)',c).fn();
+vm.runInContext("beginComposition(1,'repeat')",c);vm.runInContext('composeTimers.find(t=>t.ms===7000)',c).fn();
 const cancelledCardEnd=vm.runInContext('cardRevealTimer',c);
 vm.runInContext('select(3,1)',c);cancelledCardEnd.fn();
 assert.equal(vm.runInContext('current().programs.length',c),0);
 assert(!node('#programs').classList.contains('reveal'));
 // Reduced motion retains all prescription content and suppresses the card movement.
 c.matchMedia=()=>({matches:true});
-vm.runInContext("beginComposition(3,'repeat')",c);vm.runInContext('composeTimers.find(t=>t.ms===1800)',c).fn();
+vm.runInContext("beginComposition(3,'repeat')",c);vm.runInContext('composeTimers.find(t=>t.ms===7000)',c).fn();
 assert.equal(vm.runInContext('current().programs.length',c),3);
 assert.equal(vm.runInContext('cardRevealTimer',c),null);
 assert(!node('#programs').classList.contains('reveal'));
 assert.equal(node('#prescription').open,false);
 console.log('Prescription scan mount continuity, typing, hidden pause, one-time reveal, interrupted replay, selection and reduced-motion passed');
+
+// The whole long mentor message remains available; reading reaches its end before collapse.
+c.matchMedia=()=>({matches:false});c.document.visibilityState='visible';
+const originalMentorRect=node('.ai-top').getBoundingClientRect,originalMentorMeasure=node('#mentor-measure').getBoundingClientRect;
+node('.ai-top').getBoundingClientRect=()=>({width:300,height:44});
+node('#mentor-measure').getBoundingClientRect=function(){return {width:this.textContent.length*10,height:22};};
+node('#ai-message').clientWidth=130;node('#ai-message').scrollWidth=680;
+vm.runInContext("cancelComposition();state=M.create();M.preset(state,3);lastMessage='';render();animateMessage(true)",c);
+vm.runInContext('thinkTimer',c).fn();
+for(let i=0;i<500&&vm.runInContext('aiState',c)==='반응 중';i++)vm.runInContext('animTimer',c).fn();
+const fullMentorCopy=node('#ai-message').textContent;
+assert.equal(node('#mentor-bubble').style.height,'40px');
+assert.equal(node('#mentor-read-controls').hidden,false);
+assert.equal(node('#ai-message').tabIndex,0);
+assert.equal(node('#ai-message').scrollLeft,0);
+assert.equal(vm.runInContext('bubbleTimer',c),null); // no expiry while words are still outside the viewport
+assert.equal(vm.runInContext('mentorReadTimer',c).ms,1800);
+for(let i=0;i<500&&vm.runInContext('mentorReadTimer',c);i++)vm.runInContext('mentorReadTimer',c).fn();
+assert.equal(node('#ai-message').scrollLeft,550);
+assert.equal(node('#mentor-read-next').disabled,true);
+assert.equal(node('#ai-message').textContent,fullMentorCopy);
+assert.equal(node('.ai-top')['data-bubble-phase'],'holding');
+assert.equal(vm.runInContext('bubbleTimer',c).ms,5000); // final words get their own reading hold
+vm.runInContext('bubbleTimer',c).fn();assert.equal(node('.ai-top')['data-bubble-phase'],'rest');
+// Pause on hover/focus and leave manual navigation in the learner's control.
+node('#ai-message').scrollLeft=0;vm.runInContext("setBubblePhase('holding');scheduleBubbleRest()",c);
+const staleRead=vm.runInContext('mentorReadTimer',c);
+node('#mentor-bubble').listeners.pointerenter({pointerType:'mouse'});
+assert.equal(vm.runInContext('mentorReadTimer',c),null);staleRead.fn();assert.equal(node('#ai-message').scrollLeft,0);
+node('#mentor-bubble').listeners.pointerleave();
+const hiddenRead=vm.runInContext('mentorReadTimer',c);
+c.document.visibilityState='hidden';listeners.visibilitychange();
+assert.equal(vm.runInContext('mentorReadTimer',c),null);
+c.document.visibilityState='visible';listeners.visibilitychange();hiddenRead.fn();
+assert.equal(node('#ai-message').scrollLeft,0);
+node('#mentor-bubble').listeners.focusin();click('mentor-read-next');
+assert.equal(node('#ai-message').scrollLeft,104);
+assert.equal(vm.runInContext('mentorReadTimer',c),null);
+assert.equal(vm.runInContext('bubbleTimer',c),null);
+let keyHandled=false;node('#ai-message').listeners.keydown({key:'ArrowRight',preventDefault(){keyHandled=true;}});
+assert.equal(keyHandled,true);assert.equal(node('#ai-message').scrollLeft,208);
+click('mentor-read-back');assert.equal(node('#ai-message').scrollLeft,104);
+node('#mentor-bubble').listeners.focusout({relatedTarget:null});
+assert(vm.runInContext('mentorReadTimer',c));
+// Reduced motion still exposes all words with the arrows; the bubble does not expire unseen.
+c.matchMedia=()=>({matches:true});vm.runInContext('animateMessage(true)',c);
+assert.equal(vm.runInContext('mentorReadTimer',c),null);
+assert.equal(vm.runInContext('bubbleTimer',c),null);
+assert.equal(node('#mentor-read-controls').hidden,false);
+assert.equal(node('#ai-message').textContent,fullMentorCopy);
+click('mentor-read-next');assert.equal(node('#ai-message').scrollLeft,104);
+node('.ai-top').getBoundingClientRect=originalMentorRect;node('#mentor-measure').getBoundingClientRect=originalMentorMeasure;
+delete node('#ai-message').clientWidth;delete node('#ai-message').scrollWidth;
+console.log('Long single-line mentor copy reaches its end, supports arrows/keyboard, pauses for reading, and remains readable with reduced motion');
+
+// Acknowledgment, search and preparation each have reading time, including repeated prescriptions.
+c.matchMedia=()=>({matches:false});
+vm.runInContext("cancelComposition();state=M.create();render();beginComposition(2,'first')",c);
+assert.equal(vm.runInContext('composing.searchAt',c),2400);
+assert.equal(vm.runInContext('composing.readyAt',c),5200);
+assert.equal(vm.runInContext('composing.total',c),8000);
+assert.equal(node('#composition')['data-compose-step'],'0');
+assert(node('#composition').innerHTML.includes('prescription-complete'));
+for(const t of vm.runInContext('composeTimers',c))if(t.ms<2400&&!t.cancelled)t.fn();
+assert.equal(node('#composition-title').textContent,'수고했어요!');
+vm.runInContext('composeTimers.find(t=>t.ms===2400)',c).fn();
+assert.equal(node('#composition')['data-compose-step'],'1');
+assert(node('#composition-title').textContent.includes('찾고 있어요'));
+assert.equal(vm.runInContext('current().programs.length',c),0);
+vm.runInContext('composeTimers.find(t=>t.ms===5200)',c).fn();
+for(const t of vm.runInContext('composeTimers',c).filter(t=>t.ms>5200&&t.ms<8000).sort((a,b)=>a.ms-b.ms))t.fn();
+assert.equal(node('#composition-copy').textContent,'여기부터 시작해 볼까요?');
+assert.equal(node('#prescription').open,true);
+assert(vm.runInContext('composing.total-composing.readyAt-composing.message.length*45>=2000',c));
+vm.runInContext('composeTimers.find(t=>t.ms===8000)',c).fn();
+assert.equal(vm.runInContext('current().programs.length',c),2);
+vm.runInContext("beginComposition(1,'repeat')",c);
+const priorSearch=vm.runInContext('composeTimers.find(t=>t.ms===2000)',c),priorFinish=vm.runInContext('composeTimers.find(t=>t.ms===7000)',c);
+assert.equal(vm.runInContext('composing.searchAt',c),2000);
+assert.equal(vm.runInContext('composing.readyAt',c),4400);
+assert.equal(vm.runInContext('composing.total',c),7000);
+vm.runInContext("beginComposition(3,'repeat')",c);priorSearch.fn();priorFinish.fn();
+assert.equal(node('#composition')['data-compose-step'],'0');
+assert.equal(vm.runInContext('composing.count',c),3); // cancelled callbacks for the same group cannot skip the new acknowledgment
+assert.equal(node('#prescription').open,true);
+vm.runInContext('composeTimers.find(t=>t.ms===7000)',c).fn();
+assert.equal(vm.runInContext('current().programs.length',c),3);
+console.log('Prescription acknowledgment/search/reading durations and cancelled-run isolation passed');

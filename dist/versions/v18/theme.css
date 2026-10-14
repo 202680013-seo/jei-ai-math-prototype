@@ -411,3 +411,36 @@ main{padding-top:40px}
 @keyframes prescription-card-settle{0%{opacity:0;transform:translateY(30px) scale(.985);animation-timing-function:cubic-bezier(.2,.65,.3,1)}55%{opacity:1;transform:translateY(-10px) scale(1.006);animation-timing-function:cubic-bezier(.4,0,.6,1)}80%{opacity:1;transform:translateY(2px) scale(1);animation-timing-function:ease-out}100%{opacity:1;transform:translateY(0) scale(1)}}
 @media(max-width:650px){.prescription-search{width:180px;height:108px}}
 @media(prefers-reduced-motion:reduce){.prescription-search .search-lens{animation:none}#programs.reveal>.card:not(.grid-diagnostic){animation:none!important;opacity:1;transform:none}}
+
+/* V3.4.5 refinement: acknowledge completion first, then search at an unhurried pace. */
+.prescription-graphics{position:relative;width:200px;height:120px;margin:0 auto 18px}
+.prescription-graphics>.prescription-complete,.prescription-graphics>.prescription-search{position:absolute;inset:0;width:100%;height:100%;margin:0;transition:opacity .4s ease,transform .4s cubic-bezier(.22,.72,.2,1)}
+.prescription-complete svg{display:block;width:100%;height:100%;overflow:visible}
+.prescription-complete{color:var(--forest);opacity:1;transform:translateY(0) scale(1)}
+.complete-glow{fill:var(--jei-c-eef8e6,#eef8e6)}
+.complete-paper{fill:#fff;stroke:currentColor;stroke-width:2.7}
+.complete-lines{stroke:var(--jei-c-d6ebc5,#d6ebc5);stroke-width:3;stroke-linecap:round}
+.complete-sheet{transform-box:view-box;transform-origin:110px 66px;animation:prescription-complete-lift 1s cubic-bezier(.22,.72,.2,1) both}
+.complete-check{stroke:currentColor;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:prescription-check-draw .65s .25s ease-out forwards}
+.complete-spark{fill:var(--jei-accent,var(--lime));transform-box:fill-box;transform-origin:center;animation:prescription-complete-spark 1.4s .2s ease-out both}
+.complete-spark.spark-two{animation-delay:.4s}
+#composition[data-compose-step="0"] .prescription-search{opacity:0;transform:translateY(6px) scale(.97)}
+#composition[data-compose-step="0"] .search-lens{animation-play-state:paused}
+#composition:not([data-compose-step="0"]) .prescription-complete{opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none}
+@keyframes prescription-complete-lift{0%{opacity:0;transform:translateY(12px) scale(.94) rotate(-4deg)}65%{opacity:1;transform:translateY(-3px) scale(1.015) rotate(1deg)}100%{opacity:1;transform:translateY(0) scale(1) rotate(0)}}
+@keyframes prescription-check-draw{to{stroke-dashoffset:0}}
+@keyframes prescription-complete-spark{0%{opacity:0;transform:scale(.5)}45%{opacity:1;transform:scale(1.15)}75%{opacity:.5;transform:scale(.9)}100%{opacity:.9;transform:scale(1)}}
+@media(max-width:650px){.prescription-graphics{width:180px;height:108px}}
+@media(prefers-reduced-motion:reduce){.prescription-graphics>.prescription-complete,.prescription-graphics>.prescription-search{transition:none}.complete-sheet,.complete-check,.complete-spark{animation:none}.complete-check{stroke-dashoffset:0}}
+
+/* Keep speech one line; let the learner read every word with visible controls. */
+.ai #ai-message{flex:1 1 0;width:auto}
+.mentor-read-controls{position:relative;z-index:2;display:flex;flex:none;gap:2px;width:44px;margin-right:5px;align-items:center}
+.mentor-read-controls[hidden]{display:none}
+.mentor-read-controls button{display:grid;place-items:center;flex:none;width:21px;height:28px;min-height:0;min-width:0;margin:0;padding:0;border:0;border-radius:7px;background:transparent;color:var(--forest)}
+.mentor-read-controls button svg{width:15px;height:15px}
+.mentor-read-controls button:hover:not(:disabled){background:var(--jei-c-eef8e6,#eef8e6)}
+.mentor-read-controls button:disabled{opacity:.3}
+.ai #ai-message:focus-visible{outline:2px solid var(--jei-c-81c357,#81c357);outline-offset:-3px;border-radius:12px}
+
+#composition[data-compose-paused=true] .complete-sheet,#composition[data-compose-paused=true] .complete-check,#composition[data-compose-paused=true] .complete-spark{animation-play-state:paused}
