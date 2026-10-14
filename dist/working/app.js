@@ -215,6 +215,7 @@ function setAIState(label){
 document.addEventListener('visibilitychange',()=>syncMentorMotion(mentorMode));
 matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change',()=>syncMentorMotion(mentorMode));
 let bubblePhase='rest',bubbleTimer=null,bubbleGeneration=0,bubbleHold=4000,mentorReadTimer=null,mentorReadToken=0,mentorReadingOverflow=false,mentorPointerPaused=false,mentorFocusPaused=false;
+let mentorReminderTimer=null,mentorReminderToken=0,mentorReminderIndex=0,lastMentorContext='';
 function mentorScrollLimit(){const text=$('#ai-message');return Math.max(0,(text.scrollWidth||0)-(text.clientWidth||0));}
 function updateMentorReadButtons(){
   const at=$('#ai-message').scrollLeft||0,limit=mentorScrollLimit();
@@ -236,10 +237,10 @@ function fitMentorBubble(){
   $('#mentor-read-controls').hidden=!mentorReadingOverflow;text.tabIndex=mentorReadingOverflow?0:-1;
   updateMentorReadButtons();
 }
-function setBubblePhase(phase){bubblePhase=phase;$('.ai-top').setAttribute('data-bubble-phase',phase);fitMentorBubble();}
+function setBubblePhase(phase){bubblePhase=phase;$('.ai-top').setAttribute('data-bubble-phase',phase);fitMentorBubble();scheduleMentorReminder();}
 function clearMentorReading(){clearTimeout(bubbleTimer);clearTimeout(mentorReadTimer);bubbleTimer=null;mentorReadTimer=null;mentorReadToken++;}
 function scheduleBubbleRest(){
-  clearMentorReading();if(bubblePhase!=='holding'||document.visibilityState==='hidden'||mentorPointerPaused||mentorFocusPaused)return;
+  scheduleMentorReminder();clearMentorReading();if(bubblePhase!=='holding'||document.visibilityState==='hidden'||mentorPointerPaused||mentorFocusPaused)return;
   const generation=bubbleGeneration,token=mentorReadToken;
   const valid=()=>generation===bubbleGeneration&&token===mentorReadToken&&bubblePhase==='holding'&&document.visibilityState!=='hidden';
   function restAfter(ms){bubbleTimer=setTimeout(()=>{if(!valid())return;setBubblePhase('rest');bubbleTimer=null;},ms);}
@@ -271,11 +272,44 @@ $('#mentor-bubble').addEventListener('focusout',e=>{if($('#mentor-bubble').conta
 $('#ai-message').addEventListener('scroll',updateMentorReadButtons);
 $('#ai-message').addEventListener('keydown',e=>{if(mentorReadingOverflow&&['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();moveMentorReading(e.key==='ArrowRight'?1:-1);}});
 matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change',scheduleBubbleRest);
-function animateMessage(force=false){
+function mainGuidanceVisible(){return document.visibilityState!=='hidden'&&!myOpen&&!panel&&!composing&&!skyBusy&&!activityKind&&!$('#learning').open&&!$('#help').open&&!$('#prescription').open;}
+function mentorContext(){
+  const s=current(),d=daily(),p=M.currentProgram(s),rec=M.recommend(state);
+  return JSON.stringify([state.grade,state.index,s.diagnosis,M.status(s,state.policy),p?.id,!!s.presentationPending,d.unreadAnswers>0,!!(d.target&&d.minutes>=d.target),M.wrongEntries(state).length>=3,!!state.sky?.newPieces,rec.kind,rec.id]);
+}
+function mentorReminderLines(){
+  const s=current(),d=daily(),st=M.status(s,state.policy),rec=M.recommend(state);
+  if(isCleanPass(s)){const pass=cleanPassInfo();return ['추가 학습 없이 진단을 통과했어요.',pass.next?pass.message:'오늘의 학습을 잘 마쳤어요.'];}
+  if(rec.kind==='answers')return ['새 답변이 도착했어요.','도와줘요에서 답변을 확인해 볼까요?'];
+  if(rec.kind==='wrongnotes')return ['헷갈렸던 문제를 다시 풀어볼까요?','오답노트에서 함께 연습해요.'];
+  if(rec.kind==='report')return ['오늘 목표를 해냈어요!','리포트에서 오늘의 학습을 확인해요.'];
+  if(rec.kind==='constellation')return ['새 별 조각을 모았어요.','나의 별자리를 꾸며볼까요?'];
+  if(s.presentationPending)return ['맞춤 학습이 준비됐어요.','첫 번째 학습부터 시작해 볼까요?','실력알기 결과도 확인할 수 있어요.'];
+  if(s.diagnosis==='idle')return ['실력알기로 지금 실력을 알아볼까요?','알고 있는 내용부터 차근차근 확인해요.',!d.target&&!d.started?'오늘 목표 시간을 정해볼까요?':'준비되면 실력알기를 시작해요.'];
+  if(s.diagnosis==='active')return ['진행 중인 실력알기가 있어요.','풀던 문제부터 이어서 확인해 볼까요?'];
+  if(rec.kind==='done')return ['여기까지 차근차근 잘 해냈어요.','오늘 학습은 리포트에서 확인해요.'];
+  if(st==='passed')return ['필요한 학습을 모두 마쳤어요!','다음 학습을 만나볼까요?'];
+  if(st==='failed'||s.programs.some(p=>p.status==='failed'))return ['헷갈린 부분을 복습해 볼까요?','틀린 문제에서 한 번 더 배워요.'];
+  if(M.currentProgram(s))return ['풀던 학습을 이어서 해볼까요?','한 문제씩 차근차근 풀어봐요.','필요하면 도와줘요를 눌러주세요.'];
+  if(rec.kind==='locked')return ['이전 학습을 마치면 다음 학습이 열려요.','진행 중인 학습부터 이어가 볼까요?'];
+  return ['맞춤 학습부터 하나씩 시작해요.','실력알기 결과에서 틀린 내용을 확인해요.'];
+}
+function scheduleMentorReminder(){
+  if(!mainGuidanceVisible()||bubblePhase!=='rest'||mentorPointerPaused||mentorFocusPaused){clearTimeout(mentorReminderTimer);mentorReminderTimer=null;mentorReminderToken++;return;}
+  if(mentorReminderTimer)return;const token=++mentorReminderToken;
+  mentorReminderTimer=setTimeout(()=>{
+    if(token!==mentorReminderToken)return;mentorReminderTimer=null;
+    if(!mainGuidanceVisible()||bubblePhase!=='rest'||mentorPointerPaused||mentorFocusPaused)return;
+    if(mentorContext()!==lastMentorContext){animateMessage();return;}
+    const lines=mentorReminderLines(),message=lines[mentorReminderIndex++%lines.length];animateMessage(true,message);
+  },6500);
+}
+function animateMessage(force=false,reminderMessage=null){
 const passed=isCleanPass(current())?cleanPassInfo():null;
 $('.ai-top').setAttribute('data-clean-pass',passed?'true':'false');
-const msg=passed?`${passed.title} ${passed.message}`:current().presentationPending&&!composing?'맞춤 학습이 준비됐어요. 첫 번째 학습부터 시작해 볼까요?':composing?'진단 결과를 바탕으로 필요한 학습을 골라 맞춤 프로그램을 구성하고 있어요.':M.message(state),signature=state.grade+':'+state.index+':'+msg;
-if(signature===lastMessage&&!force)return;lastMessage=signature;const generation=++bubbleGeneration;clearTimeout(thinkTimer);clearTimeout(animTimer);clearMentorReading();
+const baseMessage=passed?`${passed.title} ${passed.message}`:current().presentationPending&&!composing?'맞춤 학습이 준비됐어요. 첫 번째 학습부터 시작해 볼까요?':composing?'진단 결과를 바탕으로 필요한 학습을 골라 맞춤 프로그램을 구성하고 있어요.':['answers','wrongnotes'].includes(M.recommend(state).kind)?mentorReminderLines()[0]:M.message(state),context=mentorContext(),signature=context+':'+baseMessage;
+if(context!==lastMentorContext){lastMentorContext=context;mentorReminderIndex=0;reminderMessage=null;}
+if(signature===lastMessage&&!force)return;lastMessage=signature;const msg=reminderMessage??baseMessage;const generation=++bubbleGeneration;clearTimeout(thinkTimer);clearTimeout(animTimer);clearMentorReading();
 const el=$('#ai-message');el.scrollLeft=0;el.textContent='';el.classList.remove('generating');el.setAttribute('aria-busy','true');setAIState('생각 중');setBubblePhase('thinking');
 const finish=()=>{if(generation!==bubbleGeneration)return;el.classList.remove('generating');el.setAttribute('aria-busy','false');setAIState('대기');el.scrollLeft=0;setBubblePhase('holding');bubbleHold=Math.max(4000,Math.min(10000,msg.length*110));scheduleBubbleRest();};
 if(passed||matchMedia('(prefers-reduced-motion: reduce)').matches){el.textContent=msg;finish();return;}
@@ -285,12 +319,13 @@ function type(){if(generation!==bubbleGeneration)return;i++;el.textContent=msg.s
 }
 // Local recommendation preparation motion; no extra network request is needed.
 let recommendationTimer=null,recommendationGeneration=0,recommendationSignature='',recommendationPending=false,recommendationDisabled=false;
+let recommendationReminderTimer=null,recommendationReminderToken=0,recommendationPointerPaused=false,recommendationFocusPaused=false;
 function finishRecommendation(generation){
   if(generation!==recommendationGeneration||!recommendationPending||document.visibilityState==='hidden')return;
   clearTimeout(recommendationTimer);recommendationTimer=null;recommendationPending=false;
   $('.recommend').setAttribute('data-recommend-state','ready');$('.recommend').setAttribute('aria-busy','false');
   $('.recommend-loader').hidden=true;$('#recommend-status').textContent='';
-  $('#recommend').disabled=recommendationDisabled;
+  $('#recommend').disabled=recommendationDisabled;scheduleRecommendationReminder();
 }
 function scheduleRecommendation(){
   clearTimeout(recommendationTimer);recommendationTimer=null;const generation=++recommendationGeneration;
@@ -298,45 +333,64 @@ function scheduleRecommendation(){
   $('.recommend').setAttribute('data-recommend-paused',document.visibilityState==='hidden'||reduced?'true':'false');
   if(!recommendationPending||document.visibilityState==='hidden')return;
   if(reduced){finishRecommendation(generation);return;}
-  recommendationTimer=setTimeout(()=>finishRecommendation(generation),800);
+  recommendationTimer=setTimeout(()=>finishRecommendation(generation),1400);
 }
 function syncRecommendation(action){
   const button=$('#recommend'),signature=JSON.stringify([state.grade,state.index,action,button.textContent,button.disabled]);
   if(signature!==recommendationSignature){
-    recommendationSignature=signature;recommendationDisabled=button.disabled;recommendationPending=true;recommendationGeneration++;
+    clearRecommendationReminder();recommendationSignature=signature;recommendationDisabled=button.disabled;recommendationPending=true;recommendationGeneration++;
     $('.recommend').setAttribute('data-recommend-state','loading');$('.recommend').setAttribute('aria-busy','true');
     $('.recommend-loader').hidden=false;$('#recommend-status').textContent='추천 활동 준비 중';
     scheduleRecommendation();
   }
   // Unrelated re-renders must neither restart preparation nor re-enable a hidden action.
-  button.disabled=recommendationPending||recommendationDisabled;
+  button.disabled=recommendationPending||recommendationDisabled;scheduleRecommendationReminder();
 }
 document.addEventListener('visibilitychange',scheduleRecommendation);
 matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change',scheduleRecommendation);
+function clearRecommendationReminder(){clearTimeout(recommendationReminderTimer);recommendationReminderTimer=null;recommendationReminderToken++;}
+function scheduleRecommendationReminder(){
+  if(!mainGuidanceVisible()||recommendationPending||recommendationDisabled||recommendationPointerPaused||recommendationFocusPaused){clearRecommendationReminder();return;}
+  if(recommendationReminderTimer)return;const token=++recommendationReminderToken,signature=recommendationSignature;
+  recommendationReminderTimer=setTimeout(()=>{
+    if(token!==recommendationReminderToken||signature!==recommendationSignature)return;recommendationReminderTimer=null;
+    if(!mainGuidanceVisible()||recommendationPending||recommendationDisabled||recommendationPointerPaused||recommendationFocusPaused)return;
+    recommendationPending=true;recommendationGeneration++;$('#recommend').disabled=true;
+    $('.recommend').setAttribute('data-recommend-state','loading');$('.recommend').setAttribute('aria-busy','true');
+    $('.recommend-loader').hidden=false;$('#recommend-status').textContent='추천 활동을 다시 살펴보고 있어요';scheduleRecommendation();
+  },24000);
+}
+function syncGuidanceReminders(){scheduleMentorReminder();scheduleRecommendationReminder();}
+$('.recommend').addEventListener('pointerenter',()=>{recommendationPointerPaused=true;scheduleRecommendationReminder();});
+$('.recommend').addEventListener('pointerleave',()=>{recommendationPointerPaused=false;scheduleRecommendationReminder();});
+$('.recommend').addEventListener('focusin',()=>{recommendationFocusPaused=true;scheduleRecommendationReminder();});
+$('.recommend').addEventListener('focusout',e=>{if($('.recommend').contains?.(e.relatedTarget))return;recommendationFocusPaused=false;scheduleRecommendationReminder();});
 function programCard(s,p){const unlocked=M.canStudy(s,p),active=M.currentProgram(s)?.id===p.id,finished=p.progress>=100,st=unlocked?p.status:'locked',statusLabel=st==='active'&&finished?'풀이 완료':M.labels[st];
-return `<button class="card program-card ${s.presentationPending&&p.id===0&&p.status==='idle'?'is-introduced ':''}${active?'is-current':finished?'is-complete':unlocked?'is-ready':'is-locked'}" data-action="program" data-id="${p.id}" style="--prescription-delay:${Math.min(p.id,5)*50}ms" ${unlocked?'':'disabled'} aria-label="${esc(p.name)} ${statusLabel}" ${active?'aria-current="step"':''} title="${unlocked?'':p.status==='locked'?'테스트에서 잠금으로 설정된 학습':'이전 프로그램 진행률이 100%가 되면 열립니다'}"><div class="card-top"><small>${String(p.id+1).padStart(2,'0')}</small><span class="badge ${st}">${statusLabel}</span></div><strong>${esc(p.name)}</strong>${s.presentationPending&&p.id===0&&p.status==='idle'?'<span class="start-here">여기부터 시작해요 →</span>':''}${p.reviewed?'<div><span class="review">↺ 복습 완료</span></div>':''}${active?`<div class="progress-row"><span>진행률</span><span>${p.progress}%</span></div><progress max="100" value="${p.progress}"></progress>`:''}</button>`;}
-function render(){if(!reveal)clearPrescribedCardReveal();daily();const s=current(),st=M.status(s,state.policy);$('#diagnosis-slot').append($('#diagnostic'));$('#diagnostic').classList.remove('grid-diagnostic','card','clean-passed');$('#diagnosis-section').hidden=false;$('#group-title').textContent=grade(state.grade)+'등급 / '+groupName(state.index);$('#summary').innerHTML=(composing?'<span class="badge active">맞춤 프로그램 구성 중</span>':badge(st))+`<small>세트 ${state.index+1} / ${state.grades[state.grade].length}${s.testOnly?' · 테스트 세트':''}</small>`;$('#diagnostic').innerHTML=`<div><strong>실력알기</strong>${s.diagnosis==='done'?`<small>${s.programs.length?'처방 프로그램 '+s.programs.length+'개':'부족한 학습 목표 0개'}</small>`:''}</div>${badge(s.diagnosis==='done'?(s.programs.length?'passed':'clean'):s.diagnosis)}`;$('#programs').innerHTML=s.programs.map(p=>programCard(s,p)).join('');const rec=M.recommend(state);$('#recommend').textContent=rec.text;$('#recommend').disabled=!!composing||['done','locked'].includes(rec.kind);
+return `<button class="card program-card ${s.presentationPending&&p.id===0&&p.status==='idle'?'is-introduced ':''}${active?'is-current':finished?'is-complete':unlocked?'is-ready':'is-locked'}" data-action="program" data-id="${p.id}" style="--prescription-delay:${Math.min(p.id,5)*65}ms" ${unlocked?'':'disabled'} aria-label="${esc(p.name)} ${statusLabel}" ${active?'aria-current="step"':''} title="${unlocked?'':p.status==='locked'?'테스트에서 잠금으로 설정된 학습':'이전 프로그램 진행률이 100%가 되면 열립니다'}"><div class="card-top"><small>${String(p.id+1).padStart(2,'0')}</small><span class="badge ${st}">${statusLabel}</span></div><strong>${esc(p.name)}</strong>${s.presentationPending&&p.id===0&&p.status==='idle'?'<span class="start-here">여기부터 시작해요 →</span>':''}${p.reviewed?'<div><span class="review">↺ 복습 완료</span></div>':''}${active?`<div class="progress-row"><span>진행률</span><span>${p.progress}%</span></div><progress max="100" value="${p.progress}"></progress>`:''}</button>`;}
+function render(){if(!reveal)clearPrescribedCardReveal();daily();const s=current(),st=M.status(s,state.policy);$('#diagnosis-slot').append($('#diagnostic'));$('#diagnostic').classList.remove('grid-diagnostic','card','clean-passed','diagnostic-summary-trigger');$('#diagnostic').setAttribute('aria-label','실력알기');$('#diagnostic-result-slot').hidden=true;$('#diagnosis-section').hidden=false;$('#group-title').textContent=grade(state.grade)+'등급 / '+groupName(state.index);$('#summary').innerHTML=(composing?'<span class="badge active">맞춤 프로그램 구성 중</span>':badge(st))+`<small>세트 ${state.index+1} / ${state.grades[state.grade].length}${s.testOnly?' · 테스트 세트':''}</small>`;$('#diagnostic').innerHTML=`<div><strong>실력알기</strong>${s.diagnosis==='done'?`<small>${s.programs.length?'처방 프로그램 '+s.programs.length+'개':'부족한 학습 목표 0개'}</small>`:''}</div>${badge(s.diagnosis==='done'?(s.programs.length?'passed':'clean'):s.diagnosis)}`;$('#programs').innerHTML=s.programs.map(p=>programCard(s,p)).join('');const rec=M.recommend(state);$('#recommend').textContent=rec.text;$('#recommend').disabled=!!composing||['done','locked'].includes(rec.kind);
 if(isCleanPass(s)&&!composing){const pass=cleanPassInfo();$('#diagnostic').classList.add('clean-passed');$('#diagnostic').innerHTML=`<div><strong>진단 통과</strong><small>추가 학습 없이 통과했어요 · 결과 보기</small></div><span class="badge clean">✓ 통과</span>`;$('#recommend').textContent=pass.next?cleanPassPrepareLabel(pass):'이번 등급 학습 완료';$('#recommend').disabled=!pass.next;}
 if(composing){$('#recommend').textContent='맞춤 프로그램을 준비하고 있어요';$('#diagnostic').innerHTML='<div><strong>실력알기</strong><small>진단 결과에 맞춰 필요한 학습을 구성하고 있습니다.</small></div><span class="badge active">진단 완료 · 구성 중</span>';$('#diagnostic').disabled=true;$('#programs').hidden=true;$('#composition').hidden=false;renderComposition();}
 else{$('#diagnostic').disabled=false;$('#composition').hidden=true;$('#programs').hidden=s.programs.length===0;
-if(s.diagnosis==='done'&&s.programs.length){const d=$('#diagnostic');d.classList.add('grid-diagnostic','card');d.innerHTML=`<div class="card-top">${badge('passed')}</div><strong>실력알기</strong><div><small>처방 ${s.programs.length}개</small></div><span class="diagnostic-result">진단 결과 보기 →</span>`;$('#programs').prepend(d);$('#diagnosis-section').hidden=true;
+if(s.diagnosis==='done'&&s.programs.length){const d=$('#diagnostic');d.classList.add('diagnostic-summary-trigger');d.setAttribute('aria-label','실력알기 결과 보기');
+d.innerHTML=`<span class="result-icon" aria-hidden="true"><svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="5" width="16" height="20" rx="4"/><path d="M11 4h6v4h-6zM10 13h8M10 17h5M10 21h3"/></svg></span><span class="result-copy"><strong>실력알기</strong><small>${s.diagnosticResult?.incorrect>0?'틀린 내용 확인':'결과 보기'}</small></span><svg class="result-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 4 4 4-4 4"/></svg>`;
+$('#diagnostic-result-slot').hidden=false;$('#diagnostic-result-slot').append(d);$('#diagnosis-section').hidden=true;
 if(reveal)revealPrescribedCards();reveal=false;
 }}
-const pieces=skyState().items.reduce((n,x)=>n+x.pieces,0);$('#star-balance').textContent=String(pieces);$('.constellation-trigger').setAttribute('aria-label','나의 별자리 · 별 조각 '+pieces+'개');syncRecommendation(isCleanPass(s)&&!composing?cleanPassInfo().next:rec.kind==='today'?M.learningRecommend(state):rec);animateMessage();renderPanel();if(myOpen)renderMy();}
+const pieces=skyState().items.reduce((n,x)=>n+x.pieces,0);$('#star-balance').textContent=String(pieces);$('.constellation-trigger').setAttribute('aria-label','나의 별자리 · 별 조각 '+pieces+'개');syncRecommendation(isCleanPass(s)&&!composing?cleanPassInfo().next:rec.kind==='today'?M.learningRecommend(state):rec);animateMessage();renderPanel();if(myOpen)renderMy();syncGuidanceReminders();}
 function clearPrescribedCardReveal(){
   clearTimeout(cardRevealTimer);cardRevealTimer=null;cardRevealGeneration++;$('#programs').classList.remove('reveal');
 }
 function revealPrescribedCards(){
   clearPrescribedCardReveal();if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   const generation=cardRevealGeneration;void $('#programs').offsetWidth;$('#programs').classList.add('reveal');
-  cardRevealTimer=setTimeout(()=>{if(generation!==cardRevealGeneration)return;$('#programs').classList.remove('reveal');cardRevealTimer=null;},1000);
+  cardRevealTimer=setTimeout(()=>{if(generation!==cardRevealGeneration)return;$('#programs').classList.remove('reveal');cardRevealTimer=null;},1600);
 }
 function cancelComposition(){composeTimers.forEach(clearTimeout);composeTimers=[];composing=null;clearPrescribedCardReveal();if($('#prescription').open)$('#prescription').close();}
 function renderComposition(){
   if(!composing)return;const c=composing,container=$('#composition');
   // Keep the graphic mounted while the copy types; replacing it would restart the scan every character.
   if(!c.mounted){
-    container.innerHTML=`<div class="prescription-graphics" aria-hidden="true"><div class="prescription-complete"><svg viewBox="0 0 220 132" fill="none"><circle class="complete-glow" cx="110" cy="65" r="51"/><g class="complete-sheet"><rect class="complete-paper" x="78" y="24" width="64" height="84" rx="14"/><path class="complete-lines" d="M93 43h22M93 51h34"/><path class="complete-check" pathLength="1" d="m92 75 12 12 25-28"/></g><path class="complete-spark spark-one" d="m53 42 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z"/><path class="complete-spark spark-two" d="m167 78 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"/></svg></div><div class="prescription-search"><svg viewBox="0 0 220 132" fill="none"><g class="search-guides" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 11"><path d="M22 32H198M22 66H198M22 100H198"/></g><g class="search-lens"><path class="lens-handle" d="m117 72 26 26"/><circle class="lens-glass" cx="96" cy="50" r="28"/><path class="lens-shine" d="M80 43a18 18 0 0 1 12-10"/></g></svg></div></div><h2 id="composition-title"></h2><p><span id="composition-copy"></span><span id="composition-caret" class="prescription-caret" hidden aria-hidden="true"></span></p>`;
+    container.innerHTML=`<div class="prescription-graphics" aria-hidden="true"><div class="prescription-complete"><svg viewBox="0 0 220 132" fill="none"><circle class="complete-glow" cx="110" cy="65" r="51"/><g class="complete-sheet"><rect class="complete-paper" x="78" y="24" width="64" height="84" rx="14"/><path class="complete-lines" d="M93 43h22M93 51h34"/><path class="complete-check" pathLength="1" d="m92 75 12 12 25-28"/></g><path class="complete-spark spark-one" d="m53 42 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z"/><path class="complete-spark spark-two" d="m167 78 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"/></svg></div><div class="prescription-search"><svg viewBox="0 0 220 132" fill="none"><g class="search-guides" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 11"><path d="M22 32H198M22 66H198M22 100H198"/></g><g class="search-lens"><path class="lens-handle" d="m117 72 26 26"/><circle class="lens-glass" cx="96" cy="50" r="28"/><path class="lens-shine" d="M80 43a18 18 0 0 1 12-10"/></g></svg></div><div class="prescription-ready"><svg viewBox="0 0 220 132" fill="none"><circle class="ready-glow" cx="110" cy="65" r="51"/><g class="ready-stack"><rect class="ready-back" x="60" y="31" width="57" height="76" rx="12" transform="rotate(-8 88 69)"/><rect class="ready-back" x="119" y="30" width="48" height="73" rx="12" transform="rotate(10 143 66)"/><rect class="ready-front" x="82" y="23" width="65" height="87" rx="13"/><path class="ready-book" d="M114 43c-5-3-11-3-17-1v18c6-2 12-2 17 1 5-3 11-3 17-1V42c-6-2-12-2-17 1Zm0 0v18"/><path class="ready-lines" d="M98 76h29M98 84h20"/></g><g class="ready-play"><circle cx="150" cy="96" r="21"/><path d="m145 88 12 8-12 8Z"/></g></svg></div></div><h2 id="composition-title"></h2><p><span id="composition-copy"></span><span id="composition-caret" class="prescription-caret" hidden aria-hidden="true"></span></p>`;
     c.mounted=true;
   }
   container.setAttribute('data-compose-step',String(c.step));container.setAttribute('data-compose-paused',document.visibilityState==='hidden'?'true':'false');
@@ -452,3 +506,8 @@ document.addEventListener('pointerup',()=>{if(!skyDrag)return;skyWasDragged=skyD
 document.addEventListener('wheel',e=>{if(activityKind!=='constellation'||skyDetail!==null||skyRun||skyState().guide||!e.target.closest('.sky-canvas'))return;e.preventDefault();skyZoom=Math.max(.5,Math.min(2,skyZoom+(e.deltaY<0?.25:-.25)));renderActivity();},{passive:false});
 
 $('#prescription').addEventListener('cancel',e=>e.preventDefault());$('#prescription').addEventListener('click',()=>{if(composing?.step===2){composing.fastForward=true;composing.text=composing.message;renderComposition();}});
+
+// Only surface periodic guidance on the visible learning overview; never interrupt a lesson or dialog.
+document.addEventListener('click',syncGuidanceReminders);
+document.addEventListener('visibilitychange',syncGuidanceReminders);
+for(const id of ['learning','help','activity','prescription'])$('#'+id).addEventListener('close',syncGuidanceReminders);

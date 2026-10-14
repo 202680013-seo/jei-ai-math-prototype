@@ -10,10 +10,10 @@ vm.runInContext(fs.readFileSync('dist/preview-runtime.js','utf8'),c);
 vm.runInContext(fs.readFileSync('dist/working/app.js','utf8'),c);
 vm.runInContext(fs.readFileSync('dist/preview-controls.js','utf8'),c);
 assert.equal(node('#diagnostic').parent,node('#diagnosis-slot'));
-vm.runInContext('M.preset(state,3);render()',c);assert.equal(node('#programs').children[0],node('#diagnostic'));assert.equal(node('#diagnosis-section').hidden,true);
+vm.runInContext('M.preset(state,3);render()',c);assert.equal(node('#diagnostic').parent,node('#diagnostic-result-slot'));assert.equal(node('#diagnosis-section').hidden,true);
 vm.runInContext('M.preset(state,0);render();beginComposition(8)',c);assert.equal(node('#programs').hidden,true);assert.equal(node('#composition').hidden,false);assert.equal(node('#diagnostic').disabled,true);assert.equal(vm.runInContext('current().programs.length',c),0);
 for(const t of [...timers].sort((a,b)=>a.ms-b.ms)){if(!t.cancelled)t.fn();}
-assert.equal(vm.runInContext('current().programs.length',c),8);assert.equal(node('#composition').hidden,true);assert.equal(node('#diagnostic').parent,node('#programs'));assert.equal(node('#diagnostic').disabled,false);
+assert.equal(vm.runInContext('current().programs.length',c),8);assert.equal(node('#composition').hidden,true);assert.equal(node('#diagnostic').parent,node('#diagnostic-result-slot'));assert.equal(node('#diagnostic').disabled,false);
 vm.runInContext('M.preset(state,2);render()',c);assert.equal(node('#diagnostic').parent,node('#diagnosis-slot'));assert.equal(node('#diagnosis-section').hidden,false);
 vm.runInContext('beginComposition(52);select(3,1)',c);for(const t of [...timers]){if(!t.cancelled&&(t.ms===8000||t.ms===7000))t.fn();}assert.equal(vm.runInContext('current().programs.length',c),0);
 for(const i of [0,1,2]){vm.runInContext(`M.preset(state,${i});render()`,c);assert.equal(node('#programs').hidden,true);assert.equal(node('#programs').innerHTML,'');assert(!node('#diagnostic').innerHTML.includes('진단 열기'));}
@@ -219,7 +219,7 @@ assert.equal(node('.recommend-loader').hidden,false);
 assert.equal(node('#recommend').disabled,true);
 assert.equal(node('#recommend-status').textContent,'추천 활동 준비 중');
 const firstPreparation=vm.runInContext('recommendationTimer',c);
-assert.equal(firstPreparation.ms,800);
+assert.equal(firstPreparation.ms,1400);
 click('recommend',0,false);assert.equal(node('#activity').open,false); // hidden action cannot open
 vm.runInContext('daily().variant++;render()',c);
 assert.equal(vm.runInContext('recommendationTimer',c),firstPreparation); // no restart for mentor variant
@@ -457,3 +457,105 @@ assert.equal(node('#prescription').open,true);
 vm.runInContext('composeTimers.find(t=>t.ms===7000)',c).fn();
 assert.equal(vm.runInContext('current().programs.length',c),3);
 console.log('Prescription acknowledgment/search/reading durations and cancelled-run isolation passed');
+
+// V3.4.6: short mentor reminders rotate with the current learning context and leave state untouched.
+c.matchMedia=()=>({matches:true});c.document.visibilityState='visible';
+vm.runInContext("cancelComposition();state=M.create();editing=null;panel=null;activityKind=null;myOpen=false;skyBusy=false;mentorPointerPaused=false;mentorFocusPaused=false;recommendationPointerPaused=false;recommendationFocusPaused=false;$('#learning').close();$('#help').close();$('#activity').close();lastMessage='';render();setBubblePhase('rest')",c);
+const learnerBeforeReminder=JSON.stringify(vm.runInContext('state',c));
+const firstMentorReminder=vm.runInContext('mentorReminderTimer',c);
+assert.equal(firstMentorReminder.ms,6500);
+firstMentorReminder.fn();
+const reminderOne=node('#ai-message').textContent;
+assert(reminderOne.includes('실력알기'));
+assert.equal(node('.ai-top')['data-bubble-phase'],'holding');
+assert.equal(JSON.stringify(vm.runInContext('state',c)),learnerBeforeReminder); // no fake progress/variant changes
+vm.runInContext('render()',c);assert.equal(node('#ai-message').textContent,reminderOne); // unrelated render cannot revert a reminder
+vm.runInContext("setBubblePhase('rest')",c);vm.runInContext('mentorReminderTimer',c).fn();
+const reminderTwo=node('#ai-message').textContent;assert.notEqual(reminderOne,reminderTwo);
+vm.runInContext("setBubblePhase('rest')",c);
+const heldDeadline=vm.runInContext('mentorReminderTimer',c);
+vm.runInContext('render()',c);assert.equal(vm.runInContext('mentorReminderTimer',c),heldDeadline);
+vm.runInContext("current().diagnosis='active';render();setBubblePhase('rest')",c);
+heldDeadline.fn();assert.equal(node('.ai-top')['data-bubble-phase'],'rest'); // stale context cannot interrupt
+vm.runInContext('mentorReminderTimer',c).fn();assert(node('#ai-message').textContent.includes('진행 중'));
+vm.runInContext("setBubblePhase('rest')",c);
+const pausedMentor=vm.runInContext('mentorReminderTimer',c);
+node('#mentor-bubble').listeners.pointerenter({pointerType:'mouse'});
+assert.equal(vm.runInContext('mentorReminderTimer',c),null);pausedMentor.fn();
+assert.equal(node('.ai-top')['data-bubble-phase'],'rest');
+node('#mentor-bubble').listeners.pointerleave();assert(vm.runInContext('mentorReminderTimer',c));
+// Recommendation refresh stays noticeable and repeats without changing its action.
+c.matchMedia=()=>({matches:false});
+vm.runInContext("state=M.create();recommendationSignature='';render()",c);
+assert.equal(vm.runInContext('recommendationTimer',c).ms,1400);
+vm.runInContext('recommendationTimer',c).fn();
+const repeatedAction=node('#recommend').textContent;
+const firstRecommendationReminder=vm.runInContext('recommendationReminderTimer',c);
+assert.equal(firstRecommendationReminder.ms,24000);
+vm.runInContext('render()',c);assert.equal(vm.runInContext('recommendationReminderTimer',c),firstRecommendationReminder);
+firstRecommendationReminder.fn();
+assert.equal(node('.recommend')['data-recommend-state'],'loading');
+assert.equal(node('.recommend-loader').hidden,false);
+assert.equal(node('#recommend').disabled,true);
+assert.equal(node('#recommend').textContent,repeatedAction);
+assert.equal(vm.runInContext('state.daily.target',c),null);
+vm.runInContext('recommendationTimer',c).fn();
+assert.equal(node('.recommend')['data-recommend-state'],'ready');
+assert.equal(node('#recommend').disabled,false);
+const secondRecommendationReminder=vm.runInContext('recommendationReminderTimer',c);
+assert.notEqual(secondRecommendationReminder,firstRecommendationReminder);
+firstRecommendationReminder.fn();assert.equal(node('.recommend')['data-recommend-state'],'ready');
+secondRecommendationReminder.fn();assert.equal(node('.recommend')['data-recommend-state'],'loading');
+vm.runInContext('recommendationTimer',c).fn();
+// Protect an impending click or keyboard selection from a periodic loading replacement.
+const beforeHoverReminder=vm.runInContext('recommendationReminderTimer',c);
+node('.recommend').listeners.pointerenter();assert.equal(vm.runInContext('recommendationReminderTimer',c),null);
+beforeHoverReminder.fn();assert.equal(node('#recommend').disabled,false);
+node('.recommend').listeners.pointerleave();assert(vm.runInContext('recommendationReminderTimer',c));
+node('.recommend').listeners.focusin();assert.equal(vm.runInContext('recommendationReminderTimer',c),null);
+node('.recommend').listeners.focusout({relatedTarget:null});
+const beforeActionChange=vm.runInContext('recommendationReminderTimer',c);
+vm.runInContext('daily().unreadAnswers=1;render()',c);beforeActionChange.fn();
+vm.runInContext('recommendationTimer',c).fn();assert(node('#recommend').textContent.includes('도와줘요'));
+// Both loops pause while a lesson is open or the tab is hidden, and resume afterward.
+vm.runInContext("setBubblePhase('rest')",c);
+const staleLessonMentor=vm.runInContext('mentorReminderTimer',c),staleLessonRecommendation=vm.runInContext('recommendationReminderTimer',c);
+vm.runInContext("$('#learning').showModal();syncGuidanceReminders()",c);
+assert.equal(vm.runInContext('mentorReminderTimer',c),null);
+assert.equal(vm.runInContext('recommendationReminderTimer',c),null);
+staleLessonMentor.fn();staleLessonRecommendation.fn();assert.equal(node('.recommend')['data-recommend-state'],'ready');
+vm.runInContext("$('#learning').close();syncGuidanceReminders()",c);
+assert(vm.runInContext('mentorReminderTimer',c));assert(vm.runInContext('recommendationReminderTimer',c));
+c.document.visibilityState='hidden';listeners.visibilitychange();
+assert.equal(vm.runInContext('mentorReminderTimer',c),null);
+assert.equal(vm.runInContext('recommendationReminderTimer',c),null);
+c.document.visibilityState='visible';listeners.visibilitychange();
+assert(vm.runInContext('mentorReminderTimer',c));assert(vm.runInContext('recommendationReminderTimer',c));
+vm.runInContext("daily().unreadAnswers=0;daily().target=20;daily().started=true;current().diagnosis='done';current().programs=M.programs(1);current().programs[0].status='locked';render()",c);
+vm.runInContext('recommendationTimer',c).fn();assert.equal(vm.runInContext('recommendationReminderTimer',c),null); // no reminder for an unavailable action
+console.log('Contextual mentor rotation and recurring recommendation loading repeat, preserve state, protect interaction, cancel stale callbacks and pause off the overview');
+
+// The prescribed diagnosis is a result entry beside the heading, separate from learning cards.
+vm.runInContext('M.preset(state,3);render()',c);
+assert.equal(node('#diagnostic').parent,node('#diagnostic-result-slot'));
+assert.equal(node('#diagnostic-result-slot').hidden,false);
+assert.equal(node('#diagnosis-section').hidden,true);
+assert(node('#diagnostic').classList.contains('diagnostic-summary-trigger'));
+assert(!node('#diagnostic').classList.contains('card'));
+assert(!node('#programs').innerHTML.includes('grid-diagnostic'));
+click('diagnosis');assert.equal(vm.runInContext('editing.kind',c),'diagnosis-result');
+assert(node('#learning').innerHTML.includes('실력 확인 결과'));
+click('close-learning');vm.runInContext('M.preset(state,0);render()',c);
+assert.equal(node('#diagnostic-result-slot').hidden,true);
+assert.equal(node('#diagnostic').parent,node('#diagnosis-slot'));
+assert.equal(node('#diagnosis-section').hidden,false);
+assert(!node('#diagnostic').classList.contains('diagnostic-summary-trigger'));
+vm.runInContext("beginComposition(2,'first')",c);
+vm.runInContext('composeTimers.find(t=>t.ms===5200)',c).fn();
+assert.equal(node('#composition')['data-compose-step'],'2');
+assert(node('#composition').innerHTML.includes('prescription-ready'));
+assert(node('#composition').innerHTML.includes('ready-stack'));
+vm.runInContext('composeTimers.find(t=>t.ms===8000)',c).fn();
+assert.equal(node('#diagnostic').parent,node('#diagnostic-result-slot'));
+assert.equal(vm.runInContext('cardRevealTimer',c).ms,1600);
+console.log('Prepared-learning graphic, gentle card reveal lifetime, result navigation and diagnostic/result hierarchy passed');
