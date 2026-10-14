@@ -1,7 +1,7 @@
 // UI state-flow smoke checks with a minimal DOM substitute; not browser layout QA.
 const vm=require('node:vm'),fs=require('node:fs'),assert=require('node:assert/strict');
 const nodes=new Map(),timers=[],listeners={};
-function node(key){if(nodes.has(key))return nodes.get(key);const classes=new Set();const n={style:{},hidden:false,disabled:false,innerHTML:'',textContent:'',value:8,offsetWidth:1,children:[],classList:{add(...a){a.forEach(x=>classes.add(x));},remove(...a){a.forEach(x=>classes.delete(x));},contains(x){return classes.has(x);}},setAttribute(k,v){this[k]=v;},getBoundingClientRect(){return {left:0,top:0,width:240,height:240};},append(x){if(x.parent)x.parent.children=x.parent.children.filter(y=>y!==x);this.children.push(x);x.parent=this;},prepend(x){if(x.parent)x.parent.children=x.parent.children.filter(y=>y!==x);this.children.unshift(x);x.parent=this;},animate(){},focus(){},close(){this.open=false;},showModal(){this.open=true;},addEventListener(){},querySelectorAll(){return [];}};nodes.set(key,n);return n;}
+function node(key){if(nodes.has(key))return nodes.get(key);const classes=new Set();const n={style:{},hidden:false,disabled:false,innerHTML:'',textContent:'',value:8,offsetWidth:1,children:[],classList:{add(...a){a.forEach(x=>classes.add(x));},remove(...a){a.forEach(x=>classes.delete(x));},contains(x){return classes.has(x);}},setAttribute(k,v){this[k]=v;},getBoundingClientRect(){return {left:0,top:0,width:240,height:240};},append(x){if(x.parent)x.parent.children=x.parent.children.filter(y=>y!==x);this.children.push(x);x.parent=this;},prepend(x){if(x.parent)x.parent.children=x.parent.children.filter(y=>y!==x);this.children.unshift(x);x.parent=this;},animate(){},focus(){},close(){this.open=false;},showModal(){this.open=true;},addEventListener(k,f){(this.listeners??={})[k]=f;},querySelectorAll(){return [];}};nodes.set(key,n);return n;}
 const c=vm.createContext({console,SkyModel:require('../dist/working/sky.js').SkyModel,window:{innerWidth:1200,innerHeight:800,scrollY:0,scrollTo(){}},MathModel:require('../dist/working/model.js').MathModel,document:{querySelector:node,addEventListener(k,f){const previous=listeners[k];listeners[k]=previous?e=>{previous(e);f(e);}:f;},body:node('body')},localStorage:{getItem(){return null;},setItem(){}},matchMedia:()=>({matches:false}),setTimeout:(fn,ms)=>{const t={fn,ms};timers.push(t);return t;},clearTimeout:t=>{if(t)t.cancelled=true;},setInterval:()=>0,clearInterval(){}});
 // Real-document adapter runs before the application's original event handlers.
 c.innerWidth=1200;c.innerHeight=800;c.scrollY=0;c.scrollTo=()=>{};c.window=c;
@@ -261,3 +261,63 @@ assert.equal(node('.recommend')['data-recommend-state'],'ready');
 assert.equal(node('#recommend').disabled,false);
 assert.equal(node('.recommend')['data-recommend-paused'],'true');
 console.log('Recommendation preparation, click gating, latest-action cancellation, stable renders, hidden-tab pause and reduced-motion passed');
+
+// V3.4.5: drawer exit remains visible until complete and cannot close a newer panel.
+c.matchMedia=()=>({matches:true});
+vm.runInContext("if(panel)closePanel();state=M.create();editing=null;$('#learning').close();$('#activity').close();render()",c);
+c.matchMedia=()=>({matches:false});
+let focusReturned=false;
+node('[data-action="groups"]').focus=()=>{focusReturned=true;};
+click('groups');
+assert.equal(node('#group-panel').hidden,false);
+assert.equal(node('#group-panel')['data-panel-phase'],'open');
+assert.equal(node('#group-panel').inert,false);
+assert.equal(node('.groups-trigger')['aria-expanded'],'true');
+assert(node('body').classList.contains('panel-open'));
+const groupBefore=vm.runInContext('current().groupId',c);
+node('#overlay').listeners.click(); // backdrop uses the real close handler
+const interruptedExit=vm.runInContext('panelMotionTimer',c);
+assert.equal(node('#group-panel')['data-panel-phase'],'closing');
+assert.equal(node('#group-panel').hidden,false);
+assert.equal(node('#group-panel').inert,true);
+assert.equal(node('#group-panel')['aria-hidden'],'true');
+assert.equal(node('#overlay').hidden,false);
+assert.equal(node('.groups-trigger')['aria-expanded'],'false');
+assert.equal(focusReturned,true);
+vm.runInContext('render()',c);
+assert.equal(node('#group-panel').hidden,false); // background update cannot cut off the exit
+click('groups');interruptedExit.fn();
+assert.equal(node('#group-panel').hidden,false);
+assert.equal(node('#group-panel')['data-panel-phase'],'open');
+assert.equal(node('#overlay').hidden,false);
+assert(node('body').classList.contains('panel-open'));
+assert.equal(vm.runInContext('current().groupId',c),groupBefore);
+// Selecting a group takes effect at once, while the drawer finishes its exit.
+click('select-group',1);
+assert.equal(vm.runInContext('state.index',c),1);
+assert.equal(node('#group-panel').hidden,false);
+const selectionExit=vm.runInContext('panelMotionTimer',c);
+selectionExit.fn();
+assert.equal(node('#group-panel').hidden,true);
+assert.equal(node('#overlay').hidden,true);
+assert(!node('body').classList.contains('panel-open'));
+// Escape uses the same exit. Opening the right test panel cancels its pending cleanup.
+click('groups');listeners.keydown({key:'Escape'});
+const escapeExit=vm.runInContext('panelMotionTimer',c);
+assert.equal(node('#group-panel')['data-panel-phase'],'closing');
+click('test');escapeExit.fn();
+assert.equal(node('#test-panel').hidden,false);
+assert.equal(node('#group-panel').hidden,true);
+assert.equal(node('#overlay').hidden,false);
+assert.equal(vm.runInContext('panel',c),'test');
+assert(node('body').classList.contains('panel-open'));
+click('close-panel');
+assert.equal(node('#test-panel').hidden,true);
+assert.equal(node('#overlay').hidden,true);
+// Reduced motion closes immediately with no invisible blocking overlay.
+c.matchMedia=()=>({matches:true});click('groups');click('close-panel');
+assert.equal(vm.runInContext('panelMotionTimer',c),null);
+assert.equal(node('#group-panel').hidden,true);
+assert.equal(node('#overlay').hidden,true);
+assert(!node('body').classList.contains('panel-open'));
+console.log('Side drawer open/exit, backdrop, Escape, interrupted reopen, render continuity, group selection and reduced-motion passed');
