@@ -324,3 +324,19 @@ main{padding-top:40px}
 .primary:hover:not(:disabled){color:var(--jei-on-accent,var(--forest));background:var(--jei-accent,var(--lime))}
 .pass-seal,.achievement-stamp>span,.achievement-stamp>small{color:var(--jei-on-accent,var(--forest))}
 .achievement-stamp svg>path{stroke:var(--jei-on-accent,var(--forest))}
+
+/* V3.4.1: next action belongs beside the learning heading. */
+.top-shortcuts{grid-row:1;gap:14px}
+.heading{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:30px}
+.heading>div{flex:1;min-width:0}
+.heading .recommend{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px;flex:0 1 300px;width:300px;max-width:44%;min-height:62px;margin:0;padding:10px 15px;border:1px solid var(--jei-c-d9e4cf,#d9e4cf);border-radius:15px;background:var(--jei-c-edf5e7,#edf5e7);box-shadow:none}
+.heading .recommend-label{position:static;display:flex;align-items:center;gap:5px;padding:0;font-size:10px;line-height:1.4;font-weight:700;color:var(--jei-c-6a8258,#6a8258);background:none}
+.recommend-label svg{flex:none}
+.heading .recommend button{display:block;width:100%;height:auto;min-height:24px;padding:0;border:0;border-radius:6px;background:none;text-align:left;font-size:14px;font-weight:700;line-height:1.5;color:var(--forest);white-space:normal;overflow-wrap:anywhere}
+.heading .recommend button:hover:not(:disabled){background:var(--jei-c-e5f2dd,#e5f2dd)}
+.compact-shortcut{position:relative;gap:10px;font-weight:700;font-size:12px;overflow:visible}
+.compact-shortcut>span:not(.star-glyph){font-size:12px;line-height:1.4;color:inherit;white-space:nowrap}
+.compact-shortcut .star-glyph{display:block;flex:none;height:21px}
+#star-balance{position:absolute;top:-9px;left:-7px;display:grid;place-items:center;min-width:22px;height:22px;padding:0 5px;border:2px solid var(--jei-c-f7f9f4,#f7f9f4);border-radius:999px;background:var(--jei-accent,var(--lime));color:var(--jei-on-accent,var(--forest));font-size:10px;line-height:1;font-weight:800;font-variant-numeric:tabular-nums;pointer-events:none}
+@media(max-width:980px){.heading{gap:18px}.heading .recommend{flex-basis:280px;width:280px;padding:10px 13px}.heading .recommend button{font-size:13px}}
+@media(max-width:650px){.heading{align-items:stretch;flex-direction:column;gap:14px;margin-top:26px}.heading .recommend{flex:auto;width:100%;max-width:none;min-height:60px;padding:10px 14px}.top-shortcuts{gap:14px}.compact-shortcut{padding:6px 11px}#star-balance{top:-8px;left:-7px}}
