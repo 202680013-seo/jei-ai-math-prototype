@@ -212,7 +212,7 @@ for(const width of [210,460]){
     const longMessage='학습 안내 '.repeat(length);
     node('#ai-message').textContent=longMessage;
     vm.runInContext("setBubblePhase('holding')",c);
-    assert.equal(node('#mentor-bubble').style.height,'40px');
+    assert.equal(node('#mentor-bubble').style.height,'44px');
     assert(parseFloat(node('#mentor-bubble').style.width)<=width-56);
     assert.equal(node('#ai-message').textContent,longMessage); // full content remains readable by horizontal scrolling
   }
@@ -390,7 +390,7 @@ vm.runInContext("cancelComposition();state=M.create();M.preset(state,3);lastMess
 vm.runInContext('thinkTimer',c).fn();
 for(let i=0;i<500&&vm.runInContext('aiState',c)==='반응 중';i++)vm.runInContext('animTimer',c).fn();
 const fullMentorCopy=node('#ai-message').textContent;
-assert.equal(node('#mentor-bubble').style.height,'40px');
+assert.equal(node('#mentor-bubble').style.height,'44px');
 assert.equal(node('#mentor-read-controls').hidden,false);
 assert.equal(node('#ai-message').tabIndex,0);
 assert.equal(node('#ai-message').scrollLeft,0);

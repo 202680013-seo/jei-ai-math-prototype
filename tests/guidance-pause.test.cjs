@@ -69,7 +69,7 @@ test('mentor width leaves reserved space and remains capped on desktop and narro
   h.context.innerWidth=375;h.node('.ai-top').getBoundingClientRect=()=>({width:220,height:44});
   h.evaluate('fitMentorBubble()');
   assert.equal(h.node('#mentor-bubble').style.width,'148px');
-  assert.equal(h.node('#mentor-bubble').style.height,'40px');
+  assert.equal(h.node('#mentor-bubble').style.height,'44px');
   assert(h.node('#ai-message').textContent.length>100); // manual overflow retains all content
 });
 

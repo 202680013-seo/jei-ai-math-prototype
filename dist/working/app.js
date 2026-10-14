@@ -260,12 +260,12 @@ function fitMentorBubble(){
   const bubble=$('#mentor-bubble'),measure=$('#mentor-measure');if(!bubble||!measure)return;
   const text=$('#ai-message'),cap=window.innerWidth<=650?260:320,available=Math.min(cap,Math.max(56,$('.ai-top').getBoundingClientRect().width-56-16));
   if(!['speaking','holding'].includes(bubblePhase)){
-    bubble.style.width='56px';bubble.style.height='40px';mentorReadingOverflow=false;
+    bubble.style.width='56px';bubble.style.height='44px';mentorReadingOverflow=false;
   }else{
     measure.style.maxWidth='none';measure.textContent=bubblePhase==='speaking'&&mentorTargetText?mentorTargetText:text.textContent||' ';
     const rect=measure.getBoundingClientRect();
-    bubble.style.width=Math.min(available,Math.max(56,Math.ceil(rect.width)+32))+'px';bubble.style.height='40px';
-    mentorReadingOverflow=bubblePhase==='holding'&&rect.width+32>available;
+    bubble.style.width=Math.min(available,Math.max(56,Math.ceil(rect.width)+38))+'px';bubble.style.height='44px';
+    mentorReadingOverflow=bubblePhase==='holding'&&rect.width+38>available;
     if(bubblePhase==='speaking')text.scrollLeft=mentorScrollLimit();
   }
   bubble.setAttribute('data-overflow',mentorReadingOverflow?'true':'false');
