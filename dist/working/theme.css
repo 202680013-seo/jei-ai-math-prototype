@@ -634,44 +634,48 @@ dialog[open]:not(.sky-dialog)::backdrop{opacity:1}
   .grid>.program-card{transition:none}
 }
 
-/* V3.5: an exact semicircle and consistent title/progress/action card slots. */
+/* V3.5.1: V3.4.10 card dimensions, concise progress and full-width text actions. */
 .groups-trigger,.groups-trigger:hover:not(:disabled),.groups-trigger:active:not(:disabled){width:72px;height:144px;top:calc(50% - 72px)}
-.grid>.program-card{min-height:248px;padding:22px;gap:12px;border-radius:28px}
-.grid>.program-card.is-current,.grid>.program-card.is-introduced{padding:21px}
-.grid>.program-card.is-locked{padding:21px;border:2px dashed var(--jei-c-dbe2d5,#dbe2d5);background:var(--jei-c-f7f9f4,#f7f9f4)}
+.grid>.program-card{min-height:232px;padding:21px;gap:14px;border-width:2px;border-radius:22px}
+.grid>.program-card.is-current,.grid>.program-card.is-introduced{padding:20px;border-width:3px}
+.grid>.program-card.is-locked{padding:20px;border:3px dashed var(--jei-c-dbe2d5,#dbe2d5);background:var(--jei-c-f7f9f4,#f7f9f4)}
 .grid>.program-card.is-locked:hover{border-color:var(--jei-c-dbe2d5,#dbe2d5);background:var(--jei-c-f7f9f4,#f7f9f4)}
-.program-card .card-top{min-height:26px;align-items:center}
-.program-card .card-number{width:26px;min-width:26px;height:26px;font-size:10px}
-.program-card.is-locked .card-number{background:transparent;border:1px solid var(--jei-c-dbe2d5,#dbe2d5)}
+.program-card .card-top{min-height:16px;align-items:center;justify-content:flex-end}
 .card-status{font-size:10px;font-weight:700;line-height:1.4;color:inherit}
-.grid>.program-card>.program-title{font-size:17px;font-weight:700;line-height:1.55;flex:1;margin:0}
-.card-progress{display:flex;flex-direction:column;gap:6px;width:100%;min-width:0;margin-bottom:3px}
-.card-progress .progress-row{color:inherit;font-size:10px;line-height:1.4}
-.card-percent{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
-.card-progress>small{font-size:9px;color:inherit;opacity:.72;font-variant-numeric:tabular-nums}
-.program-card .card-progress progress{width:100%;height:7px;border-radius:99px}
+.grid>.program-card>.program-title{font-size:17px;font-weight:800;line-height:1.55;flex:1;margin:0}
+.card-progress{display:flex;align-items:center;gap:10px;width:100%;min-width:0;margin:0}
+.card-percent{flex:none;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.4}
+.program-card .card-progress progress{flex:1;min-width:0;width:0;height:6px;border-radius:99px}
 .program-card .card-progress progress::-webkit-progress-bar{background:#ffffff80;border-radius:99px}
 .program-card .card-progress progress::-webkit-progress-value{background:var(--jei-on-accent,var(--forest));border-radius:99px}
 .program-card .card-progress progress::-moz-progress-bar{background:var(--jei-on-accent,var(--forest));border-radius:99px}
-.card-footer{display:flex;align-items:center;justify-content:flex-end;gap:10px;min-height:36px;width:100%;margin-top:auto}
+.card-footer{display:flex;align-items:center;justify-content:flex-end;gap:10px;min-height:42px;width:100%;margin-top:auto}
 .card-footer.has-result{justify-content:space-between}
-.card-start-box{display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:none;height:36px;padding:0 11px;border:1px solid var(--jei-c-c1d8af,#c1d8af);border-radius:10px;background:#fff;color:var(--forest);font-size:11px;font-weight:800;line-height:1.2}
-.card-start-box svg{width:14px;height:14px}
+.card-start-box{display:flex;align-items:center;justify-content:center;flex:none;width:100%;height:42px;padding:0 12px;border:2px solid var(--jei-c-c1d8af,#c1d8af);border-radius:10px;background:#fff;color:var(--forest);font-size:15px;font-weight:800;line-height:1.2}
 .is-current .card-start-box,.is-introduced .card-start-box{border-color:#ffffffa6}
 .program-card>.card-intro-note{min-width:0;margin:0;padding:0;border:0;background:none;font-size:9px;font-weight:700;line-height:1.5;color:inherit;text-align:right}
 .card-state-icon{display:block;flex:none;width:36px;height:36px;color:var(--jei-c-49702e,#49702e)}
 .card-state-icon.needs-review{color:#984521}
 .card-state-icon svg{display:block;width:100%;height:100%}
-.card-footer .card-lock{position:static;display:grid;place-items:center;flex:none;width:36px;height:36px;padding:8px;border:1px solid var(--jei-c-dbe2d5,#dbe2d5);border-radius:10px;background:#ffffffa6;color:var(--jei-c-78846f,#78846f)}
+.card-footer .card-lock{position:static;display:grid;place-items:center;flex:none;width:32px;height:32px;padding:5px;border:0;border-radius:0;background:transparent;color:var(--jei-c-78846f,#78846f)}
 .card-result-links{display:flex;flex-direction:column;gap:3px;min-width:0}
 .card-result-links .review-entry{margin:0;font-size:10px}
 .card-review-note{font-size:9px;line-height:1.4;color:var(--jei-c-668853,#668853)}
+@media(max-width:1250px){
+  .grid>.program-card{min-height:222px;padding:18px}
+  .grid>.program-card.is-current,.grid>.program-card.is-introduced,.grid>.program-card.is-locked{padding:17px}
+  .grid>.program-card>.program-title{font-size:16px}
+}
 @media(max-width:650px){
   .groups-trigger,.groups-trigger:hover:not(:disabled),.groups-trigger:active:not(:disabled){width:62px;height:124px;top:calc(50% - 62px)}
-  .grid>.program-card{padding:17px;min-height:242px;border-radius:23px;gap:10px}
-  .grid>.program-card.is-current,.grid>.program-card.is-introduced,.grid>.program-card.is-locked{padding:16px}
+  .grid>.program-card{padding:16px;min-height:218px;border-radius:18px;gap:12px}
+  .grid>.program-card.is-current,.grid>.program-card.is-introduced,.grid>.program-card.is-locked{padding:15px}
+  .card-start-box{height:40px;padding:0 10px;font-size:14px}
+  .card-footer{gap:7px;min-height:40px}.card-state-icon{width:32px;height:32px}
+  .card-percent{font-size:12px}
+}
+@media(max-width:380px){
+  .grid>.program-card{padding:13px;min-height:208px}
+  .grid>.program-card.is-current,.grid>.program-card.is-introduced,.grid>.program-card.is-locked{padding:12px}
   .grid>.program-card>.program-title{font-size:15px}
-  .card-start-box{height:34px;padding:0 9px;font-size:10px}
-  .card-footer{gap:7px}.card-state-icon{width:32px;height:32px}
-  .card-footer .card-lock{width:32px;height:32px;padding:6px}
 }
