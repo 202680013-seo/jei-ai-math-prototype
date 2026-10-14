@@ -46,7 +46,7 @@ click('program',0);assert.equal(node('#learning').open,true);
 click('close-learning');click('mypage');assert.equal(node('main').hidden,true);
 console.log('Direct-view storage adapter and original prototype button interactions passed');
 
-// V3.2: explicit pass acknowledgement, truthful grade completion and direct continuation.
+// V3.3: celebrate, introduce the next part, then start only on an explicit click.
 vm.runInContext('state=M.create();editing=null;render()',c);
 click('diagnosis');click('diagnosis-begin');
 for(const answer of [0,1,1]){click('diagnosis-answer',answer);click('diagnosis-next');}
@@ -62,18 +62,32 @@ click('diagnosis-leave');
 assert(node('#diagnostic').classList.contains('clean-passed'));
 assert(node('#diagnostic').innerHTML.includes('진단 통과'));
 assert(node('#ai-message').textContent.includes('진단을 통과했어요'));
-assert(node('#recommend').textContent.includes('다음 실력알기 시작'));
+assert(node('#recommend').textContent.includes('다음 단계 만나기'));
 // A persisted clean record has the same clear status after re-rendering.
 vm.runInContext('state=JSON.parse(JSON.stringify(state));render()',c);
 assert(node('#diagnostic').classList.contains('clean-passed'));
-click('recommend');assert.equal(vm.runInContext('state.index',c),1);
+click('recommend');
+assert.equal(vm.runInContext('state.index',c),0);
+assert.equal(vm.runInContext('state.grades[3][1].diagnosis',c),'idle');
+assert.equal(vm.runInContext('state.daily.timerRunning',c),false);
+assert(node('#learning').innerHTML.includes('다음 도전이 열렸어요!'));
+assert(node('#learning').innerHTML.includes('data-action="pass-begin"'));
+click('pass-next');assert.equal(vm.runInContext('state.index',c),0); // repeated prepare click cannot skip a part
+click('pass-summary');assert(node('#learning').innerHTML.includes('진단을 통과했어요!'));
+click('pass-begin');assert.equal(vm.runInContext('state.index',c),0); // cannot start from the celebration
+click('pass-next');click('diagnosis-leave');
+assert.equal(node('#learning').open,false);
+assert.equal(vm.runInContext('state.grades[3][1].diagnosis',c),'idle');
+vm.runInContext('state=JSON.parse(JSON.stringify(state));render()',c);
+click('recommend');assert(node('#learning').innerHTML.includes('다음 도전이 열렸어요!'));
+click('pass-begin');assert.equal(vm.runInContext('state.index',c),1);
 assert.equal(vm.runInContext('current().diagnosis',c),'active');
 assert.equal(node('#learning').open,true);
 assert(node('#learning').innerHTML.includes('문항 1 / 3'));
 assert.equal(vm.runInContext('state.grades[3][0].diagnosticResult.incorrect',c),0);
-click('pass-next');assert.equal(vm.runInContext('state.index',c),1); // stale/double click
+click('pass-next');click('pass-begin');assert.equal(vm.runInContext('state.index',c),1); // stale/double click
 click('diagnosis-answer',0);click('diagnosis-next');
-vm.runInContext('select(3,0)',c);click('pass-next');
+vm.runInContext('select(3,0)',c);click('pass-next');click('pass-begin');
 assert(node('#learning').innerHTML.includes('문항 2 / 3')); // existing next session survives
 // The last group alone does not pass a grade; unfinished earlier groups are offered.
 vm.runInContext('state=M.create();state.index=state.grades[3].length-1;current().diagnosis="done";render()',c);
@@ -88,13 +102,19 @@ assert.equal(vm.runInContext('cleanPassInfo().next.kind',c),'program');
 vm.runInContext('state.grades[3][0].programs[0].status="passed";M.setProgress(state.grades[3][0].programs[0],100);editing={kind:"diagnosis",complete:true};refreshDialog()',c);
 assert.equal(vm.runInContext('cleanPassInfo().gradeComplete',c),true);
 assert(node('#learning').innerHTML.includes('D등급을 통과했어요!'));
-assert(node('#learning').innerHTML.includes('E등급 시작하기'));
-click('pass-next');assert.equal(vm.runInContext('state.grade',c),4);
+assert(node('#learning').innerHTML.includes('다음 단계 만나기'));
+click('pass-next');assert.equal(vm.runInContext('state.grade',c),3);
+assert(node('#learning').innerHTML.includes('E등급'));
+assert.equal(vm.runInContext('state.grades[4][0].diagnosis',c),'idle');
+click('pass-begin');assert.equal(vm.runInContext('state.grade',c),4);
 assert(node('#learning').innerHTML.includes('E등급 /'));
 // Existing prescribed learning resumes instead of being reset or skipped.
 vm.runInContext('state=M.create();state.ui={diagnosisIntroSeen:true};current().diagnosis="done";state.grades[3][1].diagnosis="done";state.grades[3][1].programs=M.programs(1,3,1);state.grades[3][1].programs[0].status="active";M.setProgress(state.grades[3][1].programs[0],40);render()',c);
 const progressBefore=vm.runInContext('state.grades[3][1].programs[0].progress',c);
-click('pass-next');assert.equal(vm.runInContext('editing.kind',c),'program');
+click('pass-next');assert.equal(vm.runInContext('state.index',c),0);
+assert(node('#learning').innerHTML.includes('맞춤 학습'));
+assert(!node('#learning').innerHTML.includes('새로운 도전'));
+click('pass-begin');assert.equal(vm.runInContext('editing.kind',c),'program');
 assert.equal(vm.runInContext('current().programs[0].progress',c),progressBefore);
 // Final grade has no invented destination; exiting keeps the completed state.
 vm.runInContext('state=M.create();state.grade=9;state.grades[9].forEach(s=>{s.diagnosis="done";s.programs=[]});editing={kind:"diagnosis",complete:true};render();refreshDialog()',c);
@@ -105,7 +125,7 @@ click('diagnosis-leave');assert.equal(node('#learning').open,false);
 assert.equal(vm.runInContext('state.grade',c),9);
 assert(!html.includes('id="ai-state"'));
 assert(/class="groups-trigger"[^>]+aria-label="진단 그룹 목록 열기"[^>]*>\s*<svg/.test(html));
-console.log('V3.2 pass acknowledgement, next diagnosis, grade accuracy, persistence and progress preservation passed');
+console.log('V3.3 celebration, preparation, explicit start, grade accuracy, pause/persistence and progress preservation passed');
 
 // The decorative morph follows real typing, and stale timers cannot restart it.
 vm.runInContext("state=M.create();lastMessage='';render()",c);
