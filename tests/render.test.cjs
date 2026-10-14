@@ -133,7 +133,7 @@ assert(!node('#learning').innerHTML.includes('data-action="pass-next"'));
 click('diagnosis-leave');assert.equal(node('#learning').open,false);
 assert.equal(vm.runInContext('state.grade',c),9);
 assert(!html.includes('id="ai-state"'));
-assert(/class="groups-trigger"[^>]+aria-label="진단 그룹 목록 열기"[^>]*>\s*<svg/.test(html));
+assert(/class="groups-trigger"[^>]+aria-label="학습 목차 열기"[^>]*>\s*<svg/.test(html));
 console.log('V3.3 celebration, preparation, explicit start, grade accuracy, pause/persistence and progress preservation passed');
 
 // The decorative morph follows real typing, and stale timers cannot restart it.
@@ -271,7 +271,7 @@ assert.equal(node('#recommend').disabled,false);
 assert.equal(node('.recommend')['data-recommend-paused'],'true');
 console.log('Recommendation preparation, click gating, latest-action cancellation, stable renders, hidden-tab pause and reduced-motion passed');
 
-// V3.4.5: drawer exit remains visible until complete and cannot close a newer panel.
+// V3.7: a non-modal outline stays beside the interactive main area.
 c.matchMedia=()=>({matches:true});
 vm.runInContext("if(panel)closePanel();state=M.create();editing=null;$('#learning').close();$('#activity').close();render()",c);
 c.matchMedia=()=>({matches:false});
@@ -282,54 +282,48 @@ assert.equal(node('#group-panel').hidden,false);
 assert.equal(node('#group-panel')['data-panel-phase'],'open');
 assert.equal(node('#group-panel').inert,false);
 assert.equal(node('.groups-trigger')['aria-expanded'],'true');
-assert(node('body').classList.contains('panel-open'));
+assert(node('body').classList.contains('learning-navigation-open'));
+assert(!node('body').classList.contains('panel-open'));
+assert.equal(node('#overlay').hidden,true);
 const groupBefore=vm.runInContext('current().groupId',c);
-node('#overlay').listeners.click(); // backdrop uses the real close handler
+click('close-panel',0,true,false);
 const interruptedExit=vm.runInContext('panelMotionTimer',c);
 assert.equal(node('#group-panel')['data-panel-phase'],'closing');
 assert.equal(node('#group-panel').hidden,false);
 assert.equal(node('#group-panel').inert,true);
 assert.equal(node('#group-panel')['aria-hidden'],'true');
-assert.equal(node('#overlay').hidden,false);
+assert.equal(node('#overlay').hidden,true);
 assert.equal(node('.groups-trigger')['aria-expanded'],'false');
 assert.equal(focusReturned,true);
-vm.runInContext('render()',c);
-assert.equal(node('#group-panel').hidden,false); // background update cannot cut off the exit
+vm.runInContext('render()',c);assert.equal(node('#group-panel').hidden,false);
 click('groups');interruptedExit.fn();
 assert.equal(node('#group-panel').hidden,false);
 assert.equal(node('#group-panel')['data-panel-phase'],'open');
-assert.equal(node('#overlay').hidden,false);
-assert(node('body').classList.contains('panel-open'));
-assert.equal(vm.runInContext('current().groupId',c),groupBefore);
-// Selecting a group takes effect at once, while the drawer finishes its exit.
-click('select-group',1);
-assert.equal(vm.runInContext('state.index',c),1);
-assert.equal(node('#group-panel').hidden,false);
-const selectionExit=vm.runInContext('panelMotionTimer',c);
-selectionExit.fn();
-assert.equal(node('#group-panel').hidden,true);
 assert.equal(node('#overlay').hidden,true);
-assert(!node('body').classList.contains('panel-open'));
-// Escape uses the same exit. Opening the right test panel cancels its pending cleanup.
+assert(node('body').classList.contains('learning-navigation-open'));
+assert.equal(vm.runInContext('current().groupId',c),groupBefore);
+// Selecting a topic updates main content and keeps the outline open.
+click('select-group',1);assert.equal(vm.runInContext('state.index',c),1);
+assert.equal(vm.runInContext('panel',c),'groups');assert.equal(vm.runInContext('panelMotionTimer',c),null);
+assert.equal(node('#group-panel')['data-panel-phase'],'open');
+click('close-panel',0,true,false);vm.runInContext('panelMotionTimer',c).fn();
+assert.equal(node('#group-panel').hidden,true);assert.equal(node('#overlay').hidden,true);
+assert(!node('body').classList.contains('learning-navigation-open'));
+// Escape uses the same exit. A modal test panel cancels its pending cleanup.
 click('groups');listeners.keydown({key:'Escape'});
 const escapeExit=vm.runInContext('panelMotionTimer',c);
 assert.equal(node('#group-panel')['data-panel-phase'],'closing');
 click('test');escapeExit.fn();
-assert.equal(node('#test-panel').hidden,false);
-assert.equal(node('#group-panel').hidden,true);
-assert.equal(node('#overlay').hidden,false);
-assert.equal(vm.runInContext('panel',c),'test');
-assert(node('body').classList.contains('panel-open'));
-click('close-panel');
-assert.equal(node('#test-panel').hidden,true);
-assert.equal(node('#overlay').hidden,true);
-// Reduced motion closes immediately with no invisible blocking overlay.
+assert.equal(node('#test-panel').hidden,false);assert.equal(node('#group-panel').hidden,true);
+assert.equal(node('#overlay').hidden,false);assert.equal(vm.runInContext('panel',c),'test');
+assert(node('body').classList.contains('panel-open'));assert(!node('body').classList.contains('learning-navigation-open'));
+click('close-panel');assert.equal(node('#test-panel').hidden,true);assert.equal(node('#overlay').hidden,true);
 c.matchMedia=()=>({matches:true});click('groups');click('close-panel');
-assert.equal(vm.runInContext('panelMotionTimer',c),null);
-assert.equal(node('#group-panel').hidden,true);
-assert.equal(node('#overlay').hidden,true);
-assert(!node('body').classList.contains('panel-open'));
-console.log('Side drawer open/exit, backdrop, Escape, interrupted reopen, render continuity, group selection and reduced-motion passed');
+assert.equal(vm.runInContext('panelMotionTimer',c),null);assert.equal(vm.runInContext('groupRevealTimer',c),null);
+assert.equal(node('#group-panel').hidden,true);assert.equal(node('#overlay').hidden,true);
+assert(!node('body').classList.contains('learning-navigation-open'));
+console.log('Non-modal outline open/exit, Escape, interrupted reopen, stable render, persistent topic selection and reduced-motion passed');
+
 
 // V3.4.5 overwrite: scanning graphic stays mounted during typing, and card reveal is a single handoff.
 c.matchMedia=()=>({matches:false});c.document.visibilityState='visible';
@@ -592,16 +586,16 @@ vm.runInContext("animateMessage(true,'새 안내')",c);outdatedLetter.fn();asser
 click('groups');
 assert.equal(node('.groups-trigger')['aria-expanded'],'true');
 assert.equal(node('.groups-trigger')['data-tab-phase'],'open');
-assert.equal(node('.groups-trigger')['aria-label'],'진단 그룹 목록 닫기');
+assert.equal(node('.groups-trigger')['aria-label'],'학습 목차 닫기');
 click('groups');
 assert.equal(node('.groups-trigger')['data-tab-phase'],'closing');
 assert.equal(node('.groups-trigger')['aria-expanded'],'false');
 assert.equal(node('#group-panel').hidden,false);
-assert.equal(vm.runInContext('panelMotionTimer',c).ms,420);
+assert.equal(vm.runInContext('panelMotionTimer',c).ms,600);
 vm.runInContext('panelMotionTimer',c).fn();
 assert.equal(node('#group-panel').hidden,true);
 assert.equal(node('.groups-trigger')['data-tab-phase'],'closed');
-assert.equal(node('.groups-trigger')['aria-label'],'진단 그룹 목록 열기');
+assert.equal(node('.groups-trigger')['aria-label'],'학습 목차 열기');
 const refinedHTML=fs.readFileSync('dist/working/index.html','utf8');
 assert(refinedHTML.includes('활동을 고르고 있어요'));
 assert(!refinedHTML.includes('학습을 고르고 있어요'));

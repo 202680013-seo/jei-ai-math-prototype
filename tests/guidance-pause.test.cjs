@@ -1,24 +1,16 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
 const {harness}=require('./helpers/ui-harness.cjs');
 
-test('mentor typing and stale callbacks cannot update under an open or closing drawer',()=>{
+test('mentor typing and stale callbacks pause under the modal test panel and resume after it closes',()=>{
   const h=harness(undefined,{reducedMotion:false});
-  h.evaluate("animateMessage(true,'이전 메시지를 읽어요.')");
-  h.evaluate('thinkTimer').fn();h.evaluate('animTimer').fn();
+  h.evaluate("animateMessage(true,'이전 메시지를 읽어요.')");h.evaluate('thinkTimer').fn();h.evaluate('animTimer').fn();
   const visible=h.node('#ai-message').textContent,oldLetter=h.evaluate('animTimer');
-  h.click('groups');
-  assert.equal(h.evaluate('mentorNeedsResume'),true);
+  h.click('test');assert.equal(h.evaluate('mentorNeedsResume'),true);
   h.evaluate('M.preset(state,4);render()');oldLetter.fn();
-  assert.equal(h.node('#ai-message').textContent,visible);
-  h.click('groups');
-  const exit=h.evaluate('panelMotionTimer');assert.equal(exit.ms,420);
-  oldLetter.fn();assert.equal(h.node('#ai-message').textContent,visible);
-  assert.equal(h.evaluate('mainGuidanceVisible()'),false);
-  exit.fn();assert.equal(h.evaluate('mainGuidanceVisible()'),true);
-  assert.equal(h.node('#ai-message').textContent,'');
-  assert.equal(h.evaluate('mentorTargetText'),'풀던 학습을 이어서 해볼까요?');
-  oldLetter.fn();assert.equal(h.node('#ai-message').textContent,'');
-  assert.equal(h.evaluate('thinkTimer').ms,450);
+  assert.equal(h.node('#ai-message').textContent,visible);assert.equal(h.evaluate('mainGuidanceVisible()'),false);
+  h.click('close-panel');assert.equal(h.evaluate('mainGuidanceVisible()'),true);
+  assert.equal(h.node('#ai-message').textContent,'');assert.equal(h.evaluate('mentorTargetText'),'풀던 학습을 이어서 해볼까요?');
+  oldLetter.fn();assert.equal(h.node('#ai-message').textContent,'');assert.equal(h.evaluate('thinkTimer').ms,450);
 });
 
 test('native dialog dismissal waits for the dim fade before showing the latest context',()=>{
@@ -39,10 +31,10 @@ test('native dialog dismissal waits for the dim fade before showing the latest c
 test('a new dim cancels a pending post-close announcement and only resumes after its own exit',()=>{
   const h=harness(undefined,{reducedMotion:false});
   h.click('help');h.click('close-help');const oldRelease=h.evaluate('guidanceClosingTimer');
-  h.click('groups');const frozen=h.node('#ai-message').textContent;
+  h.click('test');const frozen=h.node('#ai-message').textContent;
   oldRelease.fn();assert.equal(h.node('#ai-message').textContent,frozen);
   assert.equal(h.evaluate('mainGuidanceVisible()'),false);
-  h.click('groups');h.evaluate('panelMotionTimer').fn();
+  h.click('close-panel');
   assert.equal(h.evaluate('mainGuidanceVisible()'),true);
   assert(h.evaluate('thinkTimer'));
 });
