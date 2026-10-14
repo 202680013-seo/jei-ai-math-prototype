@@ -1,7 +1,7 @@
 // UI state-flow smoke checks with a minimal DOM substitute; not browser layout QA.
 const vm=require('node:vm'),fs=require('node:fs'),assert=require('node:assert/strict');
 const nodes=new Map(),timers=[],listeners={};
-function node(key){if(nodes.has(key))return nodes.get(key);const classes=new Set();const n={style:{},hidden:false,disabled:false,innerHTML:'',textContent:'',value:8,offsetWidth:1,children:[],classList:{add(...a){a.forEach(x=>classes.add(x));},remove(...a){a.forEach(x=>classes.delete(x));},contains(x){return classes.has(x);}},setAttribute(k,v){this[k]=v;},getBoundingClientRect(){return {left:0,top:0,width:240,height:240};},append(x){if(x.parent)x.parent.children=x.parent.children.filter(y=>y!==x);this.children.push(x);x.parent=this;},prepend(x){if(x.parent)x.parent.children=x.parent.children.filter(y=>y!==x);this.children.unshift(x);x.parent=this;},animate(){},focus(){},close(){this.open=false;},showModal(){this.open=true;},addEventListener(k,f){(this.listeners??={})[k]=f;},querySelectorAll(){return [];}};nodes.set(key,n);return n;}
+function node(key){if(nodes.has(key))return nodes.get(key);const classes=new Set();const n={style:{},hidden:false,disabled:false,innerHTML:'',textContent:'',value:8,offsetWidth:1,children:[],classList:{add(...a){a.forEach(x=>classes.add(x));},remove(...a){a.forEach(x=>classes.delete(x));},contains(x){return classes.has(x);}},setAttribute(k,v){this[k]=v;},removeAttribute(k){delete this[k];},getBoundingClientRect(){return {left:0,top:0,width:240,height:240};},append(x){if(x.parent)x.parent.children=x.parent.children.filter(y=>y!==x);this.children.push(x);x.parent=this;},prepend(x){if(x.parent)x.parent.children=x.parent.children.filter(y=>y!==x);this.children.unshift(x);x.parent=this;},animate(){},focus(){},close(){this.open=false;},showModal(){this.open=true;},addEventListener(k,f){(this.listeners??={})[k]=f;},querySelectorAll(){return [];}};nodes.set(key,n);return n;}
 const c=vm.createContext({console,SkyModel:require('../dist/working/sky.js').SkyModel,window:{innerWidth:1200,innerHeight:800,scrollY:0,scrollTo(){}},MathModel:require('../dist/working/model.js').MathModel,document:{querySelector:node,addEventListener(k,f){const previous=listeners[k];listeners[k]=previous?e=>{previous(e);f(e);}:f;},body:node('body')},localStorage:{getItem(){return null;},setItem(){}},matchMedia:()=>({matches:false}),setTimeout:(fn,ms)=>{const t={fn,ms};timers.push(t);return t;},clearTimeout:t=>{if(t)t.cancelled=true;},setInterval:()=>0,clearInterval(){}});
 // Real-document adapter runs before the application's original event handlers.
 c.innerWidth=1200;c.innerHeight=800;c.scrollY=0;c.scrollTo=()=>{};c.window=c;
@@ -28,7 +28,7 @@ function click(action,id=0,waitForRecommendation=true){
   if(action==='recommend'&&waitForRecommendation){const t=vm.runInContext('recommendationTimer',c);if(t&&!t.cancelled)t.fn();}
   listeners.click({target:{closest:()=>({dataset:{action,id:String(id)},disabled:action==='recommend'?node('#recommend').disabled:false})}});
 }
-click('recommend');assert.equal(node('#activity').open,true);assert(node('#activity').innerHTML.includes('목표 학습 시간'));node('#goal-minutes').value=20;click('save-goal');assert.equal(vm.runInContext('state.daily.target',c),20);assert(node('#recommend').textContent.includes('오늘의 학습'));
+click('recommend');assert.equal(node('#activity').open,true);assert(node('#activity').innerHTML.includes('목표 학습 시간'));node('#goal-minutes').value=20;click('save-goal');assert.equal(vm.runInContext('state.daily.target',c),20);assert(node('#recommend-copy').textContent.includes('오늘의 학습'));
 click('diagnosis');click('diag-start');assert.equal(vm.runInContext('state.daily.started',c),true);click('diag-prescribe');for(const t of [...timers])if(!t.cancelled&&(t.ms===8000||t.ms===7000))t.fn();click('program',0);click('program-start');click('program-frame');assert.equal(vm.runInContext('current().programs[0].completedFrames',c),1);for(let i=0;i<5;i++)click('program-retry');assert(vm.runInContext('M.message(state)',c).includes('차분하게'));click('program-frame');assert(!vm.runInContext('M.message(state)',c).includes('차분하게'));
 node('#sky-transition').animate=undefined;node('#activity').animate=undefined;click('constellation');assert(node('#activity').innerHTML.includes('별자리'));click('close-activity');vm.runInContext('state.daily.unreadAnswers=1;render()',c);click('recommend');assert(node('#activity').innerHTML.includes('도와줘요'));click('answer-read');assert.equal(vm.runInContext('state.daily.unreadAnswers',c),0);
 click('mypage');assert.equal(node('main').hidden,true);assert(node('#mypage').innerHTML.includes('학습 캘린더'));assert(node('#mypage').innerHTML.includes('오답노트'));const prior=vm.runInContext('current().groupId',c);click('back-main');assert.equal(node('main').hidden,false);assert.equal(vm.runInContext('current().groupId',c),prior);
@@ -65,7 +65,7 @@ click('diagnosis-leave');
 assert(node('#diagnostic').classList.contains('clean-passed'));
 assert(node('#diagnostic').innerHTML.includes('진단 통과'));
 assert(node('#ai-message').textContent.includes('진단을 통과했어요'));
-assert(node('#recommend').textContent.includes('다음 단계 만나기'));
+assert(node('#recommend-copy').textContent.includes('다음 단계 만나기'));
 // A persisted clean record has the same clear status after re-rendering.
 vm.runInContext('state=JSON.parse(JSON.stringify(state));render()',c);
 assert(node('#diagnostic').classList.contains('clean-passed'));
@@ -235,7 +235,7 @@ assert.equal(node('.recommend')['data-recommend-state'],'ready');
 assert.equal(node('.recommend')['aria-busy'],'false');
 assert.equal(node('.recommend-loader').hidden,true);
 assert.equal(node('#recommend').disabled,false);
-assert(node('#recommend').textContent.includes('도와줘요'));
+assert(node('#recommend-copy').textContent.includes('도와줘요'));
 click('recommend',0,false);assert(node('#activity').innerHTML.includes('도와줘요'));
 click('close-activity');vm.runInContext('render()',c);
 assert.equal(vm.runInContext('recommendationTimer',c),null); // unchanged ready content stays ready
@@ -490,7 +490,7 @@ c.matchMedia=()=>({matches:false});
 vm.runInContext("state=M.create();recommendationSignature='';render()",c);
 assert.equal(vm.runInContext('recommendationTimer',c).ms,1400);
 vm.runInContext('recommendationTimer',c).fn();
-const repeatedAction=node('#recommend').textContent;
+const repeatedAction=node('#recommend-copy').textContent;
 const firstRecommendationReminder=vm.runInContext('recommendationReminderTimer',c);
 assert.equal(firstRecommendationReminder.ms,24000);
 vm.runInContext('render()',c);assert.equal(vm.runInContext('recommendationReminderTimer',c),firstRecommendationReminder);
@@ -498,7 +498,7 @@ firstRecommendationReminder.fn();
 assert.equal(node('.recommend')['data-recommend-state'],'loading');
 assert.equal(node('.recommend-loader').hidden,false);
 assert.equal(node('#recommend').disabled,true);
-assert.equal(node('#recommend').textContent,repeatedAction);
+assert.equal(node('#recommend-copy').textContent,repeatedAction);
 assert.equal(vm.runInContext('state.daily.target',c),null);
 vm.runInContext('recommendationTimer',c).fn();
 assert.equal(node('.recommend')['data-recommend-state'],'ready');
@@ -517,7 +517,7 @@ node('.recommend').listeners.focusin();assert.equal(vm.runInContext('recommendat
 node('.recommend').listeners.focusout({relatedTarget:null});
 const beforeActionChange=vm.runInContext('recommendationReminderTimer',c);
 vm.runInContext('daily().unreadAnswers=1;render()',c);beforeActionChange.fn();
-vm.runInContext('recommendationTimer',c).fn();assert(node('#recommend').textContent.includes('도와줘요'));
+vm.runInContext('recommendationTimer',c).fn();assert(node('#recommend-copy').textContent.includes('도와줘요'));
 // Both loops pause while a lesson is open or the tab is hidden, and resume afterward.
 vm.runInContext("setBubblePhase('rest')",c);
 const staleLessonMentor=vm.runInContext('mentorReminderTimer',c),staleLessonRecommendation=vm.runInContext('recommendationReminderTimer',c);
@@ -649,6 +649,42 @@ c.matchMedia=()=>({matches:true});const priorPageMotions=pageMotions.length;
 click('mypage');click('back-main');assert.equal(pageMotions.length,priorPageMotions);
 c.matchMedia=()=>({matches:false});
 console.log('Grade/topic hierarchy, result wording, rapid question changes, stable answer selection, page navigation and reduced-motion state preservation passed');
+
+// V3.4.9: the recommendation stays one button, and progress/icon changes preserve its actions.
+vm.runInContext("cancelComposition();state=M.create();editing=null;panel=null;myOpen=false;activityKind=null;skyBusy=false;$('#learning').close();$('#activity').close();render()",c);
+assert.equal(node('#unit-progress').value,0);
+assert.equal(node('#unit-progress-label').textContent,'실력알기');
+click('diagnosis');click('diagnosis-begin');click('diagnosis-answer',0);
+vm.runInContext('render()',c);assert.equal(node('#unit-progress').value,33);
+click('close-learning');click('diagnosis-leave');
+vm.runInContext('M.preset(state,3);render()',c);
+assert.equal(node('#unit-progress').value,0);
+assert.equal(node('#unit-progress-label').textContent,'맞춤 학습 풀이');
+assert(node('#programs').innerHTML.includes('시작 전'));
+assert(!node('#programs').innerHTML.includes('미진행'));
+assert(!node('#programs').innerHTML.includes('class="badge locked"'));
+const lockedCards=vm.runInContext('current().programs.filter(p=>!M.canStudy(current(),p)).length',c);
+assert.equal((node('#programs').innerHTML.match(/class="card-lock"/g)||[]).length,lockedCards);
+click('program',1);assert.equal(node('#learning').open,false); // replacing the label never unlocks a later card
+click('program',0);assert.equal(node('#learning').open,true);click('close-learning');
+vm.runInContext("current().programs.forEach(p=>{p.progress=100;p.status='failed';});render()",c);
+assert.equal(node('#unit-progress').value,100);
+assert.equal(node('#unit-progress-label').textContent,'맞춤 학습 풀이'); // all questions solved is distinct from passing
+vm.runInContext('M.preset(state,2);render()',c);assert.equal(node('#unit-progress').value,100);
+vm.runInContext("beginComposition(2,'first')",c);assert.equal(node('#unit-progress').value,undefined);
+assert.equal(node('#summary')['data-progress-phase'],'preparing');
+vm.runInContext('composeTimers.find(t=>t.ms===8000)',c).fn();assert.equal(node('#unit-progress').value,0);
+const compactHTML=fs.readFileSync('dist/working/index.html','utf8');
+const recommendMarkup=compactHTML.match(/<button id="recommend"[^>]*>(.*?)<\/button>/)[1];
+assert(recommendMarkup.includes('class="recommend-label">AI 추천 활동</span>'));
+assert(recommendMarkup.includes('id="recommend-copy"'));
+vm.runInContext('daily().target=20;daily().started=true;render()',c);
+assert.equal(node('#recommend-copy').textContent,'오늘의 학습 문제 풀기');
+assert.equal(node('#recommend')['aria-label'],'AI 추천 활동 · 오늘의 학습 문제 풀기');
+vm.runInContext('recommendationTimer',c).fn();click('recommend',0,false);
+assert.equal(node('#learning').open,true);assert.equal(vm.runInContext('editing.kind',c),'program');
+click('close-learning');
+console.log('Unit progress, prescription preparation, locked-icon gating, recommendation label containment and retained recommendation actions passed');
 
 require('node:test')('star transition expands and contracts at the button instead of travelling through the viewport center',async()=>{
   c.matchMedia=()=>({matches:false});

@@ -1,7 +1,7 @@
 (function(root){
 const Catalog=typeof module==='object'?require('./catalog.js').MathCatalog:root.MathCatalog;
 const COUNTS=Catalog.grades.map(g=>g.groups.length);
-const labels={idle:'미진행',active:'진행 중',passed:'통과',failed:'미통과',clean:'처방 없이 통과',locked:'잠금'};
+const labels={idle:'시작 전',active:'진행 중',passed:'통과',failed:'미통과',clean:'처방 없이 통과',locked:'잠금'};
 const defaults={prescribed:'active',unfinished:'active',recommendation:'active'};
 const topics=['수의 크기 비교하기','덧셈의 원리 이해하기','뺄셈의 관계 알아보기','곱셈의 의미 이해하기','나눗셈의 원리 적용하기','분수의 크기와 관계를 이해하고 문제에 적용하기'];
 function group(g,i){return Catalog.grades[g]?.groups[i];}
@@ -11,6 +11,17 @@ function programs(n,g=3,i=0){const source=sourcePrograms(g,i);return Array.from(
 function setProgress(p,value){const n=p.frames?.length||0,percent=Math.max(0,Math.min(100,Number(value)||0));p.completedFrames=n?Math.round(percent*n/100):0;p.progress=n?Math.round(p.completedFrames/n*100):percent;}
 function blank(g,i){const source=group(g,i);return {grade:g,index:i,groupId:source?.groupId||'TEST-'+String.fromCharCode(65+g)+String(i+1).padStart(2,'0'),groupName:source?.name||'테스트 그룹 '+(i+1),testOnly:!source,diagnosis:'idle',programs:[],recent:'',reviewHistory:false};}
 function create(){return {schema:'diagnosis-v1',grade:3,index:0,policy:{...defaults},grades:COUNTS.map((n,g)=>Array.from({length:n},(_,i)=>blank(g,i)))};}
+// Completion here means questions solved, independently of the pass/fail outcome.
+function studyProgress(s,diagnosticTotal=3){
+  if(s.programs.length){
+    const totals=s.programs.reduce((a,p)=>{const weight=Math.max(1,p.frames?.length||0),progress=Number(p.progress);a.total+=weight;a.solved+=weight*(Number.isFinite(progress)?Math.max(0,Math.min(100,progress)):0)/100;return a;},{total:0,solved:0});
+    const value=totals.solved>=totals.total?100:Math.min(99,Math.round(totals.solved/totals.total*100));
+    return {phase:'program',label:'맞춤 학습 풀이',value,description:Math.round(totals.solved)+' / '+totals.total+'문항 풀이'};
+  }
+  if(s.diagnosis==='done')return {phase:'complete',label:'실력알기 완료',value:100,description:'진단을 통과했어요'};
+  const total=Math.max(1,Math.floor(Number(diagnosticTotal)||3)),solved=s.diagnosis==='active'?Math.min(total,(s.diagnosticSession?.answers||[]).filter(a=>Number.isInteger(a)&&a>=0).length):0;
+  return {phase:'diagnosis',label:'실력알기',value:Math.round(solved/total*100),description:solved+' / '+total+'문항 풀이'};
+}
 function status(s,p=defaults){if(s.diagnosis==='idle')return 'idle';if(s.diagnosis==='active')return 'active';if(!s.programs.length)return 'clean';if(s.programs.every(x=>x.status==='passed'))return 'passed';if(s.programs.every(x=>['passed','failed'].includes(x.status)))return 'failed';if(s.programs.every(x=>['idle','locked'].includes(x.status)))return p.prescribed;return p.unfinished;}
 const presetNames=['첫 진입 · 처방 없음','진단 진행 중','진단 통과 · 처방 없음','처방 발생 · 학습 미시작','프로그램 학습 진행 중','처방 프로그램 전체 통과','모든 풀이 완료 · 미통과 존재','복습 후 모든 프로그램 통과','처방 프로그램 1개','처방 프로그램 52개','진단 그룹 78개 · J등급'];
 function preset(state,k){if(k===10){state.grade=9;state.index=0;}const s=blank(state.grade,state.index);if(k>1&&k<10)s.diagnosis='done';if(k===1)s.diagnosis='active';if(k>=3&&k<10)s.programs=programs(k===8?1:k===9?52:sourceCount(state.grade,state.index),state.grade,state.index);if(k===4){s.programs[0].status='active';setProgress(s.programs[0],45);}if([5,6,7].includes(k))s.programs.forEach(x=>{x.status='passed';setProgress(x,100);});if(k===6)s.programs[Math.min(2,s.programs.length-1)].status='failed';if(k===7){s.programs[Math.min(2,s.programs.length-1)].reviewed=true;s.reviewHistory=true;}s.recent='프리셋: '+presetNames[k];state.grades[state.grade][state.index]=s;return s;}
@@ -55,5 +66,5 @@ if(k===8||k===9){preset(state,9);const s=state.grades[state.grade][state.index];
 if(k===10)d.unreadAnswers=1;
 if(k===11){preset(state,6);const s=state.grades[state.grade][state.index];s.programs.slice(0,3).forEach(p=>{p.status='failed';setProgress(p,100);});}
 }
-root.MathModel={COUNTS,labels,defaults,create,status,preset,presetNames,programs,recommend:dailyRecommend,message:draftMessage,learningRecommend,learningMessage,ensureDaily,wrongEntries,draftPreset,draftPresetNames,canStudy,currentProgram,canStart,Catalog,group,sourceCount,sourcePrograms,setProgress,blank};
+root.MathModel={COUNTS,labels,defaults,create,status,studyProgress,preset,presetNames,programs,recommend:dailyRecommend,message:draftMessage,learningRecommend,learningMessage,ensureDaily,wrongEntries,draftPreset,draftPresetNames,canStudy,currentProgram,canStart,Catalog,group,sourceCount,sourcePrograms,setProgress,blank};
 })(typeof module==='object'?module.exports:window);
