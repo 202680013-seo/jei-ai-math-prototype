@@ -20,7 +20,8 @@ for(const i of [0,1,2]){vm.runInContext(`M.preset(state,${i});render()`,c);asser
 const html=fs.readFileSync('dist/working/index.html','utf8');for(const text of ['<footer>','선택한 그룹의 진단','id="program-heading"'])assert(!html.includes(text));
 // Accessible section names may describe AI guidance; duplicate visible headings stay absent.
 assert(!/<h[1-6]\b[^>]*>\s*학습 안내\s*<\/h[1-6]>/u.test(html));
-assert(!node('#ai-message').textContent);assert.equal(node('#ai-message')['aria-busy'],'true');
+assert(node('#ai-message').textContent.includes('진단을 통과했어요'));assert.equal(node('#ai-message')['aria-busy'],'false');
+vm.runInContext('M.preset(state,0);render()',c);assert(!node('#ai-message').textContent);assert.equal(node('#ai-message')['aria-busy'],'true');
 vm.runInContext('M.preset(state,3);render()',c);assert(!node('#programs').innerHTML.includes('<progress'));assert(node('#programs').innerHTML.includes('is-locked'));assert(!node('#programs').innerHTML.includes('프로그램 01'));vm.runInContext('M.preset(state,4);render()',c);assert.equal((node('#programs').innerHTML.match(/<progress/g)||[]).length,1);assert.equal((node('#programs').innerHTML.match(/is-current/g)||[]).length,1);vm.runInContext('current().programs[0].progress=100;render()',c);assert(!node('#programs').innerHTML.includes('<progress'));assert(node('#programs').innerHTML.includes('풀이 완료'));vm.runInContext('M.preset(state,6);render()',c);assert(!node('#programs').innerHTML.includes('<progress'));
 vm.runInContext('state=M.create();render()',c);assert(node('#group-title').textContent.includes('비교와 분류'));assert(!node('#group-title').textContent.includes('D01'));vm.runInContext('openPanel("groups")',c);assert(node('#group-panel').innerHTML.includes('모으기와 가르기(10)'));vm.runInContext('select(0,0)',c);assert(node('#group-title').textContent.includes('모양'));
 function click(action,id=0){listeners.click({target:{closest:()=>({dataset:{action,id:String(id)},disabled:false})}});}
@@ -45,6 +46,67 @@ click('program',0);assert.equal(node('#learning').open,true);
 click('close-learning');click('mypage');assert.equal(node('main').hidden,true);
 console.log('Direct-view storage adapter and original prototype button interactions passed');
 
+// V3.2: explicit pass acknowledgement, truthful grade completion and direct continuation.
+vm.runInContext('state=M.create();editing=null;render()',c);
+click('diagnosis');click('diagnosis-begin');
+for(const answer of [0,1,1]){click('diagnosis-answer',answer);click('diagnosis-next');}
+assert(node('#learning').innerHTML.includes('진단을 통과했어요!'));
+assert(!node('#learning').innerHTML.includes('D등급을 통과했어요!'));
+assert(node('#learning').innerHTML.includes('data-action="pass-next"'));
+assert.equal(vm.runInContext('state.index',c),0); // no automatic navigation while reading
+assert.equal(vm.runInContext('current().diagnosticResult.incorrect',c),0);
+assert.equal(vm.runInContext('state.daily.timerRunning',c),false);
+click('pass-details');assert(node('#learning').innerHTML.includes('실력 확인 결과'));
+click('pass-summary');assert(node('#learning').innerHTML.includes('진단을 통과했어요!'));
+click('diagnosis-leave');
+assert(node('#diagnostic').classList.contains('clean-passed'));
+assert(node('#diagnostic').innerHTML.includes('진단 통과'));
+assert(node('#ai-message').textContent.includes('진단을 통과했어요'));
+assert(node('#recommend').textContent.includes('다음 실력알기 시작'));
+// A persisted clean record has the same clear status after re-rendering.
+vm.runInContext('state=JSON.parse(JSON.stringify(state));render()',c);
+assert(node('#diagnostic').classList.contains('clean-passed'));
+click('recommend');assert.equal(vm.runInContext('state.index',c),1);
+assert.equal(vm.runInContext('current().diagnosis',c),'active');
+assert.equal(node('#learning').open,true);
+assert(node('#learning').innerHTML.includes('문항 1 / 3'));
+assert.equal(vm.runInContext('state.grades[3][0].diagnosticResult.incorrect',c),0);
+click('pass-next');assert.equal(vm.runInContext('state.index',c),1); // stale/double click
+click('diagnosis-answer',0);click('diagnosis-next');
+vm.runInContext('select(3,0)',c);click('pass-next');
+assert(node('#learning').innerHTML.includes('문항 2 / 3')); // existing next session survives
+// The last group alone does not pass a grade; unfinished earlier groups are offered.
+vm.runInContext('state=M.create();state.index=state.grades[3].length-1;current().diagnosis="done";render()',c);
+assert.equal(vm.runInContext('cleanPassInfo().gradeComplete',c),false);
+assert.equal(vm.runInContext('cleanPassInfo().next.grade',c),3);
+assert.equal(vm.runInContext('cleanPassInfo().next.index',c),0);
+assert.equal(vm.runInContext('cleanPassInfo().nextLabel',c),'남은 학습');
+// A grade passes only after every group, including prescribed programs, has passed.
+vm.runInContext('state.grades[3].forEach(s=>{s.diagnosis="done";s.programs=[]});state.grades[3][0].programs=M.programs(1,3,0);render()',c);
+assert.equal(vm.runInContext('cleanPassInfo().gradeComplete',c),false);
+assert.equal(vm.runInContext('cleanPassInfo().next.kind',c),'program');
+vm.runInContext('state.grades[3][0].programs[0].status="passed";M.setProgress(state.grades[3][0].programs[0],100);editing={kind:"diagnosis",complete:true};refreshDialog()',c);
+assert.equal(vm.runInContext('cleanPassInfo().gradeComplete',c),true);
+assert(node('#learning').innerHTML.includes('D등급을 통과했어요!'));
+assert(node('#learning').innerHTML.includes('E등급 시작하기'));
+click('pass-next');assert.equal(vm.runInContext('state.grade',c),4);
+assert(node('#learning').innerHTML.includes('E등급 /'));
+// Existing prescribed learning resumes instead of being reset or skipped.
+vm.runInContext('state=M.create();state.ui={diagnosisIntroSeen:true};current().diagnosis="done";state.grades[3][1].diagnosis="done";state.grades[3][1].programs=M.programs(1,3,1);state.grades[3][1].programs[0].status="active";M.setProgress(state.grades[3][1].programs[0],40);render()',c);
+const progressBefore=vm.runInContext('state.grades[3][1].programs[0].progress',c);
+click('pass-next');assert.equal(vm.runInContext('editing.kind',c),'program');
+assert.equal(vm.runInContext('current().programs[0].progress',c),progressBefore);
+// Final grade has no invented destination; exiting keeps the completed state.
+vm.runInContext('state=M.create();state.grade=9;state.grades[9].forEach(s=>{s.diagnosis="done";s.programs=[]});editing={kind:"diagnosis",complete:true};render();refreshDialog()',c);
+assert.equal(vm.runInContext('cleanPassInfo().next',c),null);
+assert(node('#learning').innerHTML.includes('J등급을 통과했어요!'));
+assert(!node('#learning').innerHTML.includes('data-action="pass-next"'));
+click('diagnosis-leave');assert.equal(node('#learning').open,false);
+assert.equal(vm.runInContext('state.grade',c),9);
+assert(!html.includes('id="ai-state"'));
+assert(/class="groups-trigger"[^>]+aria-label="진단 그룹 목록 열기"[^>]*>\s*<svg/.test(html));
+console.log('V3.2 pass acknowledgement, next diagnosis, grade accuracy, persistence and progress preservation passed');
+
 // The decorative morph follows real typing, and stale timers cannot restart it.
 vm.runInContext("state=M.create();lastMessage='';render()",c);
 assert.equal(node('.ai-top')['data-mentor-state'],'thinking');
@@ -63,6 +125,10 @@ assert.equal(node('#ai-message')['aria-busy'],'false');
 const idleMorph=vm.runInContext('mentorTimer',c);staleMorph.fn();
 assert.equal(vm.runInContext('mentorTimer',c),idleMorph);
 idleMorph.fn();assert.equal(node('#mentor-symbol')['data-shape'],'clover');
+for(let cycle=0;cycle<2;cycle++)for(const shape of ['plus','divide','times','minus','clover']){
+  const timer=vm.runInContext('mentorTimer',c);assert.equal(timer.ms,2400);timer.fn();
+  assert.equal(node('#mentor-symbol')['data-shape'],shape);assert(vm.runInContext('mentorTimer',c));
+}
 vm.runInContext("setAIState('반응 중')",c);
 const hiddenMorph=vm.runInContext('mentorTimer',c);
 c.document.visibilityState='hidden';listeners.visibilitychange();
