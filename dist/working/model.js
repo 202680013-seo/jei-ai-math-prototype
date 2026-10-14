@@ -27,6 +27,7 @@ const presetNames=['첫 진입 · 처방 없음','진단 진행 중','진단 통
 function preset(state,k){if(k===10){state.grade=9;state.index=0;}const s=blank(state.grade,state.index);if(k>1&&k<10)s.diagnosis='done';if(k===1)s.diagnosis='active';if(k>=3&&k<10)s.programs=programs(k===8?1:k===9?52:sourceCount(state.grade,state.index),state.grade,state.index);if(k===4){s.programs[0].status='active';setProgress(s.programs[0],45);}if([5,6,7].includes(k))s.programs.forEach(x=>{x.status='passed';setProgress(x,100);});if(k===6)s.programs[Math.min(2,s.programs.length-1)].status='failed';if(k===7){s.programs[Math.min(2,s.programs.length-1)].reviewed=true;s.reviewHistory=true;}s.recent='프리셋: '+presetNames[k];state.grades[state.grade][state.index]=s;return s;}
 // Sequence is gated by completion percentage, never by pass/fail outcome.
 function canStudy(s,p){if(!p||p.status==='locked')return false;const i=s.programs.indexOf(p);return i>=0&&(p.progress>=100||s.programs.slice(0,i).every(x=>x.progress>=100));}
+function canReview(s,p){return !!p&&p.status!=='locked'&&(p.progress>=100||['passed','failed'].includes(p.status))&&canStudy(s,p);}
 function currentProgram(s){return s.programs.find(p=>p.status==='active'&&p.progress<100&&canStudy(s,p));}
 function canStart(s,p){const active=currentProgram(s);return canStudy(s,p)&&(!active||active.id===p.id);}
 function learningRecommend(state){const s=state.grades[state.grade][state.index];if(s.diagnosis!=='done')return {kind:'diagnosis',text:s.diagnosis==='active'?'실력알기 이어하기':'실력알기 시작하기'};
@@ -66,5 +67,5 @@ if(k===8||k===9){preset(state,9);const s=state.grades[state.grade][state.index];
 if(k===10)d.unreadAnswers=1;
 if(k===11){preset(state,6);const s=state.grades[state.grade][state.index];s.programs.slice(0,3).forEach(p=>{p.status='failed';setProgress(p,100);});}
 }
-root.MathModel={COUNTS,labels,defaults,create,status,studyProgress,preset,presetNames,programs,recommend:dailyRecommend,message:draftMessage,learningRecommend,learningMessage,ensureDaily,wrongEntries,draftPreset,draftPresetNames,canStudy,currentProgram,canStart,Catalog,group,sourceCount,sourcePrograms,setProgress,blank};
+root.MathModel={COUNTS,labels,defaults,create,status,studyProgress,preset,presetNames,programs,recommend:dailyRecommend,message:draftMessage,learningRecommend,learningMessage,ensureDaily,wrongEntries,draftPreset,draftPresetNames,canStudy,canReview,currentProgram,canStart,Catalog,group,sourceCount,sourcePrograms,setProgress,blank};
 })(typeof module==='object'?module.exports:window);

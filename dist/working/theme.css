@@ -591,3 +591,45 @@ dialog[open]:not(.sky-dialog)::backdrop{opacity:1}
   .card-lock{right:16px;bottom:16px;width:18px;height:18px}
 }
 @media(prefers-reduced-motion:reduce){#unit-progress::-webkit-progress-value{transition:none}}
+
+/* V3.4.10: keep the AI label still while only the activity/loading copy crossfades. */
+.mentor-cluster{column-gap:32px}
+.mentor-cluster .recommend-label{animation:none!important;transform:none}
+.mentor-cluster .recommend[data-recommend-state] button{visibility:visible;pointer-events:auto;animation:none!important;opacity:1}
+.mentor-cluster .recommend button:disabled .recommend-label{opacity:1}
+.recommend-content{position:relative;display:block;flex:1;min-width:0;height:100%}
+.mentor-cluster .recommend-content>.recommend-loader{position:absolute;inset:0;display:flex;align-items:center;gap:7px;padding:0;opacity:0;visibility:hidden;transition:opacity .3s ease,visibility 0s .3s}
+.mentor-cluster #recommend-copy{display:block;min-width:0;width:100%;height:100%;line-height:28px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:1;transform:translateY(0);transition:opacity .3s ease,transform .35s ease}
+.mentor-cluster .recommend[data-recommend-state=loading] .recommend-loader{opacity:1;visibility:visible;transition-delay:0s}
+.mentor-cluster .recommend[data-recommend-state=loading] #recommend-copy{opacity:0;transform:translateY(3px);pointer-events:none}
+.mentor-cluster .recommend button::after{transition:opacity .3s ease}
+.mentor-cluster .recommend[data-recommend-state=loading] button::after{opacity:0}
+.mentor-cluster .recommend[data-recommend-state=ready] button:disabled #recommend-copy{opacity:.55}
+.mentor-cluster .recommend-loader small{font-size:10px}
+.mentor-bubble{max-width:min(320px,calc(100% - 72px))}
+.heading-title-row{margin-bottom:0}
+.intro-arrival>.badge,.intro-arrival>h1,.intro-arrival>p,.intro-arrival>button{animation:diagnosis-copy-arrive .9s cubic-bezier(.25,.1,.25,1) both}
+.intro-arrival>.badge{animation-delay:.15s}.intro-arrival>h1{animation-delay:.24s}.intro-arrival>p{animation-delay:.4s}.intro-arrival>button{animation-delay:.58s}
+.pause-actions{justify-content:center;gap:18px}
+.pause-actions>.text-button{border:0;background:none;box-shadow:none;color:var(--muted);font-weight:600;padding:10px 12px}
+.pause-actions>.text-button:hover:not(:disabled){background:none;color:var(--forest);text-decoration:underline;text-underline-offset:4px}
+.grid>.program-card{transition:transform .28s cubic-bezier(.25,.1,.25,1),box-shadow .28s ease,background .2s,border-color .2s}
+@media(hover:hover){.grid>.program-card:is(.is-ready,.is-current,.is-introduced):hover:not(:disabled){transform:translateY(-4px);box-shadow:0 10px 22px var(--jei-c-1633000d,#1633000d)}}
+.review-entry{display:flex;align-items:center;gap:5px;margin-top:auto;color:var(--jei-c-668853,#668853);font-size:11px;font-weight:700}
+.review-entry svg{width:13px;height:13px}
+.program-card.is-complete:hover:not(:disabled) .review-entry{text-decoration:underline;text-underline-offset:3px}
+.review-context{color:var(--muted);font-size:13px;line-height:1.7}
+.review-progress{display:flex;align-items:center;gap:15px;font-size:11px;color:var(--muted);margin:18px 0}
+.review-progress progress{flex:1;min-width:60px;height:6px}
+.review-answers{margin:20px 0;text-align:left}
+.review-answers>summary{cursor:pointer;color:var(--forest);font-size:13px;font-weight:700}
+.review-answer{padding:16px 0;border-bottom:1px solid var(--line)}
+.review-answer>strong{font-size:12px}.review-answer>p{font-size:14px}
+@keyframes diagnosis-copy-arrive{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:650px){.mentor-cluster{row-gap:14px}.mentor-bubble{max-width:min(260px,calc(100% - 72px))}.mentor-cluster #recommend-copy{line-height:26px}.pause-actions{gap:12px}.review-progress{gap:10px}}
+@media(prefers-reduced-motion:reduce){
+  .mentor-cluster .recommend-content>.recommend-loader,.mentor-cluster #recommend-copy,.mentor-cluster .recommend button::after{transition:none}
+  .intro-arrival>.badge,.intro-arrival>h1,.intro-arrival>p,.intro-arrival>button{animation:none}
+  .grid>.program-card:is(.is-ready,.is-current,.is-introduced):hover:not(:disabled){transform:none}
+  .grid>.program-card{transition:none}
+}

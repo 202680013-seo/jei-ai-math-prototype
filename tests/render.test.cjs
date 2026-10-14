@@ -20,13 +20,17 @@ for(const i of [0,1,2]){vm.runInContext(`M.preset(state,${i});render()`,c);asser
 const html=fs.readFileSync('dist/working/index.html','utf8');for(const text of ['<footer>','선택한 그룹의 진단','id="program-heading"'])assert(!html.includes(text));
 // Accessible section names may describe AI guidance; duplicate visible headings stay absent.
 assert(!/<h[1-6]\b[^>]*>\s*학습 안내\s*<\/h[1-6]>/u.test(html));
-assert(node('#ai-message').textContent.includes('진단을 통과했어요'));assert.equal(node('#ai-message')['aria-busy'],'false');
+settleGuidance();assert(node('#ai-message').textContent.includes('진단을 통과했어요'));assert.equal(node('#ai-message')['aria-busy'],'false');
 vm.runInContext('M.preset(state,0);render()',c);assert(!node('#ai-message').textContent);assert.equal(node('#ai-message')['aria-busy'],'true');
 vm.runInContext('M.preset(state,3);render()',c);assert(!node('#programs').innerHTML.includes('<progress'));assert(node('#programs').innerHTML.includes('is-locked'));assert(!node('#programs').innerHTML.includes('프로그램 01'));vm.runInContext('M.preset(state,4);render()',c);assert.equal((node('#programs').innerHTML.match(/<progress/g)||[]).length,1);assert.equal((node('#programs').innerHTML.match(/is-current/g)||[]).length,1);vm.runInContext('current().programs[0].progress=100;render()',c);assert(!node('#programs').innerHTML.includes('<progress'));assert(node('#programs').innerHTML.includes('풀이 완료'));vm.runInContext('M.preset(state,6);render()',c);assert(!node('#programs').innerHTML.includes('<progress'));
 vm.runInContext('state=M.create();render()',c);assert(node('#group-title').textContent.includes('비교와 분류'));assert(!node('#group-title').textContent.includes('D01'));vm.runInContext('openPanel("groups")',c);assert(node('#group-panel').innerHTML.includes('모으기와 가르기(10)'));vm.runInContext('select(0,0)',c);assert(node('#group-title').textContent.includes('모양'));
-function click(action,id=0,waitForRecommendation=true){
+function settleGuidance(){const panelExit=vm.runInContext('panelMotionTimer',c);if(panelExit&&!panelExit.cancelled&&vm.runInContext("groupPanelPhase==='closing'",c))panelExit.fn();const t=vm.runInContext('guidanceClosingTimer',c);if(t&&!t.cancelled)t.fn();}
+function finishSpeech(){if(vm.runInContext('bubblePhase',c)==='thinking')vm.runInContext('thinkTimer',c)?.fn();for(let i=0;i<1000&&vm.runInContext('aiState',c)==='반응 중';i++)vm.runInContext('animTimer',c)?.fn();}
+function prepareOverview(){vm.runInContext("editing=null;activityKind=null;myOpen=false;skyBusy=false;$('#learning').close();$('#activity').close();$('#help').close();if(panel)closePanel();",c);settleGuidance();}
+function click(action,id=0,waitForRecommendation=true,waitForGuidance=true){
   if(action==='recommend'&&waitForRecommendation){const t=vm.runInContext('recommendationTimer',c);if(t&&!t.cancelled)t.fn();}
   listeners.click({target:{closest:()=>({dataset:{action,id:String(id)},disabled:action==='recommend'?node('#recommend').disabled:false})}});
+  if(waitForGuidance&&!['groups','select-group'].includes(action))settleGuidance();
 }
 click('recommend');assert.equal(node('#activity').open,true);assert(node('#activity').innerHTML.includes('목표 학습 시간'));node('#goal-minutes').value=20;click('save-goal');assert.equal(vm.runInContext('state.daily.target',c),20);assert(node('#recommend-copy').textContent.includes('오늘의 학습'));
 click('diagnosis');click('diag-start');assert.equal(vm.runInContext('state.daily.started',c),true);click('diag-prescribe');for(const t of [...timers])if(!t.cancelled&&(t.ms===8000||t.ms===7000))t.fn();click('program',0);click('program-start');click('program-frame');assert.equal(vm.runInContext('current().programs[0].completedFrames',c),1);for(let i=0;i<5;i++)click('program-retry');assert(vm.runInContext('M.message(state)',c).includes('차분하게'));click('program-frame');assert(!vm.runInContext('M.message(state)',c).includes('차분하게'));
@@ -50,6 +54,7 @@ click('close-learning');click('mypage');assert.equal(node('main').hidden,true);
 console.log('Direct-view storage adapter and original prototype button interactions passed');
 
 // V3.3: celebrate, introduce the next part, then start only on an explicit click.
+prepareOverview();
 vm.runInContext('state=M.create();editing=null;render()',c);
 click('diagnosis');click('diagnosis-begin');
 for(const answer of [0,1,1]){click('diagnosis-answer',answer);click('diagnosis-next');}
@@ -132,6 +137,7 @@ assert(/class="groups-trigger"[^>]+aria-label="진단 그룹 목록 열기"[^>]*
 console.log('V3.3 celebration, preparation, explicit start, grade accuracy, pause/persistence and progress preservation passed');
 
 // The decorative morph follows real typing, and stale timers cannot restart it.
+prepareOverview();
 vm.runInContext("state=M.create();lastMessage='';render()",c);
 assert.equal(node('.ai-top')['data-mentor-state'],'thinking');
 vm.runInContext('thinkTimer',c).fn();
@@ -185,6 +191,8 @@ const message=node('#ai-message').textContent,oldRest=vm.runInContext('bubbleTim
 c.document.visibilityState='hidden';listeners.visibilitychange();
 assert.equal(vm.runInContext('bubbleTimer',c),null);
 c.document.visibilityState='visible';listeners.visibilitychange();
+vm.runInContext('thinkTimer',c).fn();
+for(let i=0;i<300&&vm.runInContext('aiState',c)==='반응 중';i++)vm.runInContext('animTimer',c).fn();
 vm.runInContext('bubbleTimer',c).fn();
 assert.equal(node('.ai-top')['data-bubble-phase'],'rest');
 assert.equal(node('#mentor-bubble').style.width,'56px');
@@ -216,7 +224,7 @@ c.matchMedia=()=>({matches:false});c.document.visibilityState='visible';
 vm.runInContext("state=M.create();editing=null;activityKind=null;$('#learning').close();$('#activity').close();render()",c);
 assert.equal(node('.recommend')['data-recommend-state'],'loading');
 assert.equal(node('.recommend')['aria-busy'],'true');
-assert.equal(node('.recommend-loader').hidden,false);
+assert.equal(node('.recommend')['data-recommend-state'],'loading');
 assert.equal(node('#recommend').disabled,true);
 assert.equal(node('#recommend-status').textContent,'추천 활동 준비 중');
 const firstPreparation=vm.runInContext('recommendationTimer',c);
@@ -233,7 +241,7 @@ firstPreparation.fn();assert.equal(node('.recommend')['data-recommend-state'],'l
 latestPreparation.fn();
 assert.equal(node('.recommend')['data-recommend-state'],'ready');
 assert.equal(node('.recommend')['aria-busy'],'false');
-assert.equal(node('.recommend-loader').hidden,true);
+assert.equal(node('.recommend')['data-recommend-state'],'ready');
 assert.equal(node('#recommend').disabled,false);
 assert(node('#recommend-copy').textContent.includes('도와줘요'));
 click('recommend',0,false);assert(node('#activity').innerHTML.includes('도와줘요'));
@@ -372,12 +380,13 @@ assert.equal(node('#prescription').open,false);
 console.log('Prescription scan mount continuity, typing, hidden pause, one-time reveal, interrupted replay, selection and reduced-motion passed');
 
 // The whole long mentor message remains available; reading reaches its end before collapse.
+prepareOverview();c.mentorTestCopy='긴 학습 안내를 끝까지 읽을 수 있어요. '.repeat(5);
 c.matchMedia=()=>({matches:false});c.document.visibilityState='visible';
 const originalMentorRect=node('.ai-top').getBoundingClientRect,originalMentorMeasure=node('#mentor-measure').getBoundingClientRect;
 node('.ai-top').getBoundingClientRect=()=>({width:300,height:44});
 node('#mentor-measure').getBoundingClientRect=function(){return {width:this.textContent.length*10,height:22};};
 node('#ai-message').clientWidth=130;node('#ai-message').scrollWidth=680;
-vm.runInContext("cancelComposition();state=M.create();M.preset(state,3);lastMessage='';render();animateMessage(true)",c);
+vm.runInContext("cancelComposition();state=M.create();M.preset(state,3);lastMessage='';render();animateMessage(true,mentorTestCopy)",c);
 vm.runInContext('thinkTimer',c).fn();
 for(let i=0;i<500&&vm.runInContext('aiState',c)==='반응 중';i++)vm.runInContext('animTimer',c).fn();
 const fullMentorCopy=node('#ai-message').textContent;
@@ -405,6 +414,7 @@ c.document.visibilityState='hidden';listeners.visibilitychange();
 assert.equal(vm.runInContext('mentorReadTimer',c),null);
 c.document.visibilityState='visible';listeners.visibilitychange();hiddenRead.fn();
 assert.equal(node('#ai-message').scrollLeft,0);
+vm.runInContext('animateMessage(true,mentorTestCopy)',c);finishSpeech();
 node('#mentor-bubble').listeners.focusin();click('mentor-read-next');
 assert.equal(node('#ai-message').scrollLeft,104);
 assert.equal(vm.runInContext('mentorReadTimer',c),null);
@@ -415,7 +425,7 @@ click('mentor-read-back');assert.equal(node('#ai-message').scrollLeft,104);
 node('#mentor-bubble').listeners.focusout({relatedTarget:null});
 assert(vm.runInContext('mentorReadTimer',c));
 // Reduced motion still exposes all words with the arrows; the bubble does not expire unseen.
-c.matchMedia=()=>({matches:true});vm.runInContext('animateMessage(true)',c);
+c.matchMedia=()=>({matches:true});vm.runInContext('animateMessage(true,mentorTestCopy)',c);
 assert.equal(vm.runInContext('mentorReadTimer',c),null);
 assert.equal(vm.runInContext('bubbleTimer',c),null);
 assert.equal(node('#mentor-read-controls').hidden,false);
@@ -460,6 +470,7 @@ assert.equal(vm.runInContext('current().programs.length',c),3);
 console.log('Prescription acknowledgment/search/reading durations and cancelled-run isolation passed');
 
 // V3.4.6: short mentor reminders rotate with the current learning context and leave state untouched.
+prepareOverview();
 c.matchMedia=()=>({matches:true});c.document.visibilityState='visible';
 vm.runInContext("cancelComposition();state=M.create();editing=null;panel=null;activityKind=null;myOpen=false;skyBusy=false;mentorPointerPaused=false;mentorFocusPaused=false;recommendationPointerPaused=false;recommendationFocusPaused=false;$('#learning').close();$('#help').close();$('#activity').close();lastMessage='';render();setBubblePhase('rest')",c);
 const learnerBeforeReminder=JSON.stringify(vm.runInContext('state',c));
@@ -496,7 +507,7 @@ assert.equal(firstRecommendationReminder.ms,24000);
 vm.runInContext('render()',c);assert.equal(vm.runInContext('recommendationReminderTimer',c),firstRecommendationReminder);
 firstRecommendationReminder.fn();
 assert.equal(node('.recommend')['data-recommend-state'],'loading');
-assert.equal(node('.recommend-loader').hidden,false);
+assert.equal(node('.recommend')['data-recommend-state'],'loading');
 assert.equal(node('#recommend').disabled,true);
 assert.equal(node('#recommend-copy').textContent,repeatedAction);
 assert.equal(vm.runInContext('state.daily.target',c),null);
@@ -525,12 +536,12 @@ vm.runInContext("$('#learning').showModal();syncGuidanceReminders()",c);
 assert.equal(vm.runInContext('mentorReminderTimer',c),null);
 assert.equal(vm.runInContext('recommendationReminderTimer',c),null);
 staleLessonMentor.fn();staleLessonRecommendation.fn();assert.equal(node('.recommend')['data-recommend-state'],'ready');
-vm.runInContext("$('#learning').close();syncGuidanceReminders()",c);
+vm.runInContext("$('#learning').close();syncGuidanceReminders()",c);finishSpeech();vm.runInContext("setBubblePhase('rest')",c);
 assert(vm.runInContext('mentorReminderTimer',c));assert(vm.runInContext('recommendationReminderTimer',c));
 c.document.visibilityState='hidden';listeners.visibilitychange();
 assert.equal(vm.runInContext('mentorReminderTimer',c),null);
 assert.equal(vm.runInContext('recommendationReminderTimer',c),null);
-c.document.visibilityState='visible';listeners.visibilitychange();
+c.document.visibilityState='visible';listeners.visibilitychange();finishSpeech();vm.runInContext("setBubblePhase('rest')",c);
 assert(vm.runInContext('mentorReminderTimer',c));assert(vm.runInContext('recommendationReminderTimer',c));
 vm.runInContext("daily().unreadAnswers=0;daily().target=20;daily().started=true;current().diagnosis='done';current().programs=M.programs(1);current().programs[0].status='locked';render()",c);
 vm.runInContext('recommendationTimer',c).fn();assert.equal(vm.runInContext('recommendationReminderTimer',c),null); // no reminder for an unavailable action
@@ -562,6 +573,7 @@ assert.equal(vm.runInContext('cardRevealTimer',c).ms,1600);
 console.log('Prepared-learning graphic, gentle card reveal lifetime, result navigation and diagnostic/result hierarchy passed');
 
 // V3.4.7: the target width is established before a steady, grapheme-by-grapheme reveal.
+prepareOverview();
 c.matchMedia=()=>({matches:false});c.document.visibilityState='visible';
 vm.runInContext("cancelComposition();panel=null;myOpen=false;activityKind=null;skyBusy=false;mentorPointerPaused=false;mentorFocusPaused=false;$('#learning').close();$('#activity').close();state=M.create();render()",c);
 vm.runInContext("animateMessage(true,'가나다 👨‍👩‍👧‍👦 끝')",c);
@@ -650,41 +662,28 @@ click('mypage');click('back-main');assert.equal(pageMotions.length,priorPageMoti
 c.matchMedia=()=>({matches:false});
 console.log('Grade/topic hierarchy, result wording, rapid question changes, stable answer selection, page navigation and reduced-motion state preservation passed');
 
-// V3.4.9: the recommendation stays one button, and progress/icon changes preserve its actions.
+// V3.4.10 keeps the AI label mounted through both recommendation phases.
 vm.runInContext("cancelComposition();state=M.create();editing=null;panel=null;myOpen=false;activityKind=null;skyBusy=false;$('#learning').close();$('#activity').close();render()",c);
-assert.equal(node('#unit-progress').value,0);
-assert.equal(node('#unit-progress-label').textContent,'실력알기');
-click('diagnosis');click('diagnosis-begin');click('diagnosis-answer',0);
-vm.runInContext('render()',c);assert.equal(node('#unit-progress').value,33);
-click('close-learning');click('diagnosis-leave');
+settleGuidance();
 vm.runInContext('M.preset(state,3);render()',c);
-assert.equal(node('#unit-progress').value,0);
-assert.equal(node('#unit-progress-label').textContent,'맞춤 학습 풀이');
 assert(node('#programs').innerHTML.includes('시작 전'));
-assert(!node('#programs').innerHTML.includes('미진행'));
 assert(!node('#programs').innerHTML.includes('class="badge locked"'));
 const lockedCards=vm.runInContext('current().programs.filter(p=>!M.canStudy(current(),p)).length',c);
 assert.equal((node('#programs').innerHTML.match(/class="card-lock"/g)||[]).length,lockedCards);
-click('program',1);assert.equal(node('#learning').open,false); // replacing the label never unlocks a later card
-click('program',0);assert.equal(node('#learning').open,true);click('close-learning');
-vm.runInContext("current().programs.forEach(p=>{p.progress=100;p.status='failed';});render()",c);
-assert.equal(node('#unit-progress').value,100);
-assert.equal(node('#unit-progress-label').textContent,'맞춤 학습 풀이'); // all questions solved is distinct from passing
-vm.runInContext('M.preset(state,2);render()',c);assert.equal(node('#unit-progress').value,100);
-vm.runInContext("beginComposition(2,'first')",c);assert.equal(node('#unit-progress').value,undefined);
-assert.equal(node('#summary')['data-progress-phase'],'preparing');
-vm.runInContext('composeTimers.find(t=>t.ms===8000)',c).fn();assert.equal(node('#unit-progress').value,0);
+click('program',1);assert.equal(node('#learning').open,false);
 const compactHTML=fs.readFileSync('dist/working/index.html','utf8');
 const recommendMarkup=compactHTML.match(/<button id="recommend"[^>]*>(.*?)<\/button>/)[1];
-assert(recommendMarkup.includes('class="recommend-label">AI 추천 활동</span>'));
-assert(recommendMarkup.includes('id="recommend-copy"'));
+assert(recommendMarkup.includes('class="recommend-label">AI 추천</span>'));
+assert(recommendMarkup.includes('class="recommend-content"'));
+assert(recommendMarkup.includes('class="recommend-loader"'));
+assert(!compactHTML.includes('id="unit-progress"'));
 vm.runInContext('daily().target=20;daily().started=true;render()',c);
 assert.equal(node('#recommend-copy').textContent,'오늘의 학습 문제 풀기');
-assert.equal(node('#recommend')['aria-label'],'AI 추천 활동 · 오늘의 학습 문제 풀기');
+assert.equal(node('#recommend')['aria-label'],'AI 추천 · 오늘의 학습 문제 풀기');
 vm.runInContext('recommendationTimer',c).fn();click('recommend',0,false);
 assert.equal(node('#learning').open,true);assert.equal(vm.runInContext('editing.kind',c),'program');
 click('close-learning');
-console.log('Unit progress, prescription preparation, locked-icon gating, recommendation label containment and retained recommendation actions passed');
+console.log('Locked-icon gating, fixed recommendation label structure, retained actions and removed overview progress passed');
 
 require('node:test')('star transition expands and contracts at the button instead of travelling through the viewport center',async()=>{
   c.matchMedia=()=>({matches:false});
