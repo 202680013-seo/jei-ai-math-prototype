@@ -650,7 +650,6 @@ dialog[open]:not(.sky-dialog)::backdrop{opacity:1}
 .program-card .card-progress progress::-webkit-progress-value{background:var(--jei-on-accent,var(--forest));border-radius:99px}
 .program-card .card-progress progress::-moz-progress-bar{background:var(--jei-on-accent,var(--forest));border-radius:99px}
 .card-footer{display:flex;align-items:center;justify-content:flex-end;gap:10px;min-height:42px;width:100%;margin-top:auto}
-.card-footer.has-result{justify-content:space-between}
 .card-start-box{display:flex;align-items:center;justify-content:center;flex:none;width:100%;height:42px;padding:0 12px;border:2px solid var(--jei-c-c1d8af,#c1d8af);border-radius:10px;background:#fff;color:var(--forest);font-size:15px;font-weight:800;line-height:1.2}
 .is-current .card-start-box,.is-introduced .card-start-box{border-color:#ffffffa6}
 .program-card>.card-intro-note{min-width:0;margin:0;padding:0;border:0;background:none;font-size:9px;font-weight:700;line-height:1.5;color:inherit;text-align:right}
@@ -660,7 +659,6 @@ dialog[open]:not(.sky-dialog)::backdrop{opacity:1}
 .card-footer .card-lock{position:static;display:grid;place-items:center;flex:none;width:36px;height:36px;padding:8px;border:0;border-radius:10px;background:#ffffffa6;color:var(--jei-c-78846f,#78846f)}
 .card-result-links{display:flex;flex-direction:column;gap:3px;min-width:0}
 .card-result-links .review-entry{margin:0;font-size:10px}
-.card-review-note{font-size:9px;line-height:1.4;color:var(--jei-c-668853,#668853)}
 @media(max-width:1250px){
   .grid>.program-card{min-height:222px;padding:18px}
   .grid>.program-card.is-current,.grid>.program-card.is-introduced,.grid>.program-card.is-locked{padding:17px}
@@ -730,7 +728,6 @@ dialog[open]:not(.sky-dialog)::backdrop{opacity:1}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .program-card .card-progress progress::-webkit-progress-value{background:var(--theme-primary)}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .program-card .card-progress progress::-moz-progress-bar{background:var(--theme-primary)}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .card-state-icon.is-passed{color:var(--theme-primary)}
-:root:is([data-preview-theme=teal],[data-preview-theme=green]) .review-entry,:root:is([data-preview-theme=teal],[data-preview-theme=green]) .card-review-note{color:var(--theme-brand)}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .side-tab-surface path{fill:var(--theme-soft);stroke:var(--theme-line-strong)}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .groups-trigger .side-tab-content{color:var(--theme-brand)}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) #overlay,:root:is([data-preview-theme=teal],[data-preview-theme=green]) dialog:not(.diagnosis-screen)::backdrop{background:var(--theme-overlay)}
@@ -952,55 +949,17 @@ body.has-long-learning-list :is(.heading,#diagnosis-section,.program-card){scrol
 /* V3.7.4: a quiet completion mark and a clear, generous result action. */
 .completed-card-heading{display:flex;align-items:flex-start;gap:10px;width:100%;min-width:0;flex:1}
 .grid>.program-card .completed-card-heading>.program-title{flex:1;min-width:0;margin:0;font-size:17px;font-weight:800;line-height:1.55}
-.completed-card-heading>.card-state-icon{width:24px;height:24px;margin-top:2px}
-.card-footer.has-result{flex-direction:column;align-items:stretch;justify-content:flex-end;gap:6px}
-.card-result-action{position:relative;display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;padding:10px 12px;white-space:nowrap;border:2px solid var(--jei-c-d9e4cf,#d9e4cf);border-radius:11px;background:var(--paper);color:var(--jei-c-49702e,#49702e);font-size:16px;font-weight:800;line-height:1.3;transition:background .22s ease,border-color .22s ease,box-shadow .22s ease}
-.card-footer.has-result>.card-review-note{font-size:11px;line-height:1.4;text-align:center}
-:root:is([data-preview-theme=teal],[data-preview-theme=green]) .card-result-action{background:var(--theme-surface);border-color:var(--theme-line-strong);color:var(--theme-brand)}
 @media(max-width:1250px){.grid>.program-card .completed-card-heading>.program-title{font-size:16px}}
-@media(max-width:650px){.completed-card-heading{gap:8px}.completed-card-heading>.card-state-icon{width:22px;height:22px}.card-result-action{font-size:15px;min-height:42px}}
 @media(max-width:380px){.grid>.program-card .completed-card-heading>.program-title{font-size:15px}}
-@media(prefers-reduced-motion:reduce){.card-result-action{transition:none}}
 
-/* V3.7.5: independent, native result and review actions in a completed card. */
-article.program-card{color:var(--forest);cursor:default}
-.card-complete-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,112px),1fr));gap:8px;width:100%}
-.card-complete-actions>button{display:flex;align-items:center;justify-content:center;width:100%;min-width:0;min-height:44px;margin:0;padding:10px 8px;border:2px solid var(--jei-c-d9e4cf,#d9e4cf);border-radius:11px;font-size:16px;font-weight:800;line-height:1.3;white-space:nowrap;transition:background .2s,border-color .2s,box-shadow .2s,transform .2s}
-.card-complete-actions>.card-result-action{background:var(--paper);color:var(--jei-c-49702e,#49702e)}
-.card-complete-actions>.card-review-action{background:var(--soft);color:var(--forest);border-color:var(--jei-c-c1d8af,#c1d8af)}
-.card-complete-actions>.card-result-action:hover:not(:disabled){background:var(--soft);border-color:var(--jei-c-9bc480,#9bc480);box-shadow:0 3px 9px var(--jei-c-16330008,#16330008)}
-.card-complete-actions>.card-review-action:hover:not(:disabled){background:var(--forest);border-color:var(--forest);color:#fff;box-shadow:0 4px 10px var(--jei-c-16330012,#16330012);transform:translateY(-1px)}
-.card-complete-actions>button:active:not(:disabled){transform:none;box-shadow:none}
-:root:is([data-preview-theme=teal],[data-preview-theme=green]) .card-complete-actions>.card-review-action{background:var(--theme-soft);color:var(--theme-brand);border-color:var(--theme-line-strong)}
-:root:is([data-preview-theme=teal],[data-preview-theme=green]) .card-complete-actions>.card-review-action:hover:not(:disabled){background:var(--theme-primary);color:var(--theme-on-primary);border-color:var(--theme-primary)}
-:root:is([data-preview-theme=teal],[data-preview-theme=green]) .card-complete-actions>.card-result-action:hover:not(:disabled){background:var(--theme-soft);border-color:var(--theme-brand)}
 /* V3.7.7: the rail occupies the FHD gutter; the 258px cards and main stay in place. */
 @media(min-width:1800px){
   body.learning-navigation-open .learning-workspace{width:100%;margin-left:0}
   .learning-workspace main,body.learning-navigation-open .learning-workspace main{width:1440px;max-width:calc(100% - 128px);margin-left:auto;margin-right:auto;padding-inline:180px}
   body.learning-navigation-open #programs.grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
-@media(max-width:650px){.card-complete-actions>button{min-height:40px;font-size:15px}}
-@media(prefers-reduced-motion:reduce){.card-complete-actions>button{transition:none;transform:none!important}}
 
 
-/* V3.7.9: completed cards stay quiet until hover, focus, or an explicit card tap. */
-article.program-card{position:relative}
-article.program-card>.card-actions-trigger,article.program-card>.card-actions-trigger:hover:not(:disabled),article.program-card>.card-actions-trigger:active:not(:disabled){position:absolute;inset:0;z-index:1;width:100%;height:100%;margin:0;padding:0;border:0;border-radius:inherit;background:transparent;box-shadow:none;color:var(--muted);transform:none}
-.card-actions-trigger .card-options-icon{position:absolute;right:18px;bottom:18px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--paper);transition:opacity .2s ease}
-.card-options-icon svg{display:block;width:19px;height:19px}
-article.program-card>.card-actions-trigger:focus-visible{outline:3px solid var(--forest);outline-offset:4px}
-article.program-card .card-footer.has-result{position:relative;z-index:2;pointer-events:none}
-article.program-card .card-complete-actions,article.program-card .card-review-note{opacity:0;visibility:hidden;transform:translateY(5px);transition:opacity .24s ease,transform .28s ease,visibility 0s .28s}
-article.program-card .card-complete-actions{pointer-events:none}
-article.program-card:is(:focus-within,[data-actions-open=true]) :is(.card-complete-actions,.card-review-note){opacity:1;visibility:visible;transform:none;transition-delay:0s}
-article.program-card:is(:focus-within,[data-actions-open=true]) .card-complete-actions{pointer-events:auto}
-article.program-card:is(:focus-within,[data-actions-open=true]) .card-options-icon{opacity:0}
-@media(hover:hover){
-  article.program-card:hover :is(.card-complete-actions,.card-review-note){opacity:1;visibility:visible;transform:none;transition-delay:0s}
-  article.program-card:hover .card-complete-actions{pointer-events:auto}
-  article.program-card:hover .card-options-icon{opacity:0}
-}
 /* The preparation shares the diagnosis viewport and only returns home after all stages finish. */
 #learning .diagnosis-preparation{display:grid;place-items:center;min-height:calc(100dvh - 80px);max-width:860px;padding:52px 32px}
 #learning .diagnosis-preparation>.composition{width:100%;max-width:660px;min-height:0;margin:0;padding:0;border:0;background:transparent;text-align:center;color:var(--forest)}
@@ -1011,44 +970,76 @@ article.program-card:is(:focus-within,[data-actions-open=true]) .card-options-ic
   .diagnosis-preparation .composition h2{font-size:24px}
   .diagnosis-preparation .composition p{font-size:16px}
 }
-@media(prefers-reduced-motion:reduce){article.program-card :is(.card-complete-actions,.card-review-note,.card-options-icon){transition:none;transform:none}}
 
 
 /* V3.7.10: supplied status geometry with semantic paints for each service theme. */
 :root{--status-pass-fill:var(--jei-c-49702e,#49702e);--status-pass-mark:#fff;--status-review-fill:#a98240;--status-review-mark:#fffaf0;--status-lock-fill:var(--jei-c-adc99b,#adc99b);--status-lock-surface:color-mix(in srgb,var(--jei-c-f7f9f4,#f7f9f4) 91%,var(--forest))}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]){--status-pass-fill:var(--theme-brand);--status-review-fill:color-mix(in srgb,var(--theme-brand) 12%,#a98240);--status-lock-fill:var(--theme-disabled);--status-lock-surface:color-mix(in srgb,var(--theme-locked) 90%,var(--theme-title))}
 .grid>.program-card .card-footer .card-lock{width:40px;height:40px;padding:0;border:0;background:transparent}
-.completed-card-heading>.card-state-icon{width:28px;height:28px;margin-top:0}
 #group-panel .group-item:is([data-state=idle],[data-state=locked]){--status-lock-fill:var(--navigation-idle);--status-lock-surface:color-mix(in srgb,var(--navigation-idle) 8%,var(--paper))}
 .status-help-icon{display:block;flex:none;width:30px;height:30px}
 .status-help-icon svg{display:block;width:100%;height:100%}
 .grid>.needs-review-card .completed-card-heading{align-items:flex-start}
-#activity.failed-study-dialog{width:440px;max-width:calc(100% - 32px);padding:24px;border:1px solid var(--line);border-radius:26px;background:var(--paper);text-align:center}
-.failed-study-top{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;font-weight:700;color:var(--muted)}
-.failed-study-top>button{display:grid;place-items:center;width:32px;height:32px;padding:7px;border:0;background:transparent;border-radius:10px}
-.failed-study-top svg{display:block;width:100%;height:100%}
-.failed-study-body{padding:12px 4px 6px}
-.failed-study-symbol{display:block;width:64px;height:64px;margin:4px auto 18px}
-.failed-study-symbol svg{display:block;width:100%;height:100%}
-.failed-study-body>h2{margin:0 0 12px;font-size:23px;line-height:1.5;font-weight:800}
-.failed-study-body>p{margin:0;color:var(--muted);font-size:14px;line-height:1.8}
-.failed-study-actions{display:grid;gap:10px;margin-top:28px}
-.failed-study-actions>button{min-height:50px;width:100%;font-size:16px;font-weight:800;border-radius:13px}
-.failed-study-actions>button:not(.primary){background:transparent;border-color:var(--line);color:var(--muted)}
-:root:is([data-preview-theme=teal],[data-preview-theme=green]) #activity.failed-study-dialog{background:var(--theme-surface);border-color:var(--theme-line)}
+#activity.study-choice-dialog{width:440px;max-width:calc(100% - 32px);padding:24px;border:1px solid var(--line);border-radius:26px;background:var(--paper);text-align:center}
+.study-choice-top{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;font-weight:700;color:var(--muted)}
+.study-choice-top>button{display:grid;place-items:center;width:32px;height:32px;padding:7px;border:0;background:transparent;border-radius:10px}
+.study-choice-top svg{display:block;width:100%;height:100%}
+.study-choice-body{padding:12px 4px 6px}
+.study-choice-symbol{display:block;width:64px;height:64px;margin:4px auto 18px}
+.study-choice-symbol svg{display:block;width:100%;height:100%}
+.study-choice-body>h2{margin:0 0 12px;font-size:23px;line-height:1.5;font-weight:800}
+.study-choice-body>p{margin:0;color:var(--muted);font-size:14px;line-height:1.8}
+.study-choice-actions{display:grid;gap:10px;margin-top:28px}
+.study-choice-actions>button{min-height:50px;width:100%;font-size:16px;font-weight:800;border-radius:13px}
+.study-choice-actions>button:not(.primary){background:transparent;border-color:var(--line);color:var(--muted)}
+:root:is([data-preview-theme=teal],[data-preview-theme=green]) #activity.study-choice-dialog{background:var(--theme-surface);border-color:var(--theme-line)}
 
 
-/* V3.7.11: a single introductory cue belongs to the first available failed card. */
-.needs-review-card .card-footer{justify-content:flex-end}
-.failed-card-cue{position:relative;display:block;flex:none;width:44px;height:44px}
-.failed-card-cue>.card-state-icon{width:100%;height:100%}
-.failed-first-tooltip{position:absolute;z-index:3;right:-12px;bottom:calc(100% + 11px);width:max-content;max-width:210px;padding:8px 11px;border-radius:9px;background:var(--forest);color:#fff;font-size:12px;font-weight:800;line-height:1.5;white-space:nowrap;pointer-events:none;box-shadow:0 3px 10px var(--jei-c-16330012,#16330012);animation:failed-hint-arrive .32s .15s ease-out both}
-.failed-first-tooltip::after{content:"";position:absolute;right:29px;top:100%;width:10px;height:10px;background:inherit;clip-path:polygon(0 0,100% 0,50% 100%)}
-:root:is([data-preview-theme=teal],[data-preview-theme=green]) .failed-first-tooltip{background:var(--theme-brand);color:#fff}
-@keyframes failed-hint-arrive{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+/* V3.7.12: all completed cards share one quiet status anchor and one-time guidance. */
+:root{--card-status-slot:40px;--card-status-symbol:28px}
+.grid>.program-card:is(.needs-review-card,.passed-card) .card-footer{justify-content:flex-end}
+.completed-card-cue{position:relative;display:grid;place-items:center;flex:none;width:var(--card-status-slot);height:var(--card-status-slot)}
+.completed-card-cue>.card-state-icon{width:var(--card-status-symbol);height:var(--card-status-symbol)}
+/* A 28px circular SVG has a 25px ink diameter; the 40px lock SVG has a 25px glyph height. */
+.grid>.program-card .card-footer .card-lock{width:var(--card-status-slot);height:var(--card-status-slot);padding:0;border:0;background:transparent}
+.completed-first-tooltip{position:absolute;z-index:3;right:-12px;bottom:calc(100% + 8px);width:max-content;max-width:210px;padding:8px 11px;border-radius:9px;background:var(--forest);color:#fff;font-size:12px;font-weight:800;line-height:1.5;white-space:nowrap;pointer-events:none;box-shadow:0 3px 10px var(--jei-c-16330012,#16330012);animation:completed-hint-arrive .32s .15s ease-out both}
+.completed-first-tooltip::after{content:"";position:absolute;right:27px;top:100%;width:10px;height:10px;background:inherit;clip-path:polygon(0 0,100% 0,50% 100%)}
+:root:is([data-preview-theme=teal],[data-preview-theme=green]) .completed-first-tooltip{background:var(--theme-brand);color:#fff}
+@keyframes completed-hint-arrive{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.program-screen-body.has-completion{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100dvh - 82px);max-width:900px;padding:48px 32px 64px}
+.program-screen-body.has-completion>.program-result{position:relative;isolation:isolate;width:100%;max-width:740px;padding:12px 0;text-align:center}
+.completion-emblem{display:block;width:88px;height:88px;margin:0 auto 20px;animation:completion-emblem-arrive .65s var(--navigation-ease) both}
+.completion-emblem svg{display:block;width:100%;height:100%}
+.program-result.completion-result>h1{margin:18px 0 12px;font-size:30px;line-height:1.5;font-weight:800;outline:none}
+.program-result.completion-result>h3{margin:0 0 16px;font-size:20px;line-height:1.6;font-weight:800}
+.program-result.completion-result>p{margin:10px 0;font-size:15px;line-height:1.8;color:var(--muted)}
+.program-result.completion-result>.badge{font-size:13px}
+.completion-result>.review-answers{max-width:700px;margin:24px auto 0;text-align:left}
+.completion-actions{display:flex;align-items:stretch;justify-content:center;flex-wrap:wrap;gap:12px;margin-top:30px}
+.completion-actions>button{display:flex;align-items:center;justify-content:center;min-width:190px;min-height:52px;margin:0;padding:12px 24px;border:2px solid var(--line);border-radius:14px;font-size:17px;font-weight:800;line-height:1.4;box-sizing:border-box}
+.completion-actions>button:not(.primary){background:var(--paper);color:var(--forest)}
+.completion-actions>.primary{background:var(--forest);border-color:var(--forest);color:#fff}
+:root:is([data-preview-theme=teal],[data-preview-theme=green]) .completion-actions>.primary{background:var(--theme-primary);border-color:var(--theme-primary);color:var(--theme-on-primary)}
+:root:is([data-preview-theme=teal],[data-preview-theme=green]) .completion-actions>button:not(.primary){background:var(--theme-surface);border-color:var(--theme-line-strong);color:var(--theme-brand)}
+.study-choice-actions.completion-actions{display:grid;gap:10px;margin-top:28px}
+.study-choice-actions.completion-actions>button{min-width:0;width:100%}
+.completion-confetti{position:absolute;z-index:-1;top:-90px;left:-5%;width:110%;height:420px;overflow:hidden;pointer-events:none}
+.completion-confetti>i{position:absolute;top:-18px;left:var(--x);width:7px;height:12px;border-radius:2px;opacity:0;animation:completion-confetti-fall 2.3s var(--delay) cubic-bezier(.15,.45,.35,1) both}
+.completion-confetti>.confetti-color-0{background:var(--lime)}
+.completion-confetti>.confetti-color-1{background:var(--status-pass-fill)}
+.completion-confetti>.confetti-color-2{background:#ecd38e}
+.completion-confetti>.confetti-color-3{background:var(--jei-c-c1d8af,#c1d8af);width:9px;height:9px;border-radius:50%}
+@keyframes completion-confetti-fall{0%{opacity:0;transform:translate3d(0,0,0) rotate(0)}12%{opacity:1}75%{opacity:.85}100%{opacity:0;transform:translate3d(var(--drift),370px,0) rotate(var(--turn))}}
+@keyframes completion-emblem-arrive{from{opacity:0;transform:translateY(8px) scale(.94)}to{opacity:1;transform:none}}
 @media(max-width:650px){
-  .failed-card-cue{width:40px;height:40px}
-  .failed-first-tooltip{right:-8px;max-width:calc((100vw - 70px)/2);padding:7px 9px;font-size:11px;white-space:normal;text-align:center}
-  .failed-first-tooltip::after{right:23px}
+  .completed-first-tooltip{right:-8px;max-width:calc((100vw - 70px)/2);padding:7px 9px;font-size:11px;white-space:normal;text-align:center}
+  .completed-first-tooltip::after{right:23px}
+  .program-screen-body.has-completion{min-height:calc(100dvh - 72px);padding:32px 22px 48px}
+  .completion-emblem{width:76px;height:76px;margin-bottom:16px}
+  .program-result.completion-result>h1{font-size:26px}
+  .program-result.completion-result>h3{font-size:18px}
+  .completion-actions{gap:10px}
+  .completion-actions>button{min-width:0;width:100%;font-size:16px}
+  .completion-confetti{left:0;width:100%;height:360px}
 }
-@media(prefers-reduced-motion:reduce){.failed-first-tooltip{animation:none}}
+@media(prefers-reduced-motion:reduce){.completed-first-tooltip,.completion-emblem{animation:none}.completion-confetti{display:none}}

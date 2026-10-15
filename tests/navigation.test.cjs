@@ -103,7 +103,7 @@ test('long learning lists pin the full guidance area and the 12-card review stat
   h.context.__JEI_REVIEW__={scenario:'many'};
   vm.runInContext(fs.readFileSync('dist/preview-controls.js','utf8'),h.context);
   assert.equal(h.evaluate('current().programs.length'),12);assert(h.node('body').classList.contains('has-long-learning-list'));
-  assert.equal((h.node('#programs').innerHTML.match(/data-action="program"/g)||[]).length,12);
+  assert.equal((h.node('#programs').innerHTML.match(/class="card program-card\b/g)||[]).length,12);
   assert.equal(h.evaluate('current().programs.filter(p=>p.status==="passed").length'),2);
   const active=h.data('current().programs[2]');assert(active.progress>0&&active.progress<100);
   assert.equal(h.evaluate('M.canStudy(current(),current().programs[3])'),false);
@@ -136,7 +136,7 @@ test('the scroll demonstration uses 20 cards in D-grade 모으기와 가르기(1
   assert.equal(h.evaluate('state.grade'),3);assert.equal(h.evaluate('state.index'),1);
   assert.equal(h.evaluate('current().groupName'),'모으기와 가르기(10)');assert.equal(h.evaluate('current().programs.length'),20);
   assert.equal(h.evaluate('M.sourceCount(3,1)'),20);assert.equal(h.evaluate('M.sourceCount(3,0)'),8);
-  assert.equal((h.node('#programs').innerHTML.match(/data-action="program"/g)||[]).length,20);
+  assert.equal((h.node('#programs').innerHTML.match(/class="card program-card\b/g)||[]).length,20);
   assert(h.node('body').classList.contains('has-long-learning-list'));h.click('groups');
   assert.equal(h.evaluate('canNavigateTopic(state.grades[3][0])'),true);assert.equal(h.evaluate('canNavigateTopic(state.grades[3][2])'),false);
   h.evaluate('M.preset(state,3);render()');assert.equal(h.evaluate('current().programs.length'),20);

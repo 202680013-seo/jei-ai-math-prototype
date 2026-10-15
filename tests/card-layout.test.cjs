@@ -30,20 +30,17 @@ test('the active card shows only a bar and percentage, retains accessible counts
   assert(h.node('#learning').innerHTML.includes(`문항 ${p.completedFrames+1} /`));
 });
 
-test('complete and failed cards keep result/review navigation but have distinct status icons',()=>{
+test('complete and failed cards share a native choice trigger with their status icon in the footer',()=>{
   const h=harness();h.evaluate('M.preset(state,5);render()');
-  const complete=h.evaluate('programCard(current(),current().programs[0])');
-  assert(complete.includes('card-state-icon is-passed'));assert(complete.includes('card-result-action'));assert(complete.includes('결과 보기'));
-  assert(!complete.includes('class="card-top"'));assert(!complete.includes('class="card-status"'));
-  assert(complete.startsWith('<article '));assert.equal((complete.match(/<button\b/g)||[]).length,3);
-  assert(complete.includes('data-action="card-review"'));assert(complete.includes('복습하기'));assert(complete.indexOf('card-state-icon')<complete.indexOf('card-footer'));
-  assert(!complete.includes('card-number'));
-  assert(!complete.includes('<progress'));assert(!complete.includes('card-start-box'));
-  h.click('program',0);assert(h.node('#learning').innerHTML.includes('복습하기'));
-  h.evaluate("current().programs[0].status='failed';render()");
-  const failed=h.evaluate('programCard(current(),current().programs[0])');
-  assert(failed.includes('card-state-icon needs-review'));assert(!failed.includes('card-state-icon is-passed'));
-  assert(failed.includes('미통과'));assert(failed.includes('data-action="failed-card"'));assert(failed.includes('aria-haspopup="dialog"'));assert(!failed.includes('card-result-action'));assert(!failed.includes('card-review-action'));assert.equal((failed.match(/<button\b/g)||[]).length,1);
+  for(const [status,action,icon] of [['passed','completed-card','is-passed'],['failed','failed-card','needs-review']]){
+    h.evaluate(`current().programs[0].status='${status}';render()`);
+    const html=h.evaluate('programCard(current(),current().programs[0])');
+    assert(html.startsWith('<button '));assert.equal((html.match(/<button\b/g)||[]).length,1);
+    assert(html.includes(`data-action="${action}"`));assert(html.includes(`card-state-icon ${icon}`));
+    assert(html.indexOf('card-footer')<html.indexOf('card-state-icon'));
+    assert(!html.includes('card-actions-trigger'));assert(!html.includes('card-options-icon'));assert(!html.includes('card-result-action'));
+    assert(!html.includes('card-number'));assert(!html.includes('<progress'));assert(!html.includes('card-start-box'));
+  }
 });
 
 test('locked cards show a footer lock without an ordinal, and never expose a start or result action',()=>{
@@ -59,15 +56,11 @@ test('locked cards show a footer lock without an ordinal, and never expose a sta
   h.click('program',1);assert.equal(h.node('#learning').open,false);
 });
 
-test('a completed-card menu is an explicit action before its choices and never starts or resets learning',()=>{
-  const h=harness();h.seed();const before=h.data('current().programs'),selector='#programs>article[data-program-id="0"]';
-  const html=h.evaluate('programCard(current(),current().programs[0])');
-  assert(html.indexOf('data-action="card-actions"')<html.indexOf('data-action="program"'),'keyboard disclosure precedes the two revealed choices');
-  let focused=0;h.node(selector+' .card-result-action').focus=()=>{focused++;};
-  h.click('card-actions',0);assert.equal(h.node(selector).getAttribute('data-actions-open'),'true');assert.equal(focused,1);
-  assert.equal(h.node('#learning').open,false);assert.deepEqual(h.data('current().programs'),before);
-  h.document.querySelectorAll=()=>[h.node(selector)];h.evaluate('closeCardActions()');
-  assert.equal(h.node(selector).getAttribute('data-actions-open'),null);
-  h.click('card-actions',1);assert.equal(h.node('#programs>article[data-program-id="1"]').getAttribute('data-actions-open'),null);
+test('a passed card opens result and review choices without starting or resetting learning',()=>{
+  const h=harness();h.seed();const before=h.data('current().programs');
+  h.click('completed-card',0);assert.equal(h.node('#activity').open,true);assert.equal(h.node('#learning').open,false);
+  assert(h.node('#activity').innerHTML.includes('data-action="study-choice-review"'));assert(h.node('#activity').innerHTML.includes('data-action="study-choice-result"'));
   assert.deepEqual(h.data('current().programs'),before);
+  h.click('study-choice-result');assert.equal(h.node('#learning').open,true);assert.equal(h.evaluate('editing.showResult'),true);assert.deepEqual(h.data('current().programs'),before);
+  h.click('close-learning');h.click('completed-card',1);assert.equal(h.node('#activity').open,false);assert.deepEqual(h.data('current().programs'),before);
 });
