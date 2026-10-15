@@ -140,12 +140,12 @@ test('the scroll demonstration uses 20 cards in D-grade 모으기와 가르기(1
   h.evaluate('M.preset(state,3);render()');assert.equal(h.evaluate('current().programs.length'),20);
 });
 
-test('FHD keeps the 1440px content and the same four 348px cards beside the open rail',()=>{
+test('FHD preserves the original 258px cards and uses extra width as gutters with four columns beside the rail',()=>{
   const h=harness();h.context.innerWidth=1920;
-  const closed=h.data('baselineStudyGrid(1920)');assert.equal(closed.columns,4);assert.equal(closed.width,348);
+  const closed=h.data('baselineStudyGrid(1920)'),reference=h.data('baselineStudyGrid(1440)');assert.equal(closed.columns,4);assert.equal(closed.width,reference.width);assert.equal(closed.width,258);
   h.node('#learning-workspace').getBoundingClientRect=()=>({width:1920-276});
-  const card=h.node('fhd-card');card.getBoundingClientRect=()=>({width:348,height:232});h.document.querySelectorAll=()=>[card];
+  const card=h.node('fhd-card');card.getBoundingClientRect=()=>({width:258,height:232});h.document.querySelectorAll=()=>[card];
   h.click('groups');const style=h.node('#learning-workspace').style;
-  assert.equal(style['--navigation-columns'],'4');assert.equal(style['--navigation-content-width'],'1440px');assert.equal(style['--navigation-card-width'],'348px');
-  h.click('close-panel');h.click('groups');assert.equal(style['--navigation-columns'],'4');assert.equal(style['--navigation-content-width'],'1440px');
+  assert.equal(style['--navigation-columns'],'4');assert.equal(style['--navigation-content-width'],'1080px');assert.equal(style['--navigation-card-width'],'258px');
+  h.click('close-panel');h.click('groups');assert.equal(style['--navigation-columns'],'4');assert.equal(style['--navigation-content-width'],'1080px');
 });

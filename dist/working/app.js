@@ -510,7 +510,7 @@ function beginComposition(n,mode){
 let studyLayoutAnimations=[],navigationCardWidth=null,navigationViewport=0;
 function baselineStudyGrid(viewport){
   const columns=viewport<=760?2:viewport<=980?3:4,gap=viewport<=380?10:viewport<=650?12:16;
-  const main=viewport>=1800?1440:viewport<=650?viewport-40:viewport<=980?viewport-104:viewport<=1250?viewport-140:Math.min(1440,viewport-Math.min(480,Math.max(128,viewport*.25)));
+  const main=viewport>=1800?1080:viewport<=650?viewport-40:viewport<=980?viewport-104:viewport<=1250?viewport-140:Math.min(1440,viewport-Math.min(480,Math.max(128,viewport*.25)));
   return {columns,gap,width:Math.max(1,(main-gap*(columns-1))/columns)};
 }
 function navigationGridMetrics(viewport,available,preferred){

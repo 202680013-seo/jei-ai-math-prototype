@@ -989,9 +989,9 @@ article.program-card{color:var(--forest);cursor:default}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .card-complete-actions>.card-review-action{background:var(--theme-soft);color:var(--theme-brand);border-color:var(--theme-line-strong)}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .card-complete-actions>.card-review-action:hover:not(:disabled){background:var(--theme-primary);color:var(--theme-on-primary);border-color:var(--theme-primary)}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .card-complete-actions>.card-result-action:hover:not(:disabled){background:var(--theme-soft);border-color:var(--theme-brand)}
-/* At FHD, a 1440px content column fits beside the 276px rail without wrapping a card. */
+/* V3.7.6: keep 258px cards inside the 1440px outer frame; spare width becomes gutters. */
 @media(min-width:1800px){
-  .learning-workspace main{width:1440px;max-width:calc(100% - 128px)}
+  .learning-workspace main{width:1440px;max-width:calc(100% - 128px);padding-inline:180px}
   body.learning-navigation-open .learning-workspace main{width:1440px;max-width:calc(100% - 64px);margin-left:auto;margin-right:auto}
   body.learning-navigation-open #programs.grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
