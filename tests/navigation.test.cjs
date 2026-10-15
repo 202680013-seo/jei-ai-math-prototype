@@ -1,7 +1,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const {harness}=require('./helpers/ui-harness.cjs');
 
-test('the outline shows current learning information, topic numbers and accessible status icons',()=>{
+test('the outline shows grade navigation, topic numbers and accessible status icons without a summary box',()=>{
   const h=harness();h.evaluate(`
     state=M.create();const topics=state.grades[state.grade];
     topics[0].diagnosis='done';topics[0].programs=M.programs(2);
@@ -11,13 +11,13 @@ test('the outline shows current learning information, topic numbers and accessib
     render();
   `);
   h.click('groups');const html=h.node('#group-panel').innerHTML;
-  assert(!html.includes('data-action="nav-resume"'));assert(html.includes('현재 학습'));assert(!html.includes('완료한 주제'));
+  assert(!html.includes('data-action="nav-resume"'));assert(!html.includes('현재 학습'));assert(!html.includes('완료한 주제'));
   assert(html.includes('class="nav-topic-number" aria-hidden="true">01</span>'));
   assert(html.includes('class="sr-only">완료</span>'));assert(html.includes('fill="currentColor"'));
   assert(!html.includes('지금 보고 있어요'));assert(!html.includes('nav-topic-icon'));
   const visible=html.replace(/<span class="sr-only">.*?<\/span>/gs,'').replace(/<[^>]*>/g,'');
   assert(!visible.includes('복습 필요'));assert(!visible.includes('시작 전'));assert(!visible.includes('학습 중'));
-  assert(html.indexOf('nav-summary')<html.indexOf('group-nav'));
+  assert(!html.includes('nav-summary'));assert(html.indexOf('group-nav')<html.indexOf('nav-list-heading'));
   assert(!html.includes('진단 그룹'));assert(!html.includes('진단 완료율'));assert(html.includes('복습 필요'));
   const arrows=[...html.matchAll(/<button class="nav-grade-arrow"[^>]*>(.*?)<\/button>/g)].map(m=>m[1]);
   assert.equal(arrows.length,2);assert(arrows.every(x=>x.startsWith('<svg')&&!x.includes('이전')&&!x.includes('다음')));
@@ -60,12 +60,14 @@ test('stable panel renders retain the mounted content and stale reveal or exit t
   h.click('groups');assert.equal(h.evaluate('groupRevealTimer'),null);assert.equal(panel['data-reveal'],'false');
 });
 
-test('the current-learning summary remains informational when browsing another grade and reflects the actual program',()=>{
+test('the grade-only heading follows browsing without changing the current learning',()=>{
   const h=harness();h.evaluate('M.preset(state,4);render()');const before=h.data('current().programs[0]');
-  h.click('groups');const summary=h.node('#group-panel').innerHTML.match(/<section class="grade-summary[\s\S]*?<\/section>/)[0];
-  assert(summary.includes(before.name));assert(!summary.includes('<button'));
-  h.click('next-grade');assert.notEqual(h.evaluate('browseGrade'),h.evaluate('state.grade'));
-  assert.equal(h.node('#group-panel').innerHTML.match(/<section class="grade-summary[\s\S]*?<\/section>/)[0],summary);
+  h.click('groups');const html=h.node('#group-panel').innerHTML;
+  assert(!html.includes('nav-summary'));assert(!html.includes('현재 학습'));
+  assert(html.includes('<strong><span>D</span>등급</strong>'));
+  h.click('next-grade');assert.equal(h.evaluate('browseGrade'),4);
+  assert(h.node('#group-panel').innerHTML.includes('<strong><span>E</span>등급</strong>'));
+  assert.equal(h.evaluate('state.grade'),3);assert.equal(h.evaluate('state.index'),0);
   assert.equal(h.node('#learning').open,false);assert.deepEqual(h.data('current().programs[0]'),before);
 });
 
@@ -106,7 +108,7 @@ test('long learning lists pin the full guidance area and the 12-card review stat
   const active=h.data('current().programs[2]');assert(active.progress>0&&active.progress<100);
   assert.equal(h.evaluate('M.canStudy(current(),current().programs[3])'),false);
   assert.equal(h.node('#recommend').disabled,false);
-  h.click('groups');assert(h.node('body').classList.contains('has-long-learning-list'));assert.equal(h.evaluate('navigationCurrentLearning().detail'),active.name);
+  h.click('groups');assert(h.node('body').classList.contains('has-long-learning-list'));assert(!h.node('#group-panel').innerHTML.includes('nav-summary'));assert.deepEqual(h.data('current().programs[2]'),active);
   h.click('program',2);assert.equal(h.node('#learning').open,true);assert.equal(h.evaluate('current().programs[2].progress'),active.progress);
 });
 
@@ -140,10 +142,11 @@ test('the scroll demonstration uses 20 cards in D-grade 모으기와 가르기(1
   h.evaluate('M.preset(state,3);render()');assert.equal(h.evaluate('current().programs.length'),20);
 });
 
-test('FHD preserves the original 258px cards and uses extra width as gutters with four columns beside the rail',()=>{
-  const h=harness();h.context.innerWidth=1920;
+test('FHD preserves four 258px cards and leaves the main stationary while the rail opens and closes',()=>{
+  const h=harness(undefined,{reducedMotion:false});h.context.innerWidth=1920;
   const closed=h.data('baselineStudyGrid(1920)'),reference=h.data('baselineStudyGrid(1440)');assert.equal(closed.columns,4);assert.equal(closed.width,reference.width);assert.equal(closed.width,258);
-  h.node('#learning-workspace').getBoundingClientRect=()=>({width:1920-276});
+  h.node('#learning-workspace').getBoundingClientRect=()=>({width:1920});
+  h.node('main').animate=()=>assert.fail('FHD main should stay stationary without a layout fade');
   const card=h.node('fhd-card');card.getBoundingClientRect=()=>({width:258,height:232});h.document.querySelectorAll=()=>[card];
   h.click('groups');const style=h.node('#learning-workspace').style;
   assert.equal(style['--navigation-columns'],'4');assert.equal(style['--navigation-content-width'],'1080px');assert.equal(style['--navigation-card-width'],'258px');

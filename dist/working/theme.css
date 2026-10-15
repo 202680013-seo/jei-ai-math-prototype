@@ -788,16 +788,6 @@ body.learning-navigation-open .learning-workspace main{width:calc(100% - 136px);
 #group-panel .nav-close,#group-panel .nav-help,#group-panel .nav-grade-arrow{display:grid;place-items:center;flex:none;width:34px;height:34px;padding:7px;border:0;border-radius:10px;background:transparent;color:var(--muted)}
 #group-panel .nav-close:hover,#group-panel .nav-help:hover,#group-panel .nav-grade-arrow:hover:not(:disabled){background:var(--soft);color:var(--forest)}
 #group-panel .nav-close svg,#group-panel .nav-grade-arrow svg,#group-panel .nav-help svg{display:block;width:100%;height:100%}
-#group-panel .nav-summary{padding:17px 16px 15px;margin:4px 0 18px;border:0;border-radius:18px;background:var(--soft);color:var(--forest)}
-.nav-summary-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
-.nav-summary-top>span{font-size:12px;font-weight:700}
-.nav-summary-top>strong{font-size:27px;font-weight:800;line-height:1.2;font-variant-numeric:tabular-nums}
-#group-panel .nav-summary-top small{font-size:13px;font-weight:700;color:var(--muted)}
-#group-panel .nav-summary progress{display:block;width:100%;height:6px;border:0;border-radius:999px;overflow:hidden;accent-color:var(--jei-c-49702e,#49702e)}
-#group-panel .nav-summary progress::-webkit-progress-bar{background:#ffffffc2;border-radius:999px}
-#group-panel .nav-summary progress::-webkit-progress-value{background:var(--jei-c-49702e,#49702e);border-radius:999px}
-#group-panel .nav-summary progress::-moz-progress-bar{background:var(--jei-c-49702e,#49702e);border-radius:999px}
-#group-panel .nav-summary p{margin:10px 0 0;font-size:10px;line-height:1.6;color:var(--muted)}
 #group-panel .group-nav{padding:0 2px;margin:0 0 18px;gap:12px;align-items:center}
 #group-panel .group-nav>strong{display:flex;align-items:center;gap:5px;font-size:18px;font-weight:800;color:var(--forest)}
 #group-panel .nav-grade-arrow{width:36px;height:36px;padding:9px;background:var(--jei-c-f8fbf5,#f8fbf5)}
@@ -837,7 +827,6 @@ body.learning-navigation-open .learning-workspace main{width:calc(100% - 136px);
   .mentor-cluster>.recommend{grid-column:1;grid-row:2;width:100%;margin:0}
   .heading-title-row{gap:8px}.heading-title-row #group-title{font-size:23px}
 }
-:root:is([data-preview-theme=teal],[data-preview-theme=green]) #group-panel .nav-summary{background:var(--theme-soft);color:var(--theme-title)}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) #group-panel .nav-grade-arrow{background:var(--theme-surface-alt)}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) #group-panel .group-item.selected{border-color:var(--theme-line-strong)}
 @media(max-width:650px){
@@ -857,10 +846,10 @@ body.learning-navigation-open .learning-workspace main{width:calc(100% - 136px);
 
 .groups-trigger[data-tab-phase=closing],.groups-trigger[data-tab-phase=closing]:hover:not(:disabled),.groups-trigger[data-tab-phase=closing]:active:not(:disabled){transition-timing-function:var(--navigation-ease)}
 
-/* Keep progress and grade navigation visible while only the topics scroll. */
+/* Keep grade navigation visible while only the topics scroll. */
 #group-panel .panel-head{flex:none}
 #group-panel .panel-content{display:flex;flex-direction:column;overflow:hidden;min-height:0}
-#group-panel .nav-summary,#group-panel .group-nav,#group-panel .nav-list-heading{flex:none}
+#group-panel .group-nav,#group-panel .nav-list-heading{flex:none}
 #group-panel .group-list{display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--line) transparent;padding:0 2px 6px}
 #group-panel .group-item{flex:none}
 
@@ -887,10 +876,6 @@ body.learning-navigation-open .groups-trigger[aria-expanded=true],body.learning-
 .program-card:is(.is-ready,.is-current):focus-visible:not(:disabled) .card-start-box{background:var(--study-action-hover);border-color:var(--study-action-hover);color:var(--study-action-on-hover);box-shadow:0 4px 12px var(--jei-c-16330020,#16330020)}
 .program-card:is(.is-ready,.is-current):active:not(:disabled) .card-start-box{transform:translateY(0);box-shadow:none}
 .card-footer .card-lock{background:color-mix(in srgb,var(--jei-c-f7f9f4,#f7f9f4) 91%,var(--forest));border:0}
-#group-panel .nav-resume-top{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:9px}
-#group-panel .nav-resume-top small{font-size:10px;color:var(--jei-c-49702e,#49702e);font-weight:700}
-#group-panel .nav-resume-title{display:block;font-size:16px;line-height:1.45;font-weight:800;color:var(--forest)}
-#group-panel .nav-resume-detail{margin:6px 0 0;font-size:11px;line-height:1.5;color:var(--muted)}
 #group-panel .group-item{gap:9px}
 #group-panel .nav-topic-number{display:grid;place-items:center;flex:none;width:22px;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--muted)}
 #group-panel .nav-topic-status{display:grid;place-items:center;flex:none;width:24px;height:24px}
@@ -989,10 +974,10 @@ article.program-card{color:var(--forest);cursor:default}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .card-complete-actions>.card-review-action{background:var(--theme-soft);color:var(--theme-brand);border-color:var(--theme-line-strong)}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .card-complete-actions>.card-review-action:hover:not(:disabled){background:var(--theme-primary);color:var(--theme-on-primary);border-color:var(--theme-primary)}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .card-complete-actions>.card-result-action:hover:not(:disabled){background:var(--theme-soft);border-color:var(--theme-brand)}
-/* V3.7.6: keep 258px cards inside the 1440px outer frame; spare width becomes gutters. */
+/* V3.7.7: the rail occupies the FHD gutter; the 258px cards and main stay in place. */
 @media(min-width:1800px){
-  .learning-workspace main{width:1440px;max-width:calc(100% - 128px);padding-inline:180px}
-  body.learning-navigation-open .learning-workspace main{width:1440px;max-width:calc(100% - 64px);margin-left:auto;margin-right:auto}
+  body.learning-navigation-open .learning-workspace{width:100%;margin-left:0}
+  .learning-workspace main,body.learning-navigation-open .learning-workspace main{width:1440px;max-width:calc(100% - 128px);margin-left:auto;margin-right:auto;padding-inline:180px}
   body.learning-navigation-open #programs.grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
 @media(max-width:650px){.card-complete-actions>button{min-height:40px;font-size:15px}}
