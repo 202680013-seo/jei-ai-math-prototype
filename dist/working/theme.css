@@ -53,7 +53,7 @@ main{width:calc(100% - clamp(128px,25vw,480px));max-width:1440px;margin:0 auto;p
 .grid>.program-card.is-current:hover:not(:disabled),.grid>.program-card.is-introduced:hover:not(:disabled){background:var(--jei-c-aaf17d,#aaf17d);border-color:var(--jei-c-6baa42,#6baa42)}
 .program-card.is-current .card-top small,.program-card.is-introduced .card-top small{background:#ffffff70;color:var(--jei-c-305413,#305413)}
 .program-card.is-current .badge,.program-card.is-introduced .badge{border-color:var(--jei-c-163300,#163300);background:var(--jei-c-163300,#163300);color:#fff}
-.grid>.program-card.is-complete{background:var(--jei-c-f8fbf5,#f8fbf5);border-color:var(--jei-c-e0e7da,#e0e7da)}
+.grid>.program-card.is-complete{background:var(--completed-card-fill);border-color:var(--jei-c-e0e7da,#e0e7da)}
 .program-card.is-complete .badge{color:var(--jei-c-456a2e,#456a2e);border-color:var(--jei-c-d7e8ca,#d7e8ca);background:var(--jei-c-edf7e5,#edf7e5)}
 .grid>.program-card.is-locked{background:var(--jei-c-f0f3ed,#f0f3ed);border-color:var(--jei-c-e3e8df,#e3e8df);color:var(--jei-c-7b8574,#7b8574);opacity:1;box-shadow:none}
 .program-card.is-locked .badge{background:transparent;border-color:var(--jei-c-dbe2d5,#dbe2d5);color:var(--jei-c-78846f,#78846f)}
@@ -718,7 +718,7 @@ dialog[open]:not(.sky-dialog)::backdrop{opacity:1}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .grid>.program-card{background:var(--theme-surface);border-color:var(--theme-line);color:var(--theme-title)}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .grid>.program-card.is-current,:root:is([data-preview-theme=teal],[data-preview-theme=green]) .grid>.program-card.is-introduced{background:var(--theme-active);border-color:var(--theme-line-strong);color:var(--theme-on-active)}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .grid>.program-card.is-current:hover:not(:disabled),:root:is([data-preview-theme=teal],[data-preview-theme=green]) .grid>.program-card.is-introduced:hover:not(:disabled){background:var(--theme-active);border-color:var(--theme-brand)}
-:root:is([data-preview-theme=teal],[data-preview-theme=green]) .grid>.program-card.is-complete{background:var(--theme-completed);border-color:var(--theme-line)}
+:root:is([data-preview-theme=teal],[data-preview-theme=green]) .grid>.program-card.is-complete{background:var(--completed-card-fill);border-color:var(--theme-line)}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .grid>.program-card.is-locked,:root:is([data-preview-theme=teal],[data-preview-theme=green]) .grid>.program-card.is-locked:hover{background:var(--theme-locked);border-color:var(--theme-line);color:var(--theme-disabled)}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .grid>.program-card.is-locked .program-title,:root:is([data-preview-theme=teal],[data-preview-theme=green]) .card-footer .card-lock{color:var(--theme-disabled)}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .grid>.program-card.is-current .start-here,:root:is([data-preview-theme=teal],[data-preview-theme=green]) .grid>.program-card.is-introduced .start-here{color:var(--theme-on-active)}
@@ -996,16 +996,20 @@ body.has-long-learning-list :is(.heading,#diagnosis-section,.program-card){scrol
 
 
 /* V3.7.12: all completed cards share one quiet status anchor and one-time guidance. */
-:root{--card-status-slot:40px;--card-status-symbol:28px}
+:root{--card-status-slot:40px;--card-status-symbol:36px;--completed-card-fill:color-mix(in srgb,var(--theme-soft-strong,var(--jei-c-c8f2b1,#c8f2b1)) 40%,var(--paper))}
 .grid>.program-card:is(.needs-review-card,.passed-card) .card-footer{justify-content:flex-end}
 .completed-card-cue{position:relative;display:grid;place-items:center;flex:none;width:var(--card-status-slot);height:var(--card-status-slot)}
 .completed-card-cue>.card-state-icon{width:var(--card-status-symbol);height:var(--card-status-symbol)}
-/* A 28px circular SVG has a 25px ink diameter; the 40px lock SVG has a 25px glyph height. */
+/* Enlarge the solid status badge within the shared 40px anchor to balance the lock tile visually. */
 .grid>.program-card .card-footer .card-lock{width:var(--card-status-slot);height:var(--card-status-slot);padding:0;border:0;background:transparent}
-.completed-first-tooltip{position:absolute;z-index:3;right:-12px;bottom:calc(100% + 8px);width:max-content;max-width:210px;padding:8px 11px;border-radius:9px;background:var(--forest);color:#fff;font-size:12px;font-weight:800;line-height:1.5;white-space:nowrap;pointer-events:none;box-shadow:0 3px 10px var(--jei-c-16330012,#16330012);animation:completed-hint-arrive .32s .15s ease-out both}
-.completed-first-tooltip::after{content:"";position:absolute;right:27px;top:100%;width:10px;height:10px;background:inherit;clip-path:polygon(0 0,100% 0,50% 100%)}
+.completed-first-tooltip{position:absolute;z-index:3;right:-12px;bottom:calc(100% + 8px);width:max-content;max-width:210px;padding:8px 11px;border-radius:12px;background:var(--status-pass-fill);color:#fff;font-size:12px;font-weight:800;line-height:1.5;white-space:nowrap;pointer-events:none;box-shadow:0 3px 10px var(--jei-c-16330012,#16330012);animation:completed-hint-arrive .4s .15s ease-out both,completed-hint-float 3.6s .55s ease-in-out infinite}
+.completed-first-tooltip::after{--completed-hint-tail:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 8'%3E%3Cpath d='M0 0H18C15.4 0 14.4 1.5 12.8 3.7L10.6 6.8C9.8 7.9 8.2 7.9 7.4 6.8L5.2 3.7C3.6 1.5 2.6 0 0 0Z'/%3E%3C/svg%3E");content:"";position:absolute;right:23px;top:calc(100% - 1px);width:18px;height:8px;background:inherit;-webkit-mask:var(--completed-hint-tail) center/100% 100% no-repeat;mask:var(--completed-hint-tail) center/100% 100% no-repeat}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .completed-first-tooltip{background:var(--theme-brand);color:#fff}
 @keyframes completed-hint-arrive{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes completed-hint-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@media(hover:hover){.grid>.program-card.is-complete:hover:not(:disabled){transform:translateY(-3px);box-shadow:0 10px 22px var(--jei-c-1633000d,#1633000d)}}
+@media(prefers-reduced-motion:reduce){.grid>.program-card.is-complete:hover:not(:disabled){transform:none}}
+
 .program-screen-body.has-completion{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100dvh - 82px);max-width:900px;padding:48px 32px 64px}
 .program-screen-body.has-completion>.program-result{position:relative;isolation:isolate;width:100%;max-width:740px;padding:12px 0;text-align:center}
 .completion-emblem{display:block;width:88px;height:88px;margin:0 auto 20px;animation:completion-emblem-arrive .65s var(--navigation-ease) both}
@@ -1033,7 +1037,7 @@ body.has-long-learning-list :is(.heading,#diagnosis-section,.program-card){scrol
 @keyframes completion-emblem-arrive{from{opacity:0;transform:translateY(8px) scale(.94)}to{opacity:1;transform:none}}
 @media(max-width:650px){
   .completed-first-tooltip{right:-8px;max-width:calc((100vw - 70px)/2);padding:7px 9px;font-size:11px;white-space:normal;text-align:center}
-  .completed-first-tooltip::after{right:23px}
+  .completed-first-tooltip::after{right:19px}
   .program-screen-body.has-completion{min-height:calc(100dvh - 72px);padding:32px 22px 48px}
   .completion-emblem{width:76px;height:76px;margin-bottom:16px}
   .program-result.completion-result>h1{font-size:26px}
