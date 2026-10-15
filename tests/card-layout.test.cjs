@@ -43,7 +43,7 @@ test('complete and failed cards keep result/review navigation but have distinct 
   h.evaluate("current().programs[0].status='failed';render()");
   const failed=h.evaluate('programCard(current(),current().programs[0])');
   assert(failed.includes('card-state-icon needs-review'));assert(!failed.includes('card-state-icon is-passed'));
-  assert(failed.includes('미통과'));assert(failed.includes('card-result-action'));assert(failed.includes('결과 보기'));
+  assert(failed.includes('미통과'));assert(failed.includes('data-action="failed-card"'));assert(failed.includes('aria-haspopup="dialog"'));assert(!failed.includes('card-result-action'));assert(!failed.includes('card-review-action'));assert.equal((failed.match(/<button\b/g)||[]).length,1);
 });
 
 test('locked cards show a footer lock without an ordinal, and never expose a start or result action',()=>{

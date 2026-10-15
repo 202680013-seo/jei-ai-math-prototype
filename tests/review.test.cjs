@@ -17,6 +17,7 @@ test('comparison links round-trip, reject invalid paths, and always show distinc
 test('the many-card scenario survives review links and direct-view initialization',()=>{
   const selected=R.normalize(data,new URLSearchParams('scenario=many'));
   assert.equal(R.normalize(data,new URLSearchParams('scenario=scroll20')).scenario,'scroll20');
+  const failed=R.normalize(data,new URLSearchParams('scenario=6'));assert.equal(failed.scenario,'6');assert.equal(R.normalize(data,new URLSearchParams(R.query(failed))).scenario,'6');
   assert.equal(selected.scenario,'many');assert.equal(R.normalize(data,new URLSearchParams(R.query(selected))).scenario,'many');
   assert(R.previewUrl('working','many').endsWith('?scenario=many'));
   const window={localStorage:null};vm.runInNewContext(fs.readFileSync(path.join(dist,'preview-runtime.js'),'utf8'),{window,document:{currentScript:{dataset:{version:'working'}}},location:{search:'?scenario=many'},URLSearchParams,Map,Object,Array,String});
