@@ -133,7 +133,7 @@ assert(!node('#learning').innerHTML.includes('data-action="pass-next"'));
 click('diagnosis-leave');assert.equal(node('#learning').open,false);
 assert.equal(vm.runInContext('state.grade',c),9);
 assert(!html.includes('id="ai-state"'));
-assert(/class="groups-trigger"[^>]+aria-label="학습 목차 열기"[^>]*>\s*<svg/.test(html));
+assert(/class="groups-trigger"[^>]+aria-label="학습 주제 열기"[^>]*>\s*<svg/.test(html));
 console.log('V3.3 celebration, preparation, explicit start, grade accuracy, pause/persistence and progress preservation passed');
 
 // The decorative morph follows real typing, and stale timers cannot restart it.
@@ -587,7 +587,7 @@ vm.runInContext("animateMessage(true,'새 안내')",c);outdatedLetter.fn();asser
 click('groups');
 assert.equal(node('.groups-trigger')['aria-expanded'],'true');
 assert.equal(node('.groups-trigger')['data-tab-phase'],'open');
-assert.equal(node('.groups-trigger')['aria-label'],'학습 목차 닫기');
+assert.equal(node('.groups-trigger')['aria-label'],'학습 주제 닫기');
 click('groups');
 assert.equal(node('.groups-trigger')['data-tab-phase'],'closing');
 assert.equal(node('.groups-trigger')['aria-expanded'],'false');
@@ -596,13 +596,13 @@ assert.equal(vm.runInContext('panelMotionTimer',c).ms,320);
 vm.runInContext('panelMotionTimer',c).fn();
 assert.equal(node('#group-panel').hidden,true);
 assert.equal(node('.groups-trigger')['data-tab-phase'],'closed');
-assert.equal(node('.groups-trigger')['aria-label'],'학습 목차 열기');
+assert.equal(node('.groups-trigger')['aria-label'],'학습 주제 열기');
 const refinedHTML=fs.readFileSync('dist/working/index.html','utf8');
 assert(refinedHTML.includes('활동을 고르고 있어요'));
 assert(!refinedHTML.includes('학습을 고르고 있어요'));
 assert(refinedHTML.includes('recommend-spinner'));
-const headingMarkup=refinedHTML.match(/<section class="heading">(.*?)<\/section>/)[1];
-assert(headingMarkup.indexOf('heading-copy')<headingMarkup.indexOf('diagnostic-result-slot')); // visual/reading order both place the result on the right
+const contextMarkup=refinedHTML.match(/<section id="learning-context"[^>]*>(.*?)<\/section>/)[1];
+assert(contextMarkup.indexOf('learning-context-copy')<contextMarkup.indexOf('diagnostic-result-slot')); // the result belongs beside the personalized-learning explanation
 console.log('Stable-width sequential speech, grapheme continuity, stale-letter cancellation and shaped-tab open/close passed');
 
 // V3.4.8: meaningful view changes move gently; answer selection and repeated renders do not.
@@ -611,9 +611,9 @@ vm.runInContext("cancelComposition();state=M.create();panel=null;myOpen=false;ac
 assert.equal(node('#group-title').textContent,'비교와 분류');
 assert(node('#grade-badge').innerHTML.includes('<strong>D</strong>'));
 vm.runInContext('M.preset(state,3);render()',c);
-assert(node('#diagnostic').innerHTML.includes('<small>진단 결과 확인</small>'));
+assert(node('#diagnostic').innerHTML.includes('<strong>진단 결과 확인</strong>'));
 assert(!node('#diagnostic').innerHTML.includes('틀린 내용 확인'));
-assert.equal(node('#diagnostic')['aria-label'],'실력알기 · 진단 결과 확인');
+assert.equal(node('#diagnostic')['aria-label'],vm.runInContext('groupName(state.index)',c)+' 실력 알기 · 진단 결과 확인');
 vm.runInContext('state=M.create();render()',c);
 const viewMotions=[];
 node('#learning > .dialog-view').animate=(frames,timing)=>{

@@ -1065,3 +1065,25 @@ body.has-long-learning-list :is(.heading,#diagnosis-section,.program-card){scrol
 #group-panel .group-list{--rail-list-mask:linear-gradient(to bottom,#000 0%,#000 18%,rgb(0 0 0 / .82) 50%,rgb(0 0 0 / .52) 78%,rgb(0 0 0 / .3) 100%);-webkit-mask-image:var(--rail-list-mask);mask-image:var(--rail-list-mask);-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
 #group-panel .group-list:has(.group-item:focus-visible){-webkit-mask-image:none;mask-image:none}
 @media(forced-colors:active){#group-panel .group-list{-webkit-mask-image:none;mask-image:none}}
+
+/* V3.8: topics are parents; the diagnosis explains the personalized learning cards. */
+.learning-context{display:flex;align-items:center;justify-content:space-between;gap:20px;margin:0 0 20px}
+.learning-context[hidden]{display:none}
+.learning-context-copy{flex:1;min-width:0}
+.learning-context h2{margin:0;color:var(--forest);font-size:18px;font-weight:800;line-height:1.5}
+.learning-context p{margin:4px 0 0;color:var(--muted);font-size:13px;line-height:1.7;word-break:keep-all;overflow-wrap:anywhere}
+body.has-personalized-learning .heading{margin-bottom:14px}
+#learning-context #diagnostic-result-slot{flex:none;margin-left:0}
+#learning-context #diagnostic-result-slot>.diagnostic-summary-trigger{flex-direction:row;justify-content:center;gap:8px;min-height:42px;width:auto;padding:9px 12px;border-radius:12px}
+#learning-context .diagnostic-summary-trigger .result-icon{width:21px;height:21px}
+#learning-context .diagnostic-summary-trigger .result-copy strong{font-size:12px;font-weight:700;line-height:1.5}
+#learning-context .diagnostic-summary-trigger .result-arrow{display:block;width:13px;height:13px;margin-left:0}
+#composition .composition-topic-context{min-height:0;margin:6px 0 8px;color:var(--theme-brand,var(--forest));font-size:13px;font-weight:700;line-height:1.6;word-break:keep-all;overflow-wrap:anywhere}
+body.has-long-learning-list .learning-context{scroll-margin-top:var(--learning-header-clearance,180px)}
+@container learning (max-width:650px){
+  .learning-context{flex-wrap:wrap;gap:12px;margin-bottom:18px}
+  .learning-context-copy{flex-basis:100%}
+  .learning-context h2{font-size:17px}
+  .learning-context p{font-size:12px}
+  #learning-context #diagnostic-result-slot{margin-left:auto}
+}
