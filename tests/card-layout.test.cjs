@@ -35,7 +35,8 @@ test('complete and failed cards keep result/review navigation but have distinct 
   const complete=h.evaluate('programCard(current(),current().programs[0])');
   assert(complete.includes('card-state-icon is-passed'));assert(complete.includes('card-result-action'));assert(complete.includes('결과 보기'));
   assert(!complete.includes('class="card-top"'));assert(!complete.includes('class="card-status"'));
-  assert.equal((complete.match(/<button\b/g)||[]).length,1);assert(complete.indexOf('card-state-icon')<complete.indexOf('card-footer'));
+  assert(complete.startsWith('<article '));assert.equal((complete.match(/<button\b/g)||[]).length,2);
+  assert(complete.includes('data-action="card-review"'));assert(complete.includes('복습하기'));assert(complete.indexOf('card-state-icon')<complete.indexOf('card-footer'));
   assert(!complete.includes('card-number'));
   assert(!complete.includes('<progress'));assert(!complete.includes('card-start-box'));
   h.click('program',0);assert(h.node('#learning').innerHTML.includes('복습하기'));

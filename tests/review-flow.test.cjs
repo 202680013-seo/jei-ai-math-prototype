@@ -121,3 +121,22 @@ test('a locked card cannot open learning or create a review session',()=>{
   h.click('program',0);assert.equal(h.node('#learning').open,false);
   assert.equal(h.evaluate('current().programs[0].reviewSession===undefined'),true);
 });
+
+test('completed-card result and review choices open independently without changing the next active program',()=>{
+  const h=harness();h.seed();const before=canonical(h),next=h.data('current().programs[1]');
+  h.click('program',0);assert.equal(h.evaluate('editing.showResult'),true);assert.equal(h.evaluate('editing.reviewing||false'),false);
+  assert.equal(h.evaluate('current().programs[0].reviewSession===undefined'),true);h.click('close-learning');
+  h.click('card-review',0);assert.equal(h.node('#learning').open,true);assert.equal(h.evaluate('editing.reviewing'),true);
+  assert(h.node('#learning').innerHTML.includes('복습 문항 1 /'));assert(!h.node('#learning').innerHTML.includes('data-action="learner-review"'));
+  assert.equal(h.evaluate('daily().timerRunning'),true);assert.deepEqual(canonical(h),before);assert.deepEqual(h.data('current().programs[1]'),next);
+  h.answer();const review=h.data('current().programs[0].reviewSession');h.click('close-learning');
+  assert(h.node('#programs').innerHTML.includes('복습 이어하기'));const restored=harness(h.saved());restored.click('card-review',0);
+  assert.deepEqual(restored.data('current().programs[0].reviewSession'),review);assert.deepEqual(canonical(restored),before);
+  assert.deepEqual(restored.data('current().programs[1]'),next);
+});
+
+test('the direct review choice obeys locks and cannot start an unfinished program as a review',()=>{
+  const h=harness();h.evaluate('M.preset(state,4);render()');const before=h.data('current().programs');
+  h.click('card-review',0);assert.equal(h.node('#learning').open,false);assert.deepEqual(h.data('current().programs'),before);
+  h.click('card-review',1);assert.equal(h.node('#learning').open,false);assert.deepEqual(h.data('current().programs'),before);
+});

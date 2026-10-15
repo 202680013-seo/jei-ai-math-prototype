@@ -8,6 +8,9 @@ test('all saved design files remain intact and V1 matches the handed-off origina
 });
 test('comparison links round-trip, reject invalid paths, and always show distinct versions',()=>{
   const s=R.normalize(data,new URLSearchParams('view=compare&left=v1&right=working&device=mobile&zoom=75&scenario=4'));assert.deepEqual(R.normalize(data,new URLSearchParams(R.query(s))),s);
+  const fhd=R.normalize(data,new URLSearchParams('device=fullhd&scenario=scroll20'));
+  assert.equal(fhd.device,'fullhd');assert.deepEqual(R.normalize(data,new URLSearchParams(R.query(fhd))),fhd);
+  assert.deepEqual(R.devices.fullhd,{width:1920,height:1080});assert.equal(R.scale(960,'fullhd','fit'),.5);
   const fallback=R.normalize(data,new URLSearchParams('left=../../&right=working&device=bad&zoom=-1&scenario=99'));assert.notEqual(fallback.left,fallback.right);assert.equal(fallback.device,'tablet');assert.equal(fallback.zoom,'fit');assert.equal(fallback.scenario,'keep');
   const bad=structuredClone(data);bad.versions[0].path='https://example.org/';assert.throws(()=>R.validate(bad));assert.equal(R.scale(640,'tablet','fit'),.5);assert.equal(R.scale(1920,'tablet','fit'),1);
 });

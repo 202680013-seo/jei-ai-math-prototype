@@ -1,6 +1,6 @@
 (function(root){
   'use strict';
-  const devices={desktop:{width:1440,height:900},tablet:{width:1280,height:800},mobile:{width:390,height:844}};
+  const devices={fullhd:{width:1920,height:1080},desktop:{width:1440,height:900},tablet:{width:1280,height:800},mobile:{width:390,height:844}};
   function validate(data){
     if(data?.schema!==1||data.working?.id!=='working'||!Array.isArray(data.versions)||!data.versions.length)throw new Error('버전 목록 형식이 올바르지 않습니다.');
     const ids=new Set();

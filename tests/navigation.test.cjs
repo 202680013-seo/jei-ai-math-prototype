@@ -139,3 +139,13 @@ test('the scroll demonstration uses 20 cards in D-grade 모으기와 가르기(1
   assert.equal(h.evaluate('canNavigateTopic(state.grades[3][0])'),true);assert.equal(h.evaluate('canNavigateTopic(state.grades[3][2])'),false);
   h.evaluate('M.preset(state,3);render()');assert.equal(h.evaluate('current().programs.length'),20);
 });
+
+test('FHD keeps the 1440px content and the same four 348px cards beside the open rail',()=>{
+  const h=harness();h.context.innerWidth=1920;
+  const closed=h.data('baselineStudyGrid(1920)');assert.equal(closed.columns,4);assert.equal(closed.width,348);
+  h.node('#learning-workspace').getBoundingClientRect=()=>({width:1920-276});
+  const card=h.node('fhd-card');card.getBoundingClientRect=()=>({width:348,height:232});h.document.querySelectorAll=()=>[card];
+  h.click('groups');const style=h.node('#learning-workspace').style;
+  assert.equal(style['--navigation-columns'],'4');assert.equal(style['--navigation-content-width'],'1440px');assert.equal(style['--navigation-card-width'],'348px');
+  h.click('close-panel');h.click('groups');assert.equal(style['--navigation-columns'],'4');assert.equal(style['--navigation-content-width'],'1440px');
+});

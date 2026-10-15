@@ -21,6 +21,11 @@ test('workspace controls switch between the saved baseline and working, resize, 
   await vm.runInContext(fs.readFileSync(path.join(dist,'workspace.js'),'utf8'),c);
   assert.equal(grid.children.length,1);assert.equal(nodes.get('#view-title').textContent,'현재 작업본');assert.equal(grid.children[0].querySelector('iframe').src,'views/working.html');
   nodes.get('#compare-mode').events.click();assert.equal(grid.children.length,2);assert.equal(nodes.get('#compare-note').hidden,!registry.working.matchesBaseline);assert.equal(grid.children[0].querySelector('iframe').src,'views/'+registry.working.basedOn+'.html');assert.equal(grid.children[1].querySelector('iframe').src,'views/working.html');
+  const frameBeforeFhd=grid.children[0].querySelector('iframe'),routeBeforeFhd=frameBeforeFhd.src;
+  nodes.get('#device').events.change({target:{value:'fullhd'}});
+  assert.equal(grid.children[0].querySelector('iframe'),frameBeforeFhd);assert.equal(frameBeforeFhd.src,routeBeforeFhd);
+  assert.equal(frameBeforeFhd.style.width,'1920px');assert.equal(frameBeforeFhd.style.height,'1080px');
+  assert.equal(nodes.get('#viewport-label').textContent,'1920 × 1080 · 자동 맞춤');
   nodes.get('#device').events.change({target:{value:'mobile'}});assert.equal(grid.children[0].querySelector('iframe').style.width,'390px');assert.equal(grid.children[1].querySelector('iframe').style.width,'390px');
   nodes.get('#scenario').events.change({target:{value:'4'}});assert.ok(grid.children.every(p=>p.querySelector('iframe').src.endsWith('?scenario=4')));
   const select=grid.children[0].querySelector('select');select.value='working';select.events.change();assert.ok(grid.children[1].querySelector('iframe').src.includes('views/'+registry.working.basedOn+'.html'));assert.ok(grid.children[0].querySelector('iframe').src.includes('views/working.html'));
