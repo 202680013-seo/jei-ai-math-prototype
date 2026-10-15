@@ -623,6 +623,9 @@ click('diagnosis');
 assert.equal(viewMotions.length,0); // a closed dialog uses its own surface entrance, without two stacked animations
 click('diagnosis-begin');assert.equal(viewMotions.length,1);
 click('diagnosis-answer',0);assert.equal(viewMotions.length,1);
+assert(!node('#learning').innerHTML.includes('<small>선택한 답</small>'));
+assert(node('#learning').innerHTML.includes('answer-selected'));
+assert(node('#learning').innerHTML.includes('aria-label="동그라미 · 선택한 답"'));
 assert.equal(viewMotions[0].cancelled,true); // a new render cancels the replaced content's motion
 click('diagnosis-next');assert.equal(viewMotions.length,2);
 vm.runInContext('refreshDialog()',c);assert.equal(viewMotions.length,2);
