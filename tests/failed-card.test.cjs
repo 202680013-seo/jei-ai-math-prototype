@@ -47,3 +47,27 @@ test('failed-card choices cannot enter locked or unfinished work, or a different
   h.seed('failed');h.click('failed-card',0);h.evaluate('select(3,1)');const next=h.data('current()');
   h.click('failed-study-review');assert.equal(h.node('#learning').open,false);assert.equal(h.node('#activity').open,false);assert.deepEqual(h.data('current()'),next);
 });
+
+test('only the first available failed card shows the introductory tooltip, and one card visit dismisses it persistently',()=>{
+  const h=harness();h.seed('failed');
+  h.evaluate("current().programs[1].status='failed';M.setProgress(current().programs[1],100);render()");
+  const before=h.data('current().programs'),html=h.node('#programs').innerHTML;
+  assert.equal((html.match(/role="tooltip"/g)||[]).length,1);
+  const first=h.evaluate('programCard(current(),current().programs[0])'),second=h.evaluate('programCard(current(),current().programs[1])');
+  assert(first.includes('aria-describedby="first-failed-card-hint"'));assert(first.includes('카드를 눌러 복습해보세요!'));
+  assert(!second.includes('role="tooltip"'));assert(!html.includes('다시 살펴보기'));
+  assert(first.indexOf('card-footer')<first.indexOf('card-state-icon'),'the cue is anchored to the lower-right status icon');
+  h.click('failed-card',1);assert.equal(h.node('#activity').open,true);assert(!h.node('#programs').innerHTML.includes('role="tooltip"'));
+  assert.deepEqual(h.data('current().programs'),before);h.click('close-activity');
+  const restored=harness(h.saved());assert(!restored.node('#programs').innerHTML.includes('role="tooltip"'));
+  restored.evaluate("M.preset(state,6);render()");assert(!restored.node('#programs').innerHTML.includes('role="tooltip"'));
+});
+
+test('the first-failure hint never attaches to passed, locked, or unfinished cards',()=>{
+  const h=harness();h.seed('passed');assert(!h.node('#programs').innerHTML.includes('role="tooltip"'));
+  h.evaluate("current().programs[2].status='failed';M.setProgress(current().programs[2],100);render()");
+  assert.equal((h.node('#programs').innerHTML.match(/role="tooltip"/g)||[]).length,1);
+  assert.equal(h.evaluate('firstFailedCardHint(current(),current().programs[2])'),true);
+  h.evaluate("current().programs[2].status='locked';render()");assert(!h.node('#programs').innerHTML.includes('role="tooltip"'));
+  h.click('failed-card',2);assert.equal(h.evaluate('state.ui?.failedCardHintSeen||false'),false);
+});

@@ -443,13 +443,21 @@ $('.recommend').addEventListener('focusout',e=>{if($('.recommend').contains?.(e.
 // User-supplied SVG geometry is unchanged; only paint roles are themed.
 const STATUS_ICONS={"locked":"<svg aria-hidden=\"true\" focusable=\"false\" width=\"64\" height=\"64\" viewBox=\"0 0 64 64\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<rect width=\"64\" height=\"64\" rx=\"20\" fill=\"var(--status-lock-surface)\"/>\n<path d=\"M20.666 49.8957C19.5008 49.8957 18.5035 49.4809 17.674 48.6514C16.8445 47.8218 16.4297 46.8245 16.4297 45.6594V26.9115C16.4297 25.7341 16.8445 24.7262 17.674 23.888C18.5035 23.0494 19.5008 22.6302 20.666 22.6302H22.9193V19.2952C22.9193 16.7357 23.7962 14.5636 25.5499 12.779C27.3033 10.994 29.444 10.1016 31.9719 10.1016C34.4996 10.1016 36.6422 10.994 38.3998 12.779C40.1574 14.5636 41.0362 16.7357 41.0362 19.2952V22.6302H43.2896C44.467 22.6302 45.4749 23.0494 46.3131 23.888C47.1517 24.7262 47.5709 25.7341 47.5709 26.9115V45.6594C47.5709 46.8245 47.1517 47.8218 46.3131 48.6514C45.4749 49.4809 44.467 49.8957 43.2896 49.8957H20.666ZM34.4339 38.7628C35.1099 38.1009 35.4479 37.3052 35.4479 36.3756C35.4479 35.4742 35.1074 34.6555 34.4263 33.9194C33.7452 33.1833 32.9264 32.8153 31.9701 32.8153C31.0138 32.8153 30.1976 33.1833 29.5216 33.9194C28.8456 34.6555 28.5076 35.4818 28.5076 36.3981C28.5076 37.3145 28.8482 38.1032 29.5293 38.7641C30.2104 39.4251 31.0291 39.7556 31.9854 39.7556C32.9418 39.7556 33.7579 39.4247 34.4339 38.7628ZM27.1556 22.6302H36.7999V19.3056C36.7999 17.9016 36.3395 16.7302 35.4186 15.7913C34.4981 14.8524 33.3564 14.3829 31.9936 14.3829C30.631 14.3829 29.4841 14.8524 28.5527 15.7913C27.6213 16.7302 27.1556 17.9016 27.1556 19.3056V22.6302Z\" fill=\"var(--status-lock-fill)\"/>\n</svg>","passed":"<svg aria-hidden=\"true\" focusable=\"false\" width=\"64\" height=\"64\" viewBox=\"0 0 64 64\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<circle cx=\"31.9997\" cy=\"32.0007\" r=\"28.6609\" fill=\"var(--status-pass-fill)\"/>\n<path d=\"M19.7002 32.1913L27.4019 39.8934C28.6518 41.1435 30.6959 41.0847 31.8719 39.7648L45.027 25.0005\" stroke=\"var(--status-pass-mark)\" stroke-width=\"6.51383\" stroke-linecap=\"round\"/>\n</svg>","failed":"<svg aria-hidden=\"true\" focusable=\"false\" width=\"64\" height=\"64\" viewBox=\"0 0 64 64\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<circle cx=\"31.9997\" cy=\"32.0007\" r=\"28.6609\" fill=\"var(--status-review-fill)\"/>\n<path d=\"M32 17.9141V32.9141\" stroke=\"var(--status-review-mark)\" stroke-width=\"6.51\" stroke-linecap=\"round\"/>\n<circle cx=\"31.9995\" cy=\"44.7456\" r=\"3.97217\" fill=\"var(--status-review-mark)\"/>\n</svg>"};
 function statusSVG(status){return STATUS_ICONS[status]||STATUS_ICONS.locked;}
+function firstFailedCardHint(topic,program){
+  if(state.ui?.failedCardHintSeen)return false;
+  const first=topic.programs.find(p=>p.status==='failed'&&p.progress>=100&&M.canStudy(topic,p));
+  return !!first&&first.id===program.id;
+}
 function programCard(s,p){
   const unlocked=M.canStudy(s,p),active=M.currentProgram(s)?.id===p.id,finished=p.progress>=100,st=unlocked?p.status:'locked',progress=Math.max(0,Math.min(100,Number(p.progress)||0)),statusLabel=st==='active'&&finished?'풀이 완료':M.labels[st];
   const introduced=unlocked&&s.presentationPending&&p.id===0&&p.status==='idle';
   const statusIcon=finished&&unlocked?`<span class="card-state-icon ${p.status==='failed'?'needs-review':'is-passed'}" aria-hidden="true">${statusSVG(p.status==='failed'?'failed':'passed')}</span>`:'';
   const lock=`<span class="card-lock" aria-hidden="true">${statusSVG('locked')}</span>`;
   const action=active?'이어서 하기':'시작하기',reviewLabel=p.reviewSession&&!p.reviewSession.complete?'복습 이어하기':'복습하기';
-  if(unlocked&&finished&&p.status==='failed')return `<button class="card program-card is-complete needs-review-card" data-action="failed-card" data-id="${p.id}" aria-haspopup="dialog" aria-label="${esc(p.name)} · 미통과 · 결과와 복습 선택" style="--prescription-delay:${Math.min(p.id,5)*65}ms"><div class="completed-card-heading"><strong class="program-title">${esc(p.name)}</strong>${statusIcon}</div><div class="card-footer"><span class="failed-card-hint">다시 살펴보기<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 5 5 5-5 5"/></svg></span></div></button>`;
+  if(unlocked&&finished&&p.status==='failed'){
+    const hint=firstFailedCardHint(s,p);
+    return `<button class="card program-card is-complete needs-review-card" data-action="failed-card" data-id="${p.id}" aria-haspopup="dialog" aria-label="${esc(p.name)} · 미통과 · 결과와 복습 선택" ${hint?'aria-describedby="first-failed-card-hint"':''} style="--prescription-delay:${Math.min(p.id,5)*65}ms"><div class="completed-card-heading"><strong class="program-title">${esc(p.name)}</strong></div><div class="card-footer"><span class="failed-card-cue">${statusIcon}${hint?'<span class="failed-first-tooltip" id="first-failed-card-hint" role="tooltip">카드를 눌러 복습해보세요!</span>':''}</span></div></button>`;
+  }
   const footer=!unlocked?lock:finished?`<div class="card-complete-actions" id="card-actions-${p.id}"><button class="card-result-action" data-action="program" data-id="${p.id}" aria-label="${esc(p.name)} · 결과 보기">결과 보기</button><button class="card-review-action" data-action="card-review" data-id="${p.id}" aria-label="${esc(p.name)} · ${reviewLabel}" ${M.canReview(s,p)?'':'disabled'}>${reviewLabel}</button></div>${p.reviewed?'<small class="card-review-note">복습 완료</small>':''}`:`<span class="card-start-box" aria-hidden="true">${action}</span>`;
   const title=unlocked&&finished?`<div class="completed-card-heading"><strong class="program-title">${esc(p.name)}</strong>${statusIcon}</div>`:`<strong class="program-title">${esc(p.name)}</strong>`;
   const classes=`card program-card ${introduced?'is-introduced ':''}${!unlocked?'is-locked':active?'is-current':finished?'is-complete':'is-ready'}`;
@@ -474,7 +482,10 @@ function selectedFailedCard(){
 }
 function openFailedCard(id){
   const p=current().programs.find(p=>p.id===id);if(p?.status!=='failed'||p.progress<100||!M.canStudy(current(),p))return;
+  const dismissHint=!state.ui?.failedCardHintSeen;
+  if(dismissHint){state.ui??={};state.ui.failedCardHintSeen=true;save();}
   failedCardSelection={grade:state.grade,index:state.index,id};closeCardActions();openActivity('failed-study');
+  if(dismissHint)render();
 }
 function dismissFailedCard(){
   const selection=failedCardSelection;failedCardSelection=null;activityKind=null;closeSurface('#activity');
