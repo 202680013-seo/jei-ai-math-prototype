@@ -8,6 +8,9 @@ test('ready cards use one accessible card button with a text-only start action a
   assert(html.includes('<span class="card-start-box" aria-hidden="true">시작하기</span>'));
   assert.equal((html.match(/<button\b/g)||[]).length,1);
   assert(!html.includes(' disabled'));assert(!html.includes('<progress'));
+  assert(!html.includes('card-top'));assert(!html.includes('여기부터 시작해요'));
+  const visible=html.replace(/<[^>]*>/g,'');assert(!visible.includes('시작 전'));
+  h.evaluate('current().presentationPending=true');assert(!h.evaluate('programCard(current(),current().programs[0])').includes('여기부터 시작해요'));
   h.click('program',0);assert.equal(h.node('#learning').open,true);
 });
 

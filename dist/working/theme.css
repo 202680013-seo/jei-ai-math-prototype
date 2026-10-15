@@ -863,3 +863,52 @@ body.learning-navigation-open .learning-workspace main{width:calc(100% - 136px);
 #group-panel .nav-summary,#group-panel .group-nav,#group-panel .nav-list-heading{flex:none}
 #group-panel .group-list{display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--line) transparent;padding:0 2px 6px}
 #group-panel .group-item{flex:none}
+
+/* V3.7.1: reserve room for learning, and animate positions after the grid has reflowed. */
+:root{--group-drawer-width:276px;--study-action-hover:var(--forest);--study-action-on-hover:#fff}
+.groups-trigger,.groups-trigger:hover:not(:disabled),.groups-trigger:active:not(:disabled){width:56px;height:112px;top:calc(50% - 56px);transition:opacity .22s ease,transform .34s var(--navigation-ease),visibility 0s}
+.groups-trigger .side-tab-content{padding-left:9px;gap:3px}
+.groups-trigger .side-tab-icon{width:22px;height:22px}
+.groups-trigger .side-tab-chevron{width:8px;height:8px}
+body.learning-navigation-open .groups-trigger[aria-expanded=true],body.learning-navigation-open .groups-trigger[aria-expanded=true]:hover:not(:disabled),body.learning-navigation-open .groups-trigger[aria-expanded=true]:active:not(:disabled){transform:translateX(-100%);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s ease,transform .3s var(--navigation-ease),visibility 0s .3s}
+@media(min-width:651px){
+  .learning-workspace,.learning-workspace main{transition:none}
+  body.learning-navigation-open .learning-workspace main{width:min(calc(100% - 64px),var(--navigation-content-width,calc(100% - 64px)));margin-left:auto;margin-right:auto}
+  body.learning-navigation-open #programs.grid{grid-template-columns:repeat(var(--navigation-columns,3),minmax(0,1fr))}
+}
+.grid>.program-card.is-ready{padding:20px;border-width:3px;border-color:color-mix(in srgb,var(--jei-c-7ec44b,#7ec44b) 70%,white);background:var(--lime);color:var(--forest);box-shadow:0 4px 16px var(--jei-c-16330008,#16330008)}
+.grid>.program-card.is-ready:hover:not(:disabled){background:var(--jei-c-aaf17d,#aaf17d);border-color:color-mix(in srgb,var(--jei-c-6baa42,#6baa42) 70%,white)}
+.is-ready .card-start-box{border-color:#ffffffa6}
+.card-start-box{transition:background .22s ease,color .22s ease,border-color .22s ease,box-shadow .25s ease,transform .25s var(--navigation-ease);cursor:pointer}
+@media(hover:hover){
+  .program-card:is(.is-ready,.is-current):hover:not(:disabled) .card-start-box{box-shadow:0 4px 10px var(--jei-c-16330012,#16330012);transform:translateY(-1px)}
+  .program-card:is(.is-ready,.is-current):not(:disabled) .card-start-box:hover{background:var(--study-action-hover);border-color:var(--study-action-hover);color:var(--study-action-on-hover);box-shadow:0 6px 14px var(--jei-c-16330020,#16330020);transform:translateY(-2px)}
+}
+.program-card:is(.is-ready,.is-current):focus-visible:not(:disabled) .card-start-box{background:var(--study-action-hover);border-color:var(--study-action-hover);color:var(--study-action-on-hover);box-shadow:0 4px 12px var(--jei-c-16330020,#16330020)}
+.program-card:is(.is-ready,.is-current):active:not(:disabled) .card-start-box{transform:translateY(0);box-shadow:none}
+.card-footer .card-lock{background:color-mix(in srgb,var(--jei-c-f7f9f4,#f7f9f4) 91%,var(--forest));border:0}
+#group-panel .nav-resume-top{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:9px}
+#group-panel .nav-resume-top small{font-size:10px;color:var(--jei-c-49702e,#49702e);font-weight:700}
+#group-panel .nav-resume-title{display:block;font-size:16px;line-height:1.45;font-weight:800;color:var(--forest)}
+#group-panel .nav-resume-detail{margin:6px 0 0;font-size:11px;line-height:1.5;color:var(--muted)}
+#group-panel .nav-resume-button{display:block;width:100%;min-height:36px;margin-top:12px;padding:8px 10px;border:1px solid var(--jei-c-c1d8af,#c1d8af);border-radius:10px;background:#fff;color:var(--forest);font-size:12px;font-weight:800;transition:background .2s,color .2s,transform .2s}
+#group-panel .nav-resume-button:hover{background:var(--forest);color:#fff;border-color:var(--forest);transform:translateY(-1px)}
+#group-panel .group-item{gap:9px}
+#group-panel .nav-topic-number{display:grid;place-items:center;flex:none;width:22px;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--muted)}
+#group-panel .nav-topic-status{display:grid;place-items:center;flex:none;width:24px;height:24px}
+#group-panel .nav-topic-status svg{display:block;width:100%;height:100%}
+#group-panel .group-item[data-state=idle] .nav-topic-copy strong{color:var(--muted);font-weight:600}
+#group-panel .group-item[data-state=idle] .nav-topic-status{color:var(--jei-c-c1d8af,#c1d8af)}
+:root:is([data-preview-theme=teal],[data-preview-theme=green]){--study-action-hover:var(--theme-primary-hover);--study-action-on-hover:var(--theme-on-primary)}
+:root:is([data-preview-theme=teal],[data-preview-theme=green]) .grid>.program-card.is-ready{background:var(--theme-active);border-color:var(--theme-line-strong);color:var(--theme-on-active)}
+:root:is([data-preview-theme=teal],[data-preview-theme=green]) .grid>.program-card.is-ready:hover:not(:disabled){background:var(--theme-active);border-color:var(--theme-brand)}
+:root:is([data-preview-theme=teal],[data-preview-theme=green]) .card-footer .card-lock{background:color-mix(in srgb,var(--theme-locked) 90%,var(--theme-title));border:0}
+:root:is([data-preview-theme=teal],[data-preview-theme=green]) #group-panel .nav-resume-button{background:var(--theme-primary);border-color:var(--theme-primary);color:var(--theme-on-primary)}
+:root:is([data-preview-theme=teal],[data-preview-theme=green]) #group-panel .nav-resume-button:hover{background:var(--theme-primary-hover);border-color:var(--theme-primary-hover);color:var(--theme-on-primary)}
+@media(max-width:1250px){.grid>.program-card.is-ready{padding:17px}}
+@media(max-width:650px){.grid>.program-card.is-ready{padding:15px}}
+@media(max-width:380px){.grid>.program-card.is-ready{padding:12px}}
+@media(prefers-reduced-motion:reduce){
+  .card-start-box,#group-panel .nav-resume-button{transition:none}
+  .program-card:is(.is-ready,.is-current) .card-start-box{transform:none!important}
+}
