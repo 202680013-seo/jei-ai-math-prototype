@@ -6,7 +6,8 @@ const defaults={prescribed:'active',unfinished:'active',recommendation:'active'}
 const topics=['수의 크기 비교하기','덧셈의 원리 이해하기','뺄셈의 관계 알아보기','곱셈의 의미 이해하기','나눗셈의 원리 적용하기','분수의 크기와 관계를 이해하고 문제에 적용하기'];
 function group(g,i){return Catalog.grades[g]?.groups[i];}
 function sourcePrograms(g,i){const x=group(g,i);return x?.mapped===false?Catalog.grades[g].programPool:x?.programs||[];}
-function sourceCount(g,i){const x=group(g,i);return x?.mapped===false?Math.min(8,sourcePrograms(g,i).length):x?.programs.length||8;}
+// The D-grade grouping topic is a 20-card layout example in this prototype.
+function sourceCount(g,i){const x=group(g,i);if(x?.groupId==='M1.DG.D.002')return 20;return x?.mapped===false?Math.min(8,sourcePrograms(g,i).length):x?.programs.length||8;}
 function programs(n,g=3,i=0){const source=sourcePrograms(g,i);return Array.from({length:n},(_,j)=>{const p=source[j];return {id:j,programId:p?.programId||'TEST-'+(j+1),name:p?.name||'테스트 학습 '+(j+1),frames:p?.frames||[],sample:!p,status:'idle',progress:0,completedFrames:0,reviewed:false};});}
 function setProgress(p,value){const n=p.frames?.length||0,percent=Math.max(0,Math.min(100,Number(value)||0));p.completedFrames=n?Math.round(percent*n/100):0;p.progress=n?Math.round(p.completedFrames/n*100):percent;}
 function blank(g,i){const source=group(g,i);return {grade:g,index:i,groupId:source?.groupId||'TEST-'+String.fromCharCode(65+g)+String(i+1).padStart(2,'0'),groupName:source?.name||'테스트 그룹 '+(i+1),testOnly:!source,diagnosis:'idle',programs:[],recent:'',reviewHistory:false};}

@@ -14,7 +14,7 @@ test('ready cards use one accessible card button with a text-only start action a
   h.click('program',0);assert.equal(h.node('#learning').open,true);
 });
 
-test('the active card shows only a bar and percentage, retains accessible counts, and opens the current frame',()=>{
+test('the active card shows only a bar and percentage, retains accessible counts, and resumes the current frame after its entry screen',()=>{
   const h=harness();h.evaluate('M.preset(state,4);render()');
   const p=h.data('current().programs[0]'),html=h.evaluate('programCard(current(),current().programs[0])');
   assert(html.includes(`class="card-percent" aria-hidden="true">${p.progress}%</span>`));
@@ -26,6 +26,7 @@ test('the active card shows only a bar and percentage, retains accessible counts
   assert(html.includes('<span class="card-start-box" aria-hidden="true">이어서 하기</span>'));
   assert(html.includes('이어서 하기'));assert(html.includes('aria-current="step"'));
   h.click('program',0);assert.equal(h.data('current().programs[0].progress'),p.progress);
+  assert.equal(h.evaluate('editing.intro'),true);h.click('program-begin');
   assert(h.node('#learning').innerHTML.includes(`문항 ${p.completedFrames+1} /`));
 });
 

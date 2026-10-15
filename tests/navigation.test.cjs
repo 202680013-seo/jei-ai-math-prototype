@@ -38,6 +38,7 @@ test('the non-modal outline leaves main guidance, keyboard navigation and progra
   h.click('program',0);assert.equal(h.node('#learning').open,true);assert.equal(h.evaluate('panel'),'groups');
   assert.equal(h.evaluate('current().programs[0].progress'),before.progress);assert.equal(h.evaluate('mainGuidanceVisible()'),false);
   h.node('#learning').close();h.evaluate('guidanceClosingTimer').fn();assert.equal(h.evaluate('mainGuidanceVisible()'),true);
+  h.evaluate("state.grades[state.grade][1].diagnosis='active';renderPanel()");
   h.click('select-group',1);assert.equal(h.evaluate('state.index'),1);assert.equal(h.evaluate('panel'),'groups');
   assert.equal(h.node('#group-panel')['data-panel-phase'],'open');assert.equal(h.evaluate('panelMotionTimer'),null);
   assert.equal(h.evaluate('state.grades[state.grade][0].programs[0].progress'),before.progress);
@@ -107,4 +108,34 @@ test('long learning lists pin the full guidance area and the 12-card review stat
   assert.equal(h.node('#recommend').disabled,false);
   h.click('groups');assert(h.node('body').classList.contains('has-long-learning-list'));assert.equal(h.evaluate('navigationCurrentLearning().detail'),active.name);
   h.click('program',2);assert.equal(h.node('#learning').open,true);assert.equal(h.evaluate('current().programs[2].progress'),active.progress);
+});
+
+test('unstarted outline topics are disabled and guarded even when a click is dispatched directly',()=>{
+  const h=harness();h.evaluate('M.preset(state,4);state.grades[3][2].diagnosis="done";render()');h.click('groups');
+  const html=h.node('#group-panel').innerHTML;
+  const idle=html.match(/<button data-state="idle"[^>]*data-id="1"[^>]*>/)[0];
+  assert(idle.includes('disabled aria-disabled="true"'));assert.equal(h.evaluate('canNavigateTopic(state.grades[3][1])'),false);
+  h.click('select-group',1);assert.equal(h.evaluate('state.index'),0);assert.equal(h.evaluate('panel'),'groups');
+  h.click('select-group',2);assert.equal(h.evaluate('state.index'),2);assert.equal(h.evaluate('panel'),'groups');
+  h.click('select-group',0);assert.equal(h.evaluate('state.index'),0);
+  assert.equal(h.evaluate('canNavigateTopic(undefined)'),false);
+});
+
+test('the outline reveals in top-to-bottom order without restarting on unchanged renders',()=>{
+  const h=harness(undefined,{reducedMotion:false});h.click('groups');const reveal=h.evaluate('groupRevealTimer');
+  const delays=[...h.node('#group-panel').innerHTML.matchAll(/--nav-delay:(\d+)ms/g)].map(m=>Number(m[1]));
+  assert(delays.length>6);assert(delays.every((value,i)=>!i||value>=delays[i-1]));assert.equal(reveal.ms,1400);
+  h.evaluate('renderPanel();render()');assert.equal(h.evaluate('groupRevealTimer'),reveal);
+  h.click('close-panel');const reduced=harness();reduced.click('groups');assert.equal(reduced.evaluate('groupRevealTimer'),null);
+});
+
+test('the scroll demonstration uses 20 cards in D-grade 모으기와 가르기(10) and keeps other topics intact',()=>{
+  const h=harness();h.context.__JEI_REVIEW__={scenario:'scroll20'};vm.runInContext(fs.readFileSync('dist/preview-controls.js','utf8'),h.context);
+  assert.equal(h.evaluate('state.grade'),3);assert.equal(h.evaluate('state.index'),1);
+  assert.equal(h.evaluate('current().groupName'),'모으기와 가르기(10)');assert.equal(h.evaluate('current().programs.length'),20);
+  assert.equal(h.evaluate('M.sourceCount(3,1)'),20);assert.equal(h.evaluate('M.sourceCount(3,0)'),8);
+  assert.equal((h.node('#programs').innerHTML.match(/data-action="program"/g)||[]).length,20);
+  assert(h.node('body').classList.contains('has-long-learning-list'));h.click('groups');
+  assert.equal(h.evaluate('canNavigateTopic(state.grades[3][0])'),true);assert.equal(h.evaluate('canNavigateTopic(state.grades[3][2])'),false);
+  h.evaluate('M.preset(state,3);render()');assert.equal(h.evaluate('current().programs.length'),20);
 });
