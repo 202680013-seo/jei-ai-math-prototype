@@ -1,6 +1,22 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const {harness}=require('./helpers/ui-harness.cjs');
 
+test('diagnosis, learning, review and read-only result choices omit the visible selected-answer caption',()=>{
+  const h=harness(),q=h.data('DEMO[0]');
+  for(const [action,readOnly] of [['diagnosis-answer',false],['learner-answer',false],[null,true]]){
+    for(const chosen of [undefined,q.correct,(q.correct+1)%q.choices.length]){
+      const board=h.evaluate(`choiceBoard(DEMO[0],${chosen===undefined?'undefined':chosen},${JSON.stringify(action)},${readOnly})`);
+      const visible=board.replace(/<[^>]*>/g,'');
+      assert(!visible.includes('선택한 답'));
+      if(chosen!==undefined){
+        assert(board.includes(`aria-label="${q.choices[chosen].label} · 선택한 답`));
+        assert.equal(board.includes('answer-correct'),action!=='diagnosis-answer');
+        assert.equal(visible.includes('정답'),action!=='diagnosis-answer');
+      }
+    }
+  }
+});
+
 test('opening and leaving a full-screen entry does not start learning, change progress or write a learning log',()=>{
   const h=harness();h.evaluate('M.preset(state,3);render()');const before=h.data('current().programs[0]');
   h.click('program',0);
@@ -19,11 +35,13 @@ test('the explicit entry action begins once, transitions to questions and preser
   assert.equal(h.evaluate('daily().timerRunning'),true);assert.equal(h.evaluate('current().attempts'),1);
   assert(h.node('#learning').innerHTML.includes('data-action="learner-answer"'));
   h.click('learner-answer',0);const selected=h.data('current().programs[0]');
+  assert(!h.node('#learning').innerHTML.includes('<small>선택한 답</small>'));
   h.click('program-begin');assert.deepEqual(h.data('current().programs[0]'),selected);assert.equal(h.evaluate('current().attempts'),1);
   h.click('close-learning');assert.equal(h.evaluate('daily().timerRunning'),false);
   const reloaded=harness(h.saved());reloaded.click('program',0);assert.equal(reloaded.evaluate('editing.intro'),true);
   assert(reloaded.node('#learning').innerHTML.includes('이어서 학습하기'));assert.deepEqual(reloaded.data('current().programs[0]'),selected);
   reloaded.click('program-begin');assert.deepEqual(reloaded.data('current().programs[0]'),selected);
+  assert(!reloaded.node('#learning').innerHTML.includes('<small>선택한 답</small>'));
   assert(reloaded.node('#learning').innerHTML.includes('answer-correct'));assert.equal(reloaded.evaluate('daily().timerRunning'),true);
   reloaded.click('learner-next');assert.equal(reloaded.evaluate('current().programs[0].completedFrames'),1);
   reloaded.click('close-learning');reloaded.click('program',0);reloaded.click('program-begin');
