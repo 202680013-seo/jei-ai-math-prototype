@@ -4,7 +4,7 @@ const dist=path.resolve(__dirname,'../dist'),registry=JSON.parse(fs.readFileSync
 function element(tag='div'){
   const classes=new Set(),node={tagName:tag.toUpperCase(),children:[],style:{},dataset:{},attrs:{},events:{},textContent:'',hidden:false,value:'',clientWidth:700,
     append(...nodes){this.children.push(...nodes);},replaceChildren(...nodes){this.children=[...nodes];},setAttribute(k,v){this.attrs[k]=v;},getAttribute(k){return this.attrs[k];},
-    addEventListener(k,f){this.events[k]=f;},select(){},showModal(){this.open=true;},close(){this.open=false;},
+    addEventListener(k,f){this.events[k]=f;},focus(){this.focused=true;},select(){},showModal(){this.open=true;},close(){this.open=false;},
     querySelector(selector){return this.querySelectorAll(selector)[0]||null;},
     querySelectorAll(selector){const match=n=>selector.startsWith('.')?n.classList.contains(selector.slice(1)):n.tagName===selector.toUpperCase();const list=[];function visit(n){for(const child of n.children){if(match(child))list.push(child);visit(child);}}visit(this);return list;}
   };
@@ -23,6 +23,18 @@ test('workspace controls switch between the saved baseline and working, resize, 
   assert.equal(nodes.get('#device').value,'fullhd');assert.equal(grid.children[0].querySelector('iframe').style.width,'1920px');assert.equal(grid.children[0].querySelector('iframe').style.height,'1080px');
   assert.equal(nodes.get('#viewport-label').textContent,'1920 × 1080 · 자동 맞춤');
   nodes.get('#compare-mode').events.click();assert.equal(grid.children.length,2);assert.equal(nodes.get('#compare-note').hidden,!registry.working.matchesBaseline);assert.equal(grid.children[0].querySelector('iframe').src,'views/'+registry.working.basedOn+'.html');assert.equal(grid.children[1].querySelector('iframe').src,'views/working.html');
+  // Each external history control belongs to exactly one live preview; opening it does not reload that preview.
+  const [leftPane,rightPane]=grid.children,leftFrame=leftPane.querySelector('iframe'),rightFrame=rightPane.querySelector('iframe'),leftHistory=leftPane.querySelector('.pane-history'),rightHistory=rightPane.querySelector('.pane-history'),historyMessages=[];
+  leftFrame.contentWindow={postMessage:(data,origin)=>historyMessages.push({side:'left',data,origin})};rightFrame.contentWindow={postMessage:(data,origin)=>historyMessages.push({side:'right',data,origin})};
+  assert.equal(leftHistory.disabled,true);assert.equal(rightHistory.disabled,true);leftHistory.events.click();assert.equal(historyMessages.length,0);
+  events.message({origin:'https://untrusted.example',source:rightFrame.contentWindow,data:{type:'jei-history-ready'}});assert.equal(rightHistory.disabled,true);
+  events.message({origin:location.origin,source:{},data:{type:'jei-history-ready'}});assert.equal(rightHistory.disabled,true);
+  events.message({origin:location.origin,source:rightFrame.contentWindow,data:{type:'jei-history-ready'}});assert.equal(rightHistory.disabled,false);assert.equal(leftHistory.disabled,true);
+  rightHistory.events.click();assert.equal(historyMessages.at(-1).side,'right');assert.equal(historyMessages.at(-1).data.type,'jei-history-open');assert.equal(historyMessages.at(-1).origin,location.origin);
+  assert.equal(grid.children[1].querySelector('iframe'),rightFrame);
+  events.message({origin:location.origin,source:rightFrame.contentWindow,data:{type:'jei-history-opened'}});assert.equal(rightHistory.attrs['aria-expanded'],'true');assert.equal(leftHistory.attrs['aria-expanded'],'false');
+  events.message({origin:location.origin,source:rightFrame.contentWindow,data:{type:'jei-history-closed'}});assert.equal(rightHistory.attrs['aria-expanded'],'false');assert.equal(rightHistory.focused,true);
+  events.message({origin:location.origin,source:leftFrame.contentWindow,data:{type:'jei-history-ready'}});leftHistory.events.click();assert.equal(historyMessages.at(-1).side,'left');assert.equal(historyMessages.at(-1).data.type,'jei-history-open');
   const frameBeforeFhd=grid.children[0].querySelector('iframe'),routeBeforeFhd=frameBeforeFhd.src;
   nodes.get('#device').events.change({target:{value:'fullhd'}});
   assert.equal(grid.children[0].querySelector('iframe'),frameBeforeFhd);assert.equal(frameBeforeFhd.src,routeBeforeFhd);

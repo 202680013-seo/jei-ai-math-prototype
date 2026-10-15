@@ -4,13 +4,12 @@
   if(!config||!H||!bridge)return;
   let registry,currentVersion,family,noticeTimer;
   const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
-  const dock=el('div');dock.id='jei-history-dock';dock.setAttribute('aria-label','시안 저장과 변경 기록');
-  dock.innerHTML='<span class="rh-version">시안 기록</span><button type="button" class="rh-open">변경 기록</button><button type="button" class="rh-save rh-primary">저장</button>';
   const dialog=el('dialog');dialog.id='jei-history-dialog';dialog.setAttribute('aria-labelledby','rh-title');
   dialog.innerHTML='<div class="rh-head"><div><span class="rh-eyebrow">DESIGN HISTORY</span><h2 id="rh-title">변경 기록</h2></div><button type="button" class="rh-close" aria-label="변경 기록 닫기">×</button></div><div class="rh-content"><p class="rh-summary"></p><section class="rh-save-box"><label for="rh-name">현재 상태 저장</label><div class="rh-save-row"><input id="rh-name" maxlength="100" placeholder="저장 이름 (선택)" autocomplete="off"><button type="button" class="rh-commit rh-primary">저장</button></div><p>디자인 버전과 학습 상태를 이 브라우저에 저장해요. 다른 기기와 동기화되지는 않아요.</p></section><p class="rh-status" role="status" aria-live="polite" hidden></p><section><h3>디자인 변경 이력</h3><p class="rh-help">항목을 누르면 해당 디자인으로 돌아가요. 돌아가기 전 현재 상태도 자동 저장해요.</p><div class="rh-revisions"></div></section><section><h3>내 저장 기록 <span class="rh-count"></span></h3><p class="rh-help">저장 당시의 디자인과 진단·학습 진행 상태를 함께 불러와요.</p><div class="rh-checkpoints"></div></section><a class="rh-workspace" href="/" target="_top">전체 버전·비교 화면 열기 ↗</a></div>';
   const notice=el('div');notice.id='jei-history-notice';notice.hidden=true;notice.setAttribute('role','status');
-  document.body.append(dock,dialog,notice);
-  const q=s=>dialog.querySelector(s),openButton=dock.querySelector('.rh-open'),saveButton=dock.querySelector('.rh-save');
+  document.body.append(dialog,notice);
+  const q=s=>dialog.querySelector(s),inWorkspace=window.parent!==window&&/^jei-review-(left|right)$/.test(window.name);
+  function notifyWorkspace(type){if(inWorkspace)window.parent.postMessage({type},location.origin);}
   function report(text,error=false){q('.rh-status').textContent=text;q('.rh-status').hidden=false;q('.rh-status').classList.toggle('is-error',error);notice.textContent=text;notice.hidden=false;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>notice.hidden=true,4500);}
   function date(value){return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(value));}
   function capture(title,kind='manual'){
@@ -60,10 +59,11 @@
       button.disabled=version.id===currentVersion.id;button.addEventListener('click',()=>go(version.id));list.append(button);
     }
   }
-  function open(focusSave=false){renderRecords();if(!dialog.open)dialog.showModal();openButton.setAttribute('aria-expanded','true');if(focusSave)q('#rh-name').focus();}
-  openButton.setAttribute('aria-haspopup','dialog');openButton.setAttribute('aria-expanded','false');
-  openButton.addEventListener('click',()=>open());saveButton.addEventListener('click',()=>open(true));q('.rh-close').addEventListener('click',()=>dialog.close());
-  dialog.addEventListener('close',()=>{openButton.setAttribute('aria-expanded','false');openButton.focus();});
+  function open(){if(registry&&currentVersion)renderRecords();if(!dialog.open)dialog.showModal();notifyWorkspace('jei-history-opened');}
+  // Only the owning review pane can open history. Standalone learner views stay free of review buttons.
+  window.addEventListener('message',event=>{if(inWorkspace&&event.source===window.parent&&event.origin===location.origin&&event.data?.type==='jei-history-open')open();});
+  q('.rh-close').addEventListener('click',()=>dialog.close());
+  dialog.addEventListener('close',()=>notifyWorkspace('jei-history-closed'));
   dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();}});
   function commit(){try{const saved=capture(q('#rh-name').value);q('#rh-name').value='';renderRecords();report('“'+saved.title+'” 저장했어요.');}catch(error){report(error.message,true);}}
   q('.rh-commit').addEventListener('click',commit);q('#rh-name').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();commit();}});
@@ -71,8 +71,9 @@
   try{
     const response=await fetch('/versions.json',{cache:'no-store'});if(!response.ok)throw new Error('변경 이력을 불러오지 못했어요. 화면을 새로고침해 주세요.');registry=await response.json();
     currentVersion=registry.versions.find(v=>v.id===config.designId)||registry.versions.find(v=>v.id===registry.working.basedOn);if(!currentVersion)throw new Error('현재 디자인의 이력을 찾을 수 없어요.');family=currentVersion.family||currentVersion.id;
-    dock.querySelector('.rh-version').textContent=currentVersion.label;q('#rh-title').textContent=(registry.versions.find(v=>v.id===family)?.label||currentVersion.label)+' 변경 기록';q('.rh-summary').textContent=currentVersion.label+' · '+currentVersion.title;q('.rh-workspace').href='/?view=single&left='+currentVersion.id;
+    q('#rh-title').textContent=(registry.versions.find(v=>v.id===family)?.label||currentVersion.label)+' 변경 기록';q('.rh-summary').textContent=currentVersion.label+' · '+currentVersion.title;q('.rh-workspace').href='/?view=single&left='+currentVersion.id;
     renderRevisions();renderRecords();
     if(config.restoreError)report(config.restoreError,true);else if(config.restored)report('“'+config.restored.title+'” 상태로 돌아왔어요.');
-  }catch(error){q('.rh-summary').textContent=error.message;saveButton.disabled=true;q('.rh-commit').disabled=true;report(error.message,true);}
+  }catch(error){q('.rh-summary').textContent=error.message;q('.rh-commit').disabled=true;report(error.message,true);}
+  finally{notifyWorkspace('jei-history-ready');}
 })();

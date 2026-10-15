@@ -1,14 +1,12 @@
 /* Review controls are injected by the host adapter, outside saved learner source. */
-#jei-history-dock,#jei-history-dialog,#jei-history-notice{font-family:"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;box-sizing:border-box;color:#273b49;letter-spacing:0;line-height:1.5}
-#jei-history-dock * ,#jei-history-dialog *{box-sizing:border-box}
-#jei-history-dock{position:fixed;z-index:9;left:50%;bottom:14px;transform:translateX(-50%);display:flex;align-items:center;gap:4px;padding:5px 6px 5px 15px;border:1px solid #d7e2e7;border-radius:18px;background:#fff;box-shadow:0 5px 25px #264f681c;max-width:calc(100% - 28px)}
-#jei-history-dock .rh-version{font-size:12px;font-weight:750;white-space:nowrap;margin-right:5px;color:#54727d}
-#jei-history-dock button,#jei-history-dialog button{font:inherit;font-size:13px;cursor:pointer;line-height:1.5;transition:background .15s;border:1px solid transparent;border-radius:12px;color:#29434f;background:#f0f5f7;padding:9px 13px;letter-spacing:0;text-transform:none}
-#jei-history-dock button:hover,#jei-history-dialog button:hover{background:#e4f1ed}
-#jei-history-dock .rh-primary,#jei-history-dialog .rh-primary{background:#087e73;color:#fff;font-weight:700}
-#jei-history-dock .rh-primary:hover,#jei-history-dialog .rh-primary:hover{background:#056b62}
-#jei-history-dock button:focus-visible,#jei-history-dialog button:focus-visible,#jei-history-dialog input:focus-visible,#jei-history-dialog a:focus-visible{outline:3px solid #1d79b8;outline-offset:3px}
-#jei-history-dock button:disabled,#jei-history-dialog button:disabled{opacity:.6;cursor:default}
+#jei-history-dialog,#jei-history-notice{font-family:"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;box-sizing:border-box;color:#273b49;letter-spacing:0;line-height:1.5}
+#jei-history-dialog *{box-sizing:border-box}
+#jei-history-dialog button{font:inherit;font-size:13px;cursor:pointer;line-height:1.5;transition:background .15s;border:1px solid transparent;border-radius:12px;color:#29434f;background:#f0f5f7;padding:9px 13px;letter-spacing:0;text-transform:none}
+#jei-history-dialog button:hover{background:#e4f1ed}
+#jei-history-dialog .rh-primary{background:#087e73;color:#fff;font-weight:700}
+#jei-history-dialog .rh-primary:hover{background:#056b62}
+#jei-history-dialog button:focus-visible,#jei-history-dialog input:focus-visible,#jei-history-dialog a:focus-visible{outline:3px solid #1d79b8;outline-offset:3px}
+#jei-history-dialog button:disabled{opacity:.6;cursor:default}
 #jei-history-dialog{position:fixed;inset:0 0 0 auto;width:440px;max-width:calc(100vw - 18px);height:100dvh;max-height:100dvh;margin:0;border:0;border-radius:28px 0 0 28px;padding:0;background:#fff;overflow:auto;box-shadow:-10px 0 70px #243d5129;text-align:left}
 #jei-history-dialog:not([open]){display:none}
 #jei-history-dialog::backdrop{background:#243d5148;backdrop-filter:blur(2px)}
@@ -34,6 +32,6 @@
 #jei-history-dialog .rh-count{font-size:12px;color:#78968a;margin-left:4px}#jei-history-dialog .rh-empty{padding:20px;border:1px dashed #d6e2e6;border-radius:16px;font-size:12px;color:#8799a2;line-height:1.8;margin:0}
 #jei-history-dialog .rh-status{font-size:12px;line-height:1.7;background:#e7f6ef;color:#246650;padding:12px 14px;border-radius:12px;margin:12px 0}#jei-history-dialog .rh-status.is-error,#jei-history-dialog .rh-error{color:#a7472e;background:#fff1e9}#jei-history-dialog .rh-status[hidden]{display:none}
 #jei-history-dialog .rh-workspace{display:block;margin-top:26px;font-size:12px;font-weight:650;color:#457480;text-decoration:none;padding:14px 0;border-top:1px solid #e5edef}
-#jei-history-notice{position:fixed;z-index:15;left:50%;bottom:77px;transform:translateX(-50%);max-width:calc(100% - 32px);width:max-content;border-radius:14px;padding:12px 18px;background:#233f48;color:#fff;font-size:12px;box-shadow:0 8px 26px #163e4d22;pointer-events:none}#jei-history-notice[hidden]{display:none}
-@media(max-width:650px){#jei-history-dock{bottom:92px;border-radius:14px;padding:4px 5px 4px 12px}#jei-history-dock button{font-size:12px;padding:8px 11px}#jei-history-notice{bottom:148px}#jei-history-dialog .rh-head{padding:22px 20px 18px}#jei-history-dialog .rh-content{padding:18px 20px 30px}}
-@media(prefers-reduced-motion:reduce){#jei-history-dock button,#jei-history-dialog button{transition:none}}
+#jei-history-notice{position:fixed;z-index:15;left:50%;bottom:24px;transform:translateX(-50%);max-width:calc(100% - 32px);width:max-content;border-radius:14px;padding:12px 18px;background:#233f48;color:#fff;font-size:12px;box-shadow:0 8px 26px #163e4d22;pointer-events:none}#jei-history-notice[hidden]{display:none}
+@media(max-width:650px){#jei-history-dialog .rh-head{padding:22px 20px 18px}#jei-history-dialog .rh-content{padding:18px 20px 30px}}
+@media(prefers-reduced-motion:reduce){#jei-history-dialog button{transition:none}}

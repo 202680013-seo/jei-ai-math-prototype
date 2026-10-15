@@ -14,7 +14,7 @@
 - Preserve `SOURCE_BASELINE.json`. Its original `dist/*` hashes now correspond to `dist/versions/v1/*`.
 - Run `node --test tests/*.test.cjs` before publishing. Existing math tests target `dist/working/`; review tests verify snapshot integrity and independent preview state.
 - Run `node scripts/build-review-views.mjs` after source or preview adapter edits, before tests/packaging. It generates direct `dist/views/*.html` entrypoints and shared catalog assets; the save-design-version script also runs it. Do not reintroduce srcdoc, nested preview frames, or readiness overlays.
-- The user explicitly requested in-preview history and save/restore controls. Inject them from `history-ui.*` through the review adapter; keep immutable learner sources free of review controls.
+- The user moved history access to the outer review pane header on 2026-10-15 and removed the floating version/history/save dock from all learner previews. Keep history/save/restore in `history-ui.*` through the review adapter, opened by the owning workspace pane via same-origin messages; keep immutable learner sources free of review controls.
 - User-requested revisions within V3 use `--family v9`, producing V3.1, V3.2, etc. V3 is the immutable v9 snapshot.
 - User-requested revisions within V2 use `--family v2` when saving, producing labels V2.1, V2.2, etc. Internal IDs remain immutable sequential `vN` directories. Existing snapshots are never rewritten.
 - Manual save records pin an immutable design ID plus learner state in this browser. Explain browser-local scope in the UI. Design source changes are recorded by publication, not by the manual save button.

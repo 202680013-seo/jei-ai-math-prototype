@@ -55,13 +55,27 @@ test('history UI saves named checkpoints, restores older designs, and backs up t
   const registry=JSON.parse(fs.readFileSync('dist/versions.json'));
   let current=registry.versions.find(v=>v.family==='v2'&&v.revision>0);
   if(!current){current={id:'v3',family:'v2',revision:1,label:'V2.1',title:'수정한 실력알기',date:'2026-10-13',changes:['진단 구조 변경']};registry.versions.push(current)}
-  const native=storage(),store=H.createStore(native),old=record(store,'v2',3),body=element('body');let snapshot=M.create();M.preset(snapshot,4);let destination;
-  const window={__JEI_REVIEW__:{id:current.id,designId:current.id},JeiHistory:H,__JEI_HISTORY_STORE__:store,__JEI_REVIEW_BRIDGE__:{capture:()=>({appState:JSON.parse(JSON.stringify(snapshot)),view:'main'})},addEventListener(){}};window.parent=window;
-  const context=vm.createContext({window,document:{body,createElement:element},location:{origin:'https://review.example',assign:url=>destination=url},fetch:async()=>({ok:true,json:async()=>registry}),Intl,Date,console,setTimeout:()=>1,clearTimeout(){}});
+  const native=storage(),store=H.createStore(native),old=record(store,'v2',3),body=element('body'),events={},messages=[],parent={postMessage:(data,origin)=>messages.push({data,origin})};let snapshot=M.create();M.preset(snapshot,4);
+  const window={name:'jei-review-left',parent,__JEI_REVIEW__:{id:current.id,designId:current.id},JeiHistory:H,__JEI_HISTORY_STORE__:store,__JEI_REVIEW_BRIDGE__:{capture:()=>({appState:JSON.parse(JSON.stringify(snapshot)),view:'main'})},addEventListener:(type,handler)=>events[type]=handler};
+  const context=vm.createContext({window,document:{body,createElement:element},location:{origin:'https://review.example'},fetch:async()=>({ok:true,json:async()=>registry}),Intl,Date,console,setTimeout:()=>1,clearTimeout(){}});
   await vm.runInContext(fs.readFileSync('dist/history-ui.js','utf8'),context);
-  const dialog=body.querySelector('#jei-history-dialog');body.querySelector('.rh-save').events.click();assert.equal(dialog.open,true);dialog.querySelector('#rh-name').value='회의 전 검토';dialog.querySelector('.rh-commit').events.click();
+  const dialog=body.querySelector('#jei-history-dialog');
+  assert.equal(body.querySelector('#jei-history-dock'),null);assert.equal(body.querySelector('.rh-open'),null);assert.equal(body.querySelector('.rh-save'),null);
+  assert.equal(messages.at(-1).data.type,'jei-history-ready');assert.equal(messages.at(-1).origin,'https://review.example');
+  events.message({origin:'https://untrusted.example',source:parent,data:{type:'jei-history-open'}});assert.ok(!dialog.open);
+  events.message({origin:'https://review.example',source:{},data:{type:'jei-history-open'}});assert.ok(!dialog.open);
+  events.message({origin:'https://review.example',source:parent,data:{type:'jei-history-open'}});assert.equal(dialog.open,true);assert.equal(messages.at(-1).data.type,'jei-history-opened');
+  dialog.querySelector('#rh-name').value='회의 전 검토';dialog.querySelector('.rh-commit').events.click();
   assert.equal(store.list()[0].title,'회의 전 검토');assert.equal(store.list()[0].versionId,current.id);assert.ok(dialog.querySelector('.rh-status').textContent.includes('저장했어요'));
   M.preset(snapshot,5);const before=JSON.stringify(old.appState);dialog.querySelector('.rh-checkpoints').children.at(-1).querySelector('.rh-restore').events.click();
-  assert.equal(destination,H.route('v2',old.id));assert.equal(store.list()[0].kind,'backup');assert.equal(store.list()[0].versionId,current.id);assert.deepEqual(store.list()[0].appState,snapshot);assert.equal(JSON.stringify(store.get(old.id).appState),before);
-  dialog.querySelector('.rh-close').events.click();assert.equal(dialog.open,false);
+  assert.equal(messages.at(-1).data.type,'jei-history-navigate');assert.equal(messages.at(-1).data.versionId,'v2');assert.equal(messages.at(-1).data.checkpoint,old.id);assert.equal(store.list()[0].kind,'backup');assert.equal(store.list()[0].versionId,current.id);assert.deepEqual(store.list()[0].appState,snapshot);assert.equal(JSON.stringify(store.get(old.id).appState),before);
+  dialog.querySelector('.rh-close').events.click();assert.equal(dialog.open,false);assert.equal(messages.at(-1).data.type,'jei-history-closed');
+});
+
+test('history remains available from the workspace when its registry fails, without floating controls',async()=>{
+  const body=element('body'),events={},messages=[],parent={postMessage:data=>messages.push(data)},window={name:'jei-review-right',parent,JeiHistory:H,__JEI_REVIEW__:{id:'v2',designId:'v2'},__JEI_HISTORY_STORE__:H.createStore(storage()),__JEI_REVIEW_BRIDGE__:{capture:()=>({appState:M.create(),view:'main'})},addEventListener:(type,handler)=>events[type]=handler};
+  await vm.runInNewContext(fs.readFileSync('dist/history-ui.js','utf8'),{window,document:{body,createElement:element},location:{origin:'https://review.example'},fetch:async()=>({ok:false}),Intl,Date,setTimeout:()=>1,clearTimeout(){}});
+  assert.equal(messages.at(-1).type,'jei-history-ready');assert.equal(body.querySelector('#jei-history-dock'),null);
+  events.message({origin:'https://review.example',source:parent,data:{type:'jei-history-open'}});
+  const dialog=body.querySelector('#jei-history-dialog');assert.equal(dialog.open,true);assert.equal(dialog.querySelector('.rh-commit').disabled,true);assert.match(dialog.querySelector('.rh-summary').textContent,/불러오지 못했어요/);
 });

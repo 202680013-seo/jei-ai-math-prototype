@@ -22,6 +22,6 @@
   font-style:normal;font-weight:800;font-display:swap;
 }
 :root,body,button,input,select,textarea,optgroup,svg text,
-#jei-history-dock,#jei-history-dialog,#jei-history-notice{
+#jei-history-dialog,#jei-history-notice{
   font-family:'NanumSquareRound','Apple SD Gothic Neo','Malgun Gothic',sans-serif!important;
 }

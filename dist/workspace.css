@@ -26,3 +26,14 @@
 @media(max-width:960px){.app-layout{--sidebar-width:190px}.sidebar{top:68px;max-height:calc(100dvh - 68px)}}
 @media(max-width:650px){.app-layout{display:block}.sidebar{position:fixed;top:64px;bottom:0;min-height:0;width:244px;max-width:calc(100vw - 48px);max-height:calc(100dvh - 64px)}}
 @media(prefers-reduced-motion:reduce){.app-layout{transition:none}}
+
+/* History belongs to the review frame header, never over the learner UI. */
+.pane-heading{flex:1}
+.pane-select{max-width:100%;width:100%;text-overflow:ellipsis}
+.pane-tools{flex:none}
+.pane-history{display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;font-size:11px;font-weight:700;color:#416959;background:#f6faf7;border:1px solid #dce7df;border-radius:8px;padding:7px 10px;min-height:32px;transition:background .15s,border-color .15s}
+.pane-history svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.pane-history:hover:not(:disabled),.pane-history[aria-expanded=true]{background:#eaf4ee;border-color:#a9cbbb}
+.pane-history:focus-visible{outline:3px solid #668f77;outline-offset:3px}
+@media(max-width:650px){.pane-header{flex-wrap:wrap}.pane-heading{flex-basis:100%}.pane-select{max-width:100%}.pane-tools{width:100%;justify-content:flex-end}.pane-tools .scale-readout{margin-right:auto}}
+@media(prefers-reduced-motion:reduce){.pane-history{transition:none}}
