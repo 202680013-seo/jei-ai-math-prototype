@@ -973,8 +973,8 @@ body.has-long-learning-list :is(.heading,#diagnosis-section,.program-card){scrol
 
 
 /* V3.7.10: supplied status geometry with semantic paints for each service theme. */
-:root{--status-pass-fill:var(--jei-c-49702e,#49702e);--status-pass-mark:#fff;--status-review-fill:#a98240;--status-review-mark:#fffaf0;--status-lock-fill:var(--jei-c-adc99b,#adc99b);--status-lock-surface:color-mix(in srgb,var(--jei-c-f7f9f4,#f7f9f4) 91%,var(--forest))}
-:root:is([data-preview-theme=teal],[data-preview-theme=green]){--status-pass-fill:var(--theme-brand);--status-review-fill:color-mix(in srgb,var(--theme-brand) 12%,#a98240);--status-lock-fill:var(--theme-disabled);--status-lock-surface:color-mix(in srgb,var(--theme-locked) 90%,var(--theme-title))}
+:root{--status-pass-fill:var(--jei-c-49702e,#49702e);--status-pass-mark:#fff;--status-review-fill:#a98240;--status-review-mark:#fffaf0;--status-lock-fill:color-mix(in srgb,var(--status-lock-surface) 60%,#656a68);--status-lock-surface:color-mix(in srgb,var(--jei-c-f7f9f4,#f7f9f4) 91%,var(--forest))}
+:root:is([data-preview-theme=teal],[data-preview-theme=green]){--status-pass-fill:var(--theme-brand);--status-review-fill:color-mix(in srgb,var(--theme-brand) 12%,#a98240);--status-lock-surface:color-mix(in srgb,var(--theme-locked) 90%,var(--theme-title))}
 .grid>.program-card .card-footer .card-lock{width:40px;height:40px;padding:0;border:0;background:transparent}
 #group-panel .group-item:is([data-state=idle],[data-state=locked]){--status-lock-fill:var(--navigation-idle);--status-lock-surface:color-mix(in srgb,var(--navigation-idle) 8%,var(--paper))}
 .status-help-icon{display:block;flex:none;width:30px;height:30px}
