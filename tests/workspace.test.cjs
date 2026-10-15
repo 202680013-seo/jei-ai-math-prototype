@@ -20,6 +20,8 @@ test('workspace controls switch between the saved baseline and working, resize, 
   const c=vm.createContext({document,window:{addEventListener:(k,f)=>events[k]=f,matchMedia:()=>screen,localStorage:{getItem:k=>stored.get(k),setItem:(k,v)=>stored.set(k,v)}},location,history,navigator:{clipboard:{writeText:async x=>{copied=x;}}},ReviewModel:R,JeiTheme:require('../dist/theme-model.js'),fetch:async()=>({ok:true,json:async()=>structuredClone(registry)}),URLSearchParams,ResizeObserver:class{observe(){}disconnect(){}},requestAnimationFrame:fn=>fn(),getComputedStyle:()=>({paddingLeft:'22px',paddingRight:'22px'}),setTimeout:()=>1,clearTimeout(){},console});
   await vm.runInContext(fs.readFileSync(path.join(dist,'workspace.js'),'utf8'),c);
   assert.equal(grid.children.length,1);assert.equal(nodes.get('#view-title').textContent,'현재 작업본');assert.equal(grid.children[0].querySelector('iframe').src,'views/working.html');
+  assert.equal(nodes.get('#device').value,'fullhd');assert.equal(grid.children[0].querySelector('iframe').style.width,'1920px');assert.equal(grid.children[0].querySelector('iframe').style.height,'1080px');
+  assert.equal(nodes.get('#viewport-label').textContent,'1920 × 1080 · 자동 맞춤');
   nodes.get('#compare-mode').events.click();assert.equal(grid.children.length,2);assert.equal(nodes.get('#compare-note').hidden,!registry.working.matchesBaseline);assert.equal(grid.children[0].querySelector('iframe').src,'views/'+registry.working.basedOn+'.html');assert.equal(grid.children[1].querySelector('iframe').src,'views/working.html');
   const frameBeforeFhd=grid.children[0].querySelector('iframe'),routeBeforeFhd=frameBeforeFhd.src;
   nodes.get('#device').events.change({target:{value:'fullhd'}});

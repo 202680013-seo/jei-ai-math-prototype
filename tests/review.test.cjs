@@ -11,7 +11,9 @@ test('comparison links round-trip, reject invalid paths, and always show distinc
   const fhd=R.normalize(data,new URLSearchParams('device=fullhd&scenario=scroll20'));
   assert.equal(fhd.device,'fullhd');assert.deepEqual(R.normalize(data,new URLSearchParams(R.query(fhd))),fhd);
   assert.deepEqual(R.devices.fullhd,{width:1920,height:1080});assert.equal(R.scale(960,'fullhd','fit'),.5);
-  const fallback=R.normalize(data,new URLSearchParams('left=../../&right=working&device=bad&zoom=-1&scenario=99'));assert.notEqual(fallback.left,fallback.right);assert.equal(fallback.device,'tablet');assert.equal(fallback.zoom,'fit');assert.equal(fallback.scenario,'keep');
+  assert.equal(R.normalize(data,new URLSearchParams()).device,'fullhd');
+  for(const device of ['fullhd','desktop','tablet','mobile'])assert.equal(R.normalize(data,new URLSearchParams('device='+device)).device,device);
+  const fallback=R.normalize(data,new URLSearchParams('left=../../&right=working&device=bad&zoom=-1&scenario=99'));assert.notEqual(fallback.left,fallback.right);assert.equal(fallback.device,'fullhd');assert.equal(fallback.zoom,'fit');assert.equal(fallback.scenario,'keep');
   const bad=structuredClone(data);bad.versions[0].path='https://example.org/';assert.throws(()=>R.validate(bad));assert.equal(R.scale(640,'tablet','fit'),.5);assert.equal(R.scale(1920,'tablet','fit'),1);
 });
 test('the many-card scenario survives review links and direct-view initialization',()=>{
