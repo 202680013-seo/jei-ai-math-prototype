@@ -1060,3 +1060,8 @@ body.has-long-learning-list :is(.heading,#diagnosis-section,.program-card){scrol
 .top-shortcuts .compact-shortcut:focus-visible>.shortcut-label{opacity:1;visibility:visible;transform:translate(-50%,0);transition-delay:0s}
 @media(hover:hover){.top-shortcuts .compact-shortcut:hover:not(:disabled)>.shortcut-label{opacity:1;visibility:visible;transform:translate(-50%,0);transition-delay:0s}}
 @media(prefers-reduced-motion:reduce){.top-shortcuts .compact-shortcut>.shortcut-label{transition:none;transform:translateX(-50%)}}
+
+/* V3.7.17: fade the scroll viewport, so topics regain clarity as they move upward. */
+#group-panel .group-list{--rail-list-mask:linear-gradient(to bottom,#000 0%,#000 18%,rgb(0 0 0 / .82) 50%,rgb(0 0 0 / .52) 78%,rgb(0 0 0 / .3) 100%);-webkit-mask-image:var(--rail-list-mask);mask-image:var(--rail-list-mask);-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+#group-panel .group-list:has(.group-item:focus-visible){-webkit-mask-image:none;mask-image:none}
+@media(forced-colors:active){#group-panel .group-list{-webkit-mask-image:none;mask-image:none}}
