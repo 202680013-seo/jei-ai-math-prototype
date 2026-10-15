@@ -1053,3 +1053,10 @@ body.has-long-learning-list :is(.heading,#diagnosis-section,.program-card){scrol
 .top-shortcuts .compact-shortcut .shortcut-art{display:block;width:26px;height:26px;flex:none}
 .top-shortcuts .compact-shortcut .star-glyph{height:26px}
 @media(max-width:650px){.top-shortcuts .compact-shortcut .shortcut-art{width:24px;height:24px}.top-shortcuts .compact-shortcut .star-glyph{height:24px}}
+
+/* V3.7.15: compact icon shortcuts, with labels below on hover or keyboard focus. */
+.top-shortcuts .compact-shortcut{width:var(--top-action-height);min-width:var(--top-action-height);padding:0;gap:0}
+.top-shortcuts .compact-shortcut>.shortcut-label{position:absolute;z-index:20;top:calc(100% + 7px);left:50%;width:max-content;max-width:120px;padding:4px 7px;border-radius:7px;background:var(--theme-surface,var(--paper));color:var(--theme-brand,var(--forest));box-shadow:0 2px 8px var(--jei-c-16330012,#16330012);font-size:11px;line-height:1.4;font-weight:700;white-space:nowrap;pointer-events:none;opacity:0;visibility:hidden;transform:translate(-50%,-3px);transition:opacity .16s ease,transform .2s ease,visibility 0s .16s}
+.top-shortcuts .compact-shortcut:focus-visible>.shortcut-label{opacity:1;visibility:visible;transform:translate(-50%,0);transition-delay:0s}
+@media(hover:hover){.top-shortcuts .compact-shortcut:hover:not(:disabled)>.shortcut-label{opacity:1;visibility:visible;transform:translate(-50%,0);transition-delay:0s}}
+@media(prefers-reduced-motion:reduce){.top-shortcuts .compact-shortcut>.shortcut-label{transition:none;transform:translateX(-50%)}}
