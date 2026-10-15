@@ -8,7 +8,7 @@ const {SkyModel}=require('../../dist/working/sky.js');
 const source=()=>fs.readFileSync(path.join(__dirname,'../../dist/working/app.js'),'utf8');
 const STATE_KEY='ai-math-prototype-diagnosis-v1';
 
-function harness(saved,{reducedMotion=true}={}){
+function harness(saved,{reducedMotion=true,appSource}={}){
   const nodes=new Map(),events=new Map(),timers=[],intervals=[],storage=new Map(),media={matches:reducedMotion};
   if(saved)storage.set(STATE_KEY,JSON.stringify(saved));
   const subscribe=(map,type,fn)=>{if(!map.has(type))map.set(type,[]);map.get(type).push(fn);};
@@ -45,7 +45,7 @@ function harness(saved,{reducedMotion=true}={}){
     innerWidth:1200,innerHeight:800,scrollY:0,scrollTo(){},addEventListener(){},
   });
   c.window=c;
-  vm.runInContext(source(),c);
+  vm.runInContext(appSource??source(),c);
   const evaluate=code=>vm.runInContext(code,c);
   const data=code=>JSON.parse(evaluate('JSON.stringify('+code+')'));
   const click=(action,id)=>{

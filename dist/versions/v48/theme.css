@@ -462,8 +462,15 @@ main{padding-top:40px}
 #composition[data-compose-paused=true] .ready-stack,#composition[data-compose-paused=true] .ready-play{animation-play-state:paused}
 @keyframes prescription-ready-arrive{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
 @keyframes prescription-ready-play{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
-#programs.reveal>.card:not(.grid-diagnostic){animation:prescription-card-arrive 1.15s both;animation-delay:var(--prescription-delay,0ms)}
-@keyframes prescription-card-arrive{0%{opacity:0;transform:translateY(18px);animation-timing-function:cubic-bezier(.22,.72,.2,1)}78%{opacity:1;transform:translateY(-2px);animation-timing-function:ease-out}100%{opacity:1;transform:translateY(0)}}
+/* A course forms in reading order after the diagnosis dim has cleared. */
+#programs.reveal>.card:not(.grid-diagnostic){animation:prescription-card-arrive .68s cubic-bezier(.22,.72,.2,1) both;animation-delay:calc(var(--course-reveal-wait,440ms) + var(--prescription-delay,0ms));transform-origin:50% 70%;will-change:opacity,transform}
+@keyframes prescription-card-arrive{0%{opacity:0;transform:translate3d(14px,28px,0) scale(.95)}65%{opacity:1;transform:translate3d(0,3px,0) scale(.995)}100%{opacity:1;transform:translate3d(0,0,0) scale(1)}}
+#learning-context.is-course-revealing{animation:course-context-arrive .48s var(--course-reveal-wait,440ms) cubic-bezier(.22,.72,.2,1) both}
+@keyframes course-context-arrive{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+#programs.reveal>.is-introduced .card-start-box{animation:course-start-invite .76s var(--course-invite-delay,1900ms) ease-out both}
+@keyframes course-start-invite{0%,100%{box-shadow:0 0 0 0 transparent}45%{box-shadow:0 0 0 7px var(--theme-soft,var(--jei-c-eaf5e2,#eaf5e2))}}
+#programs[data-course-paused=true]>.card,#programs[data-course-paused=true] .card-start-box,#learning-context[data-course-paused=true]{animation-play-state:paused!important}
+@media(prefers-reduced-motion:reduce){#learning-context.is-course-revealing,#programs.reveal>.is-introduced .card-start-box{animation:none!important}}
 .mentor-cluster .recommend-loader{gap:5px;color:var(--forest)}
 .recommend-loader small{margin-left:6px;font-size:11px;font-weight:600;color:var(--jei-c-668853,#668853);white-space:nowrap}
 .recommend-loader i{width:6px;height:6px}

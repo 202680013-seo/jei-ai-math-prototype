@@ -564,7 +564,7 @@ assert(node('#composition').innerHTML.includes('prescription-ready'));
 assert(node('#composition').innerHTML.includes('ready-stack'));
 vm.runInContext('composeTimers.find(t=>t.ms===8000)',c).fn();
 assert.equal(node('#diagnostic').parent,node('#diagnostic-result-slot'));
-assert.equal(vm.runInContext('cardRevealTimer',c).ms,1600);
+assert.equal(vm.runInContext('cardRevealTimer',c).ms,vm.runInContext('cardRevealRun.remaining',c));
 console.log('Prepared-learning graphic, gentle card reveal lifetime, result navigation and diagnostic/result hierarchy passed');
 
 // V3.4.7: the target width is established before a steady, grapheme-by-grapheme reveal.

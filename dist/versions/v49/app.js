@@ -453,11 +453,11 @@ function programCard(s,p){
   const introduced=unlocked&&s.presentationPending&&p.id===0&&p.status==='idle';
   if(unlocked&&finished){
     const kind=p.status==='failed'?'failed':'passed',hint=firstCompletedCardHint(s,p,kind),review=p.reviewSession&&!p.reviewSession.complete?'복습 이어하기':'복습하기';
-    return `<button class="card program-card is-complete ${kind==='failed'?'needs-review-card':'passed-card'}" data-action="${kind==='failed'?'failed-card':'completed-card'}" data-id="${p.id}" data-program-id="${p.id}" aria-haspopup="dialog" aria-label="${esc(p.name)} · ${statusLabel} · ${review} 또는 결과 보기" ${hint?`aria-describedby="first-${kind}-card-hint"`:''} style="--prescription-delay:${Math.min(p.id,5)*65}ms"><div class="completed-card-heading"><strong class="program-title">${esc(p.name)}</strong></div><div class="card-footer"><span class="completed-card-cue"><span class="card-state-icon ${kind==='failed'?'needs-review':'is-passed'}" aria-hidden="true">${statusSVG(kind)}</span>${hint?`<span class="completed-first-tooltip" id="first-${kind}-card-hint" role="tooltip">카드를 눌러 복습해보세요!</span>`:''}</span></div></button>`;
+    return `<button class="card program-card is-complete ${kind==='failed'?'needs-review-card':'passed-card'}" data-action="${kind==='failed'?'failed-card':'completed-card'}" data-id="${p.id}" data-program-id="${p.id}" aria-haspopup="dialog" aria-label="${esc(p.name)} · ${statusLabel} · ${review} 또는 결과 보기" ${hint?`aria-describedby="first-${kind}-card-hint"`:''} style="--prescription-delay:${Math.min(p.id,15)*105}ms"><div class="completed-card-heading"><strong class="program-title">${esc(p.name)}</strong></div><div class="card-footer"><span class="completed-card-cue"><span class="card-state-icon ${kind==='failed'?'needs-review':'is-passed'}" aria-hidden="true">${statusSVG(kind)}</span>${hint?`<span class="completed-first-tooltip" id="first-${kind}-card-hint" role="tooltip">카드를 눌러 복습해보세요!</span>`:''}</span></div></button>`;
   }
   const action=active?'이어서 하기':'시작하기',lock=`<span class="card-lock" aria-hidden="true">${statusSVG('locked')}</span>`;
   const classes=`card program-card ${introduced?'is-introduced ':''}${!unlocked?'is-locked':active?'is-current':'is-ready'}`;
-  return `<button class="${classes}" data-action="program" data-id="${p.id}" style="--prescription-delay:${Math.min(p.id,5)*65}ms" ${unlocked?'':'disabled'} aria-label="${esc(p.name)} ${statusLabel}${unlocked?' · '+action:''}" ${active?'aria-current="step"':''} title="${unlocked?'':p.status==='locked'?'테스트에서 잠금으로 설정된 학습':'이전 학습을 마치면 열려요'}"><strong class="program-title">${esc(p.name)}</strong>${active?`<div class="card-progress"><progress max="100" value="${progress}" aria-label="${esc(p.name)} 학습 진행률" aria-valuetext="${progress}% · ${p.completedFrames||0} / ${p.frames?.length||1}문항"></progress><span class="card-percent" aria-hidden="true">${progress}%</span></div>`:''}<div class="card-footer">${unlocked?`<span class="card-start-box" aria-hidden="true">${action}</span>`:lock}</div></button>`;
+  return `<button class="${classes}" data-action="program" data-id="${p.id}" style="--prescription-delay:${Math.min(p.id,15)*105}ms" ${unlocked?'':'disabled'} aria-label="${esc(p.name)} ${statusLabel}${unlocked?' · '+action:''}" ${active?'aria-current="step"':''} title="${unlocked?'':p.status==='locked'?'테스트에서 잠금으로 설정된 학습':'이전 학습을 마치면 열려요'}"><strong class="program-title">${esc(p.name)}</strong>${active?`<div class="card-progress"><progress max="100" value="${progress}" aria-label="${esc(p.name)} 학습 진행률" aria-valuetext="${progress}% · ${p.completedFrames||0} / ${p.frames?.length||1}문항"></progress><span class="card-percent" aria-hidden="true">${progress}%</span></div>`:''}<div class="card-footer">${unlocked?`<span class="card-start-box" aria-hidden="true">${action}</span>`:lock}</div></button>`;
 }
 function selectedCompletedCard(){
   if(!completedCardSelection||completedCardSelection.grade!==state.grade||completedCardSelection.index!==state.index)return null;
@@ -502,6 +502,7 @@ function renderProgramCards(topic){
   const markup=topic.programs.map(p=>programCard(topic,p)).join(''),view=state.grade+':'+state.index;
   // Keep mounted hints and keyboard focus when only surrounding guidance changes.
   if(markup!==programCardsMarkup||view!==programCardsView){
+    if(cardRevealRun)clearPrescribedCardReveal();
     $('#programs').innerHTML=markup;programCardsMarkup=markup;programCardsView=view;
   }
 }
@@ -511,7 +512,7 @@ function syncLearningContext(topic){
   $('#personalized-summary').textContent=ready?'실력 알기 결과에 맞춰 '+topic.programs.length+'개의 학습을 준비했어요.':'';
   if(ready)document.body.classList.add('has-personalized-learning');else document.body.classList.remove('has-personalized-learning');
 }
-function render(){if(!reveal)clearPrescribedCardReveal();daily();const s=current();syncLearningHeader(s);syncLearningContext(s);$('#diagnosis-slot').append($('#diagnostic'));$('#diagnostic').classList.remove('grid-diagnostic','card','clean-passed','diagnostic-summary-trigger');$('#diagnostic').setAttribute('aria-label','실력알기');$('#diagnostic-result-slot').hidden=true;$('#diagnosis-section').hidden=false;$('#grade-badge').innerHTML=`<strong>${grade(state.grade)}</strong><span>등급</span><span class="grade-topic-number">${String(state.index+1).padStart(2,'0')}</span>`;$('#group-title').textContent=groupName(state.index);$('#diagnostic').innerHTML=`<div><strong>실력알기</strong>${s.diagnosis==='done'?`<small>${s.programs.length?'처방 프로그램 '+s.programs.length+'개':'부족한 학습 목표 0개'}</small>`:''}</div>${badge(s.diagnosis==='done'?(s.programs.length?'passed':'clean'):s.diagnosis)}`;renderProgramCards(s);const rec=M.recommend(state);setRecommendationText(rec.text);$('#recommend').disabled=!!composing||['done','locked'].includes(rec.kind);
+function render(){if(cardRevealRun&&cardRevealRun.target!==current())clearPrescribedCardReveal();daily();const s=current();syncLearningHeader(s);syncLearningContext(s);$('#diagnosis-slot').append($('#diagnostic'));$('#diagnostic').classList.remove('grid-diagnostic','card','clean-passed','diagnostic-summary-trigger');$('#diagnostic').setAttribute('aria-label','실력알기');$('#diagnostic-result-slot').hidden=true;$('#diagnosis-section').hidden=false;$('#grade-badge').innerHTML=`<strong>${grade(state.grade)}</strong><span>등급</span><span class="grade-topic-number">${String(state.index+1).padStart(2,'0')}</span>`;$('#group-title').textContent=groupName(state.index);$('#diagnostic').innerHTML=`<div><strong>실력알기</strong>${s.diagnosis==='done'?`<small>${s.programs.length?'처방 프로그램 '+s.programs.length+'개':'부족한 학습 목표 0개'}</small>`:''}</div>${badge(s.diagnosis==='done'?(s.programs.length?'passed':'clean'):s.diagnosis)}`;renderProgramCards(s);const rec=M.recommend(state);setRecommendationText(rec.text);$('#recommend').disabled=!!composing||['done','locked'].includes(rec.kind);
 if(isCleanPass(s)&&!composing){const pass=cleanPassInfo();$('#diagnostic').classList.add('clean-passed');$('#diagnostic').innerHTML=`<div><strong>진단 통과</strong><small>추가 학습 없이 통과했어요 · 결과 보기</small></div><span class="badge clean">✓ 통과</span>`;setRecommendationText(pass.next?cleanPassPrepareLabel(pass):'이번 등급 학습 완료');$('#recommend').disabled=!pass.next;}
 if(composing){setRecommendationText('맞춤 프로그램을 준비하고 있어요');$('#diagnostic').innerHTML='<div><strong>실력알기</strong><small>진단 결과에 맞춰 필요한 학습을 구성하고 있습니다.</small></div><span class="badge active">진단 완료 · 구성 중</span>';$('#diagnostic').disabled=true;$('#programs').hidden=true;$('#composition').hidden=false;renderComposition();}
 else{$('#diagnostic').disabled=false;$('#composition').hidden=true;$('#programs').hidden=s.programs.length===0;
@@ -521,14 +522,44 @@ $('#diagnostic-result-slot').hidden=false;$('#diagnostic-result-slot').append(d)
 if(reveal)revealPrescribedCards();reveal=false;
 }}
 const pieces=skyState().items.reduce((n,x)=>n+x.pieces,0);$('#star-balance').textContent=String(pieces);$('.constellation-trigger').setAttribute('aria-label','나의 별자리 · 별 조각 '+pieces+'개');syncRecommendation(isCleanPass(s)&&!composing?cleanPassInfo().next:rec.kind==='today'?M.learningRecommend(state):rec);animateMessage();renderPanel();if(myOpen)renderMy();syncGuidanceReminders();const viewKey=state.grade+':'+state.index;if(overviewViewKey!==null&&overviewViewKey!==viewKey&&!myOpen){softReveal($('.heading'));if(!$('#learning-context').hidden)softReveal($('#learning-context'));if(!$('#programs').hidden)softReveal($('#programs'));}overviewViewKey=viewKey;}
+const COURSE_REVEAL={wait:440,stagger:105,card:680,limit:15,invite:760};
+let cardRevealRun=null;
 function clearPrescribedCardReveal(){
-  clearTimeout(cardRevealTimer);cardRevealTimer=null;cardRevealGeneration++;$('#programs').classList.remove('reveal');
+  clearTimeout(cardRevealTimer);cardRevealTimer=null;cardRevealGeneration++;
+  const previous=cardRevealRun;cardRevealRun=null;
+  // Remove the animation class before releasing individual cards, so they never replay.
+  $('#programs').classList.remove('reveal');$('#programs').setAttribute('aria-busy','false');
+  $('#programs').removeAttribute('data-course-paused');$('#learning-context').removeAttribute('data-course-paused');$('#learning-context').classList.remove('is-course-revealing');
+  for(const card of previous?.cards||[]){card.inert=false;card.style.animation='';}
+}
+function scheduleCourseRevealEnd(run){
+  clearTimeout(cardRevealTimer);cardRevealTimer=null;const token=++run.endToken;
+  if(run.paused)return;run.started=Date.now();
+  cardRevealTimer=setTimeout(()=>{if(cardRevealRun===run&&run.endToken===token&&!run.paused)clearPrescribedCardReveal();},run.remaining);
 }
 function revealPrescribedCards(){
-  clearPrescribedCardReveal();if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-  const generation=cardRevealGeneration;void $('#programs').offsetWidth;$('#programs').classList.add('reveal');
-  cardRevealTimer=setTimeout(()=>{if(generation!==cardRevealGeneration)return;$('#programs').classList.remove('reveal');cardRevealTimer=null;},1600);
+  clearPrescribedCardReveal();if(matchMedia('(prefers-reduced-motion: reduce)').matches||!current().programs.length)return;
+  const host=$('#programs'),last=Math.min(current().programs.length-1,COURSE_REVEAL.limit),inviteAt=COURSE_REVEAL.wait+last*COURSE_REVEAL.stagger+COURSE_REVEAL.card+80;
+  const run=cardRevealRun={target:current(),generation:cardRevealGeneration,cards:Array.from(host.querySelectorAll('.program-card')),paused:document.visibilityState==='hidden',endToken:0,remaining:inviteAt+COURSE_REVEAL.invite+80,started:Date.now(),inviteAt};
+  for(const card of run.cards)card.inert=true;
+  for(const element of [host,$('#learning-context')]){
+    const values={'--course-reveal-wait':COURSE_REVEAL.wait+'ms','--course-invite-delay':inviteAt+'ms'};
+    for(const [name,value] of Object.entries(values)){if(element.style.setProperty)element.style.setProperty(name,value);else element.style[name]=value;}
+  }
+  host.setAttribute('aria-busy','true');host.setAttribute('data-course-paused',String(run.paused));$('#learning-context').setAttribute('data-course-paused',String(run.paused));
+  void host.offsetWidth;host.classList.add('reveal');$('#learning-context').classList.add('is-course-revealing');scheduleCourseRevealEnd(run);
 }
+$('#programs').addEventListener('animationend',event=>{
+  const run=cardRevealRun,card=event.target;if(!run||event.animationName!=='prescription-card-arrive'||!run.cards.includes(card))return;
+  card.inert=false;card.style.animation='none';
+  if(card===run.cards[0]&&(document.activeElement===document.body||document.activeElement===$('#diagnostic')))card.focus({preventScroll:true});
+});
+document.addEventListener('visibilitychange',()=>{
+  const run=cardRevealRun;if(!run)return;const paused=document.visibilityState==='hidden';if(paused===run.paused)return;
+  if(paused)run.remaining=Math.max(0,run.remaining-(Date.now()-run.started));
+  run.paused=paused;$('#programs').setAttribute('data-course-paused',String(paused));$('#learning-context').setAttribute('data-course-paused',String(paused));scheduleCourseRevealEnd(run);
+});
+matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change',event=>{if(event.matches)clearPrescribedCardReveal();});
 function cancelComposition(){
   const previous=composing;composeTimers.forEach(clearTimeout);composeTimers=[];composing=null;clearPrescribedCardReveal();
   if(previous?.surface==='learning'){
@@ -569,7 +600,7 @@ function beginComposition(n,mode){
   composeTimers.push(setTimeout(()=>{
     if(!valid())return;target.diagnosis='done';target.programs=M.programs(n,state.grade,state.index);target.reviewHistory=false;target.diagnosticSession=null;target.presentationPending=true;state.ui.prescriptionSeen=true;
     cancelComposition();reveal=true;notify('진단 완료 · 맞춤 프로그램 '+n+'개 구성 완료');
-    const card=document.querySelector('#programs [data-action="program"]');card?.focus();card?.scrollIntoView?.({block:'nearest',behavior:'auto'});
+    const card=document.querySelector('#programs [data-action="program"]');if(!cardRevealRun)card?.focus();card?.scrollIntoView?.({block:'nearest',behavior:'auto'});
   },total));
 }
 
@@ -744,6 +775,7 @@ return false;}
 function startDiagnostic(){const s=current();state.ui??={testControls:false};state.ui.diagnosisIntroSeen=true;editing.intro=false;if(s.diagnosis==='idle'){s.attempts=(s.attempts||0)+1;s.diagnosis='active';}s.diagnosticSession??={index:0,answers:[],started:Date.now(),notes:''};markLearning();save();render();refreshDialog();}
 function openLearning(kind,id){
   if(kind==='program'&&!M.canStudy(current(),current().programs.find(p=>p.id===id)))return;
+  clearPrescribedCardReveal();
   diagnosisEndBackground=null;
   const s=current();if(kind==='diagnosis'&&s.diagnosis==='done')editing={kind:'diagnosis-result',goal:0,item:0};
   else{editing={kind,id};if(kind==='diagnosis'){state.ui??={testControls:false};editing.intro=s.diagnosis==='idle'&&!state.ui.diagnosisIntroSeen;if(!editing.intro)startDiagnostic();}
