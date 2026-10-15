@@ -35,7 +35,7 @@ test('complete and failed cards keep result/review navigation but have distinct 
   const complete=h.evaluate('programCard(current(),current().programs[0])');
   assert(complete.includes('card-state-icon is-passed'));assert(complete.includes('card-result-action'));assert(complete.includes('결과 보기'));
   assert(!complete.includes('class="card-top"'));assert(!complete.includes('class="card-status"'));
-  assert(complete.startsWith('<article '));assert.equal((complete.match(/<button\b/g)||[]).length,2);
+  assert(complete.startsWith('<article '));assert.equal((complete.match(/<button\b/g)||[]).length,3);
   assert(complete.includes('data-action="card-review"'));assert(complete.includes('복습하기'));assert(complete.indexOf('card-state-icon')<complete.indexOf('card-footer'));
   assert(!complete.includes('card-number'));
   assert(!complete.includes('<progress'));assert(!complete.includes('card-start-box'));
@@ -57,4 +57,17 @@ test('locked cards show a footer lock without an ordinal, and never expose a sta
   html=h.evaluate('programCard(current(),current().programs[1])');
   assert(html.includes('is-locked'));assert(!html.includes('is-complete'));
   h.click('program',1);assert.equal(h.node('#learning').open,false);
+});
+
+test('a completed-card menu is an explicit action before its choices and never starts or resets learning',()=>{
+  const h=harness();h.seed();const before=h.data('current().programs'),selector='#programs>article[data-program-id="0"]';
+  const html=h.evaluate('programCard(current(),current().programs[0])');
+  assert(html.indexOf('data-action="card-actions"')<html.indexOf('data-action="program"'),'keyboard disclosure precedes the two revealed choices');
+  let focused=0;h.node(selector+' .card-result-action').focus=()=>{focused++;};
+  h.click('card-actions',0);assert.equal(h.node(selector).getAttribute('data-actions-open'),'true');assert.equal(focused,1);
+  assert.equal(h.node('#learning').open,false);assert.deepEqual(h.data('current().programs'),before);
+  h.document.querySelectorAll=()=>[h.node(selector)];h.evaluate('closeCardActions()');
+  assert.equal(h.node(selector).getAttribute('data-actions-open'),null);
+  h.click('card-actions',1);assert.equal(h.node('#programs>article[data-program-id="1"]').getAttribute('data-actions-open'),null);
+  assert.deepEqual(h.data('current().programs'),before);
 });
