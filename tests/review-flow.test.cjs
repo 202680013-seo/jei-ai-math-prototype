@@ -22,7 +22,7 @@ test('completed-program review is independent of the next active program and kee
 
 test('completed-card click shows the saved result and explicit review while preserving active-next progress',()=>{
   const h=harness();h.seed();const original=canonical(h),next=h.data('current().programs[1]');
-  assert.match(h.node('#programs').innerHTML,/결과\s*·\s*복습/);
+  assert.match(h.node('#programs').innerHTML,/결과 보기/);
   h.click('program',0);
   assert.equal(h.node('#learning').open,true);
   assert.match(h.node('#learning').innerHTML,/data-action="learner-review"/);
