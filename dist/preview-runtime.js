@@ -4,7 +4,7 @@
   const id=document.currentScript.dataset.version;
   if(!/^(working|v[1-9]\d*)$/.test(id))throw new Error('Unknown design version.');
   const scenario=new URLSearchParams(location.search).get('scenario');
-  const config=window.__JEI_REVIEW__={id,designId:document.currentScript.dataset.designId||id,scenario:['0','3','4','5'].includes(scenario)?scenario:'keep'},prefix=`jei-review:${id}:`,memory=new Map();let native;
+  const config=window.__JEI_REVIEW__={id,designId:document.currentScript.dataset.designId||id,scenario:['0','3','4','5','many'].includes(scenario)?scenario:'keep'},prefix=`jei-review:${id}:`,memory=new Map();let native;
   try{native=window.localStorage;}catch{}
   if(window.JeiHistory)window.__JEI_HISTORY_STORE__=window.JeiHistory.createStore(native);
   if(config.id==='working'&&native){try{const marker='jei-review:migrated:working',key='ai-math-prototype-diagnosis-v1';if(!native.getItem(marker)){const legacy=native.getItem(key);if(legacy!=null&&native.getItem(prefix+key)==null)native.setItem(prefix+key,legacy);native.setItem(marker,'1');}}catch{}}

@@ -891,8 +891,6 @@ body.learning-navigation-open .groups-trigger[aria-expanded=true],body.learning-
 #group-panel .nav-resume-top small{font-size:10px;color:var(--jei-c-49702e,#49702e);font-weight:700}
 #group-panel .nav-resume-title{display:block;font-size:16px;line-height:1.45;font-weight:800;color:var(--forest)}
 #group-panel .nav-resume-detail{margin:6px 0 0;font-size:11px;line-height:1.5;color:var(--muted)}
-#group-panel .nav-resume-button{display:block;width:100%;min-height:36px;margin-top:12px;padding:8px 10px;border:1px solid var(--jei-c-c1d8af,#c1d8af);border-radius:10px;background:#fff;color:var(--forest);font-size:12px;font-weight:800;transition:background .2s,color .2s,transform .2s}
-#group-panel .nav-resume-button:hover{background:var(--forest);color:#fff;border-color:var(--forest);transform:translateY(-1px)}
 #group-panel .group-item{gap:9px}
 #group-panel .nav-topic-number{display:grid;place-items:center;flex:none;width:22px;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--muted)}
 #group-panel .nav-topic-status{display:grid;place-items:center;flex:none;width:24px;height:24px}
@@ -903,12 +901,36 @@ body.learning-navigation-open .groups-trigger[aria-expanded=true],body.learning-
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .grid>.program-card.is-ready{background:var(--theme-active);border-color:var(--theme-line-strong);color:var(--theme-on-active)}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .grid>.program-card.is-ready:hover:not(:disabled){background:var(--theme-active);border-color:var(--theme-brand)}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .card-footer .card-lock{background:color-mix(in srgb,var(--theme-locked) 90%,var(--theme-title));border:0}
-:root:is([data-preview-theme=teal],[data-preview-theme=green]) #group-panel .nav-resume-button{background:var(--theme-primary);border-color:var(--theme-primary);color:var(--theme-on-primary)}
-:root:is([data-preview-theme=teal],[data-preview-theme=green]) #group-panel .nav-resume-button:hover{background:var(--theme-primary-hover);border-color:var(--theme-primary-hover);color:var(--theme-on-primary)}
 @media(max-width:1250px){.grid>.program-card.is-ready{padding:17px}}
 @media(max-width:650px){.grid>.program-card.is-ready{padding:15px}}
 @media(max-width:380px){.grid>.program-card.is-ready{padding:12px}}
 @media(prefers-reduced-motion:reduce){
-  .card-start-box,#group-panel .nav-resume-button{transition:none}
+  .card-start-box{transition:none}
   .program-card:is(.is-ready,.is-current) .card-start-box{transform:none!important}
 }
+
+/* V3.7.2: a quiet outline, compact topic type, and one pinned guidance area. */
+:root{--navigation-idle:color-mix(in srgb,var(--muted) 62%,var(--paper));--learning-page:var(--jei-c-f7f9f4,#f7f9f4)}
+#group-panel .group-item:is([data-state=idle],[data-state=locked]),
+#group-panel .group-item:is([data-state=idle],[data-state=locked]) :is(.nav-topic-number,.nav-topic-copy strong,.nav-topic-status){color:var(--navigation-idle)}
+#group-panel .group-item:is([data-state=idle],[data-state=locked]) .nav-topic-copy strong{font-weight:600}
+#group-panel{transition-duration:.32s}
+#group-panel[data-panel-phase=open][data-reveal=true] .nav-stagger{animation:learning-nav-settle .3s ease-out both;animation-delay:var(--nav-delay,0ms)}
+@keyframes learning-nav-settle{from{opacity:.45;transform:translateY(3px)}to{opacity:1;transform:none}}
+.heading-title-row #group-title{font-size:26px}
+/* Native document scrolling stays available to wheel, touch and keyboard. */
+html,body,#group-panel .group-list{scrollbar-width:none}
+html::-webkit-scrollbar,body::-webkit-scrollbar,#group-panel .group-list::-webkit-scrollbar{display:none}
+body.has-long-learning-list .ai{position:sticky;top:16px;z-index:12;isolation:isolate;background:var(--learning-page)}
+body.has-long-learning-list .ai::before{content:'';position:absolute;inset:-16px -16px 0;z-index:-1;pointer-events:none;background:var(--learning-page);box-shadow:0 12px 20px -20px var(--jei-c-16330020,#16330020)}
+body.has-long-learning-list :is(.heading,#diagnosis-section,.program-card){scroll-margin-top:var(--learning-header-clearance,180px)}
+:root:is([data-preview-theme=teal],[data-preview-theme=green]){--learning-page:var(--theme-page)}
+@media(max-width:980px){.heading-title-row #group-title{font-size:25px}}
+@media(max-width:650px){
+  #group-panel{transition-duration:.32s}
+  .heading-title-row #group-title{font-size:22px}
+  body.has-long-learning-list .ai{top:8px}
+  body.has-long-learning-list .ai::before{inset:-8px -8px 0}
+}
+@container learning (max-width:650px){.heading-title-row #group-title{font-size:22px}}
+@media(prefers-reduced-motion:reduce){#group-panel .nav-stagger{animation:none!important;opacity:1;transform:none}}

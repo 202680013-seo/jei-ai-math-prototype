@@ -1,7 +1,15 @@
 (function(){
   'use strict';const config=window.__JEI_REVIEW__;
   if(config.scenario!=='keep'){
-    state=M.create();browseGrade=state.grade;M.preset(state,Number(config.scenario));presetIndex=Number(config.scenario);editing=null;render();save();
+    state=M.create();browseGrade=state.grade;
+    if(config.scenario==='many'){
+      const topic=state.grades[state.grade][state.index];topic.diagnosis='done';topic.programs=M.programs(12,state.grade,state.index);
+      topic.programs.slice(0,2).forEach(program=>{program.status='passed';M.setProgress(program,100);});
+      topic.programs[2].status='active';M.setProgress(topic.programs[2],45);
+      topic.recent='확인용 상태 · 학습 카드 12개';presetIndex=-1;
+      daily().target=20;daily().started=true;
+    }else{M.preset(state,Number(config.scenario));presetIndex=Number(config.scenario);}
+    editing=null;render();save();
   }
   if(config.restored?.view==='mypage')openMy();
   // Only the review adapter reads learner state; immutable design sources stay untouched.

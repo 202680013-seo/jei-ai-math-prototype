@@ -11,6 +11,13 @@ test('comparison links round-trip, reject invalid paths, and always show distinc
   const fallback=R.normalize(data,new URLSearchParams('left=../../&right=working&device=bad&zoom=-1&scenario=99'));assert.notEqual(fallback.left,fallback.right);assert.equal(fallback.device,'tablet');assert.equal(fallback.zoom,'fit');assert.equal(fallback.scenario,'keep');
   const bad=structuredClone(data);bad.versions[0].path='https://example.org/';assert.throws(()=>R.validate(bad));assert.equal(R.scale(640,'tablet','fit'),.5);assert.equal(R.scale(1920,'tablet','fit'),1);
 });
+test('the many-card scenario survives review links and direct-view initialization',()=>{
+  const selected=R.normalize(data,new URLSearchParams('scenario=many'));
+  assert.equal(selected.scenario,'many');assert.equal(R.normalize(data,new URLSearchParams(R.query(selected))).scenario,'many');
+  assert(R.previewUrl('working','many').endsWith('?scenario=many'));
+  const window={localStorage:null};vm.runInNewContext(fs.readFileSync(path.join(dist,'preview-runtime.js'),'utf8'),{window,document:{currentScript:{dataset:{version:'working'}}},location:{search:'?scenario=many'},URLSearchParams,Map,Object,Array,String});
+  assert.equal(window.__JEI_REVIEW__.scenario,'many');
+});
 test('version storage is isolated; clearing V1 cannot clear working or legacy state',()=>{
   const backing=new Map([['ai-math-prototype-diagnosis-v1','legacy']]);const native={get length(){return backing.size},key:i=>[...backing.keys()][i]??null,getItem:k=>backing.get(k)??null,setItem:(k,v)=>backing.set(k,String(v)),removeItem:k=>backing.delete(k)};
   function load(id){const window={__JEI_REVIEW__:{id},localStorage:native};vm.runInNewContext(fs.readFileSync(path.join(dist,'preview-runtime.js'),'utf8'),{window,document:{currentScript:{dataset:{version:id}}},location:{search:''},URLSearchParams,Map,Object,Array,String});return window.localStorage;}

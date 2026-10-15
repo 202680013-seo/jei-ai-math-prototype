@@ -591,7 +591,7 @@ click('groups');
 assert.equal(node('.groups-trigger')['data-tab-phase'],'closing');
 assert.equal(node('.groups-trigger')['aria-expanded'],'false');
 assert.equal(node('#group-panel').hidden,false);
-assert.equal(vm.runInContext('panelMotionTimer',c).ms,600);
+assert.equal(vm.runInContext('panelMotionTimer',c).ms,320);
 vm.runInContext('panelMotionTimer',c).fn();
 assert.equal(node('#group-panel').hidden,true);
 assert.equal(node('.groups-trigger')['data-tab-phase'],'closed');
