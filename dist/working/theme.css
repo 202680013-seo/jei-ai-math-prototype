@@ -1043,3 +1043,9 @@ body.has-long-learning-list :is(.heading,#diagnosis-section,.program-card){scrol
   .completion-confetti{left:0;width:100%;height:360px}
 }
 @media(prefers-reduced-motion:reduce){.completed-first-tooltip,.completion-emblem{animation:none}.completion-confetti{display:none}}
+
+/* Supplied shortcut artwork: original geometry with theme-aware solid fills. */
+.top-shortcuts{--shortcut-icon-ink:var(--theme-brand,#49702e);--shortcut-icon-light:var(--theme-soft-strong,#c8f2b1);--shortcut-icon-body:color-mix(in srgb,var(--shortcut-icon-ink) 48%,var(--shortcut-icon-light))}
+.top-shortcuts .compact-shortcut .shortcut-art{display:block;width:26px;height:26px;flex:none}
+.top-shortcuts .compact-shortcut .star-glyph{height:26px}
+@media(max-width:650px){.top-shortcuts .compact-shortcut .shortcut-art{width:24px;height:24px}.top-shortcuts .compact-shortcut .star-glyph{height:24px}}
