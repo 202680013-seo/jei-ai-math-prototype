@@ -611,9 +611,9 @@ vm.runInContext("cancelComposition();state=M.create();panel=null;myOpen=false;ac
 assert.equal(node('#group-title').textContent,'비교와 분류');
 assert(node('#grade-badge').innerHTML.includes('<strong>D</strong>'));
 vm.runInContext('M.preset(state,3);render()',c);
-assert(node('#diagnostic').innerHTML.includes('<strong>진단 결과 확인</strong>'));
+assert(node('#diagnostic').innerHTML.includes('<strong>실력 알기 결과 확인</strong>'));
 assert(!node('#diagnostic').innerHTML.includes('틀린 내용 확인'));
-assert.equal(node('#diagnostic')['aria-label'],vm.runInContext('groupName(state.index)',c)+' 실력 알기 · 진단 결과 확인');
+assert.equal(node('#diagnostic')['aria-label'],vm.runInContext('groupName(state.index)',c)+' · 실력 알기 결과 확인');
 vm.runInContext('state=M.create();render()',c);
 const viewMotions=[];
 node('#learning > .dialog-view').animate=(frames,timing)=>{

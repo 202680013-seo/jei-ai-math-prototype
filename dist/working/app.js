@@ -497,18 +497,26 @@ function measureLearningHeader(){
   if(host.style.setProperty)host.style.setProperty('--learning-header-clearance',height+'px');
   else host.style['--learning-header-clearance']=height+'px';
 }
+let programCardsMarkup=null,programCardsView=null;
+function renderProgramCards(topic){
+  const markup=topic.programs.map(p=>programCard(topic,p)).join(''),view=state.grade+':'+state.index;
+  // Keep mounted hints and keyboard focus when only surrounding guidance changes.
+  if(markup!==programCardsMarkup||view!==programCardsView){
+    $('#programs').innerHTML=markup;programCardsMarkup=markup;programCardsView=view;
+  }
+}
 function syncLearningContext(topic){
   const ready=!composing&&topic.diagnosis==='done'&&topic.programs.length>0;
   $('#learning-context').hidden=!ready;
   $('#personalized-summary').textContent=ready?'실력 알기 결과에 맞춰 '+topic.programs.length+'개의 학습을 준비했어요.':'';
   if(ready)document.body.classList.add('has-personalized-learning');else document.body.classList.remove('has-personalized-learning');
 }
-function render(){if(!reveal)clearPrescribedCardReveal();daily();const s=current();syncLearningHeader(s);syncLearningContext(s);$('#diagnosis-slot').append($('#diagnostic'));$('#diagnostic').classList.remove('grid-diagnostic','card','clean-passed','diagnostic-summary-trigger');$('#diagnostic').setAttribute('aria-label','실력알기');$('#diagnostic-result-slot').hidden=true;$('#diagnosis-section').hidden=false;$('#grade-badge').innerHTML=`<strong>${grade(state.grade)}</strong><span>등급</span>`;$('#group-title').textContent=groupName(state.index);$('#diagnostic').innerHTML=`<div><strong>실력알기</strong>${s.diagnosis==='done'?`<small>${s.programs.length?'처방 프로그램 '+s.programs.length+'개':'부족한 학습 목표 0개'}</small>`:''}</div>${badge(s.diagnosis==='done'?(s.programs.length?'passed':'clean'):s.diagnosis)}`;$('#programs').innerHTML=s.programs.map(p=>programCard(s,p)).join('');const rec=M.recommend(state);setRecommendationText(rec.text);$('#recommend').disabled=!!composing||['done','locked'].includes(rec.kind);
+function render(){if(!reveal)clearPrescribedCardReveal();daily();const s=current();syncLearningHeader(s);syncLearningContext(s);$('#diagnosis-slot').append($('#diagnostic'));$('#diagnostic').classList.remove('grid-diagnostic','card','clean-passed','diagnostic-summary-trigger');$('#diagnostic').setAttribute('aria-label','실력알기');$('#diagnostic-result-slot').hidden=true;$('#diagnosis-section').hidden=false;$('#grade-badge').innerHTML=`<strong>${grade(state.grade)}</strong><span>등급</span><span class="grade-topic-number">${String(state.index+1).padStart(2,'0')}</span>`;$('#group-title').textContent=groupName(state.index);$('#diagnostic').innerHTML=`<div><strong>실력알기</strong>${s.diagnosis==='done'?`<small>${s.programs.length?'처방 프로그램 '+s.programs.length+'개':'부족한 학습 목표 0개'}</small>`:''}</div>${badge(s.diagnosis==='done'?(s.programs.length?'passed':'clean'):s.diagnosis)}`;renderProgramCards(s);const rec=M.recommend(state);setRecommendationText(rec.text);$('#recommend').disabled=!!composing||['done','locked'].includes(rec.kind);
 if(isCleanPass(s)&&!composing){const pass=cleanPassInfo();$('#diagnostic').classList.add('clean-passed');$('#diagnostic').innerHTML=`<div><strong>진단 통과</strong><small>추가 학습 없이 통과했어요 · 결과 보기</small></div><span class="badge clean">✓ 통과</span>`;setRecommendationText(pass.next?cleanPassPrepareLabel(pass):'이번 등급 학습 완료');$('#recommend').disabled=!pass.next;}
 if(composing){setRecommendationText('맞춤 프로그램을 준비하고 있어요');$('#diagnostic').innerHTML='<div><strong>실력알기</strong><small>진단 결과에 맞춰 필요한 학습을 구성하고 있습니다.</small></div><span class="badge active">진단 완료 · 구성 중</span>';$('#diagnostic').disabled=true;$('#programs').hidden=true;$('#composition').hidden=false;renderComposition();}
 else{$('#diagnostic').disabled=false;$('#composition').hidden=true;$('#programs').hidden=s.programs.length===0;
-if(s.diagnosis==='done'&&s.programs.length){const d=$('#diagnostic');d.classList.add('diagnostic-summary-trigger');d.setAttribute('aria-label',groupName(state.index)+' 실력 알기 · 진단 결과 확인');
-d.innerHTML=`<span class="result-icon" aria-hidden="true"><svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="5" width="16" height="20" rx="4"/><path d="M11 4h6v4h-6zM10 13h8M10 17h5M10 21h3"/></svg></span><span class="result-copy"><strong>진단 결과 확인</strong></span><svg class="result-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 4 4 4-4 4"/></svg>`;
+if(s.diagnosis==='done'&&s.programs.length){const d=$('#diagnostic');d.classList.add('diagnostic-summary-trigger');d.setAttribute('aria-label',groupName(state.index)+' · 실력 알기 결과 확인');
+d.innerHTML=`<span class="result-icon" aria-hidden="true"><svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="5" width="16" height="20" rx="4"/><path d="M11 4h6v4h-6zM10 13h8M10 17h5M10 21h3"/></svg></span><span class="result-copy"><strong>실력 알기 결과 확인</strong></span><svg class="result-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 4 4 4-4 4"/></svg>`;
 $('#diagnostic-result-slot').hidden=false;$('#diagnostic-result-slot').append(d);$('#diagnosis-section').hidden=true;
 if(reveal)revealPrescribedCards();reveal=false;
 }}

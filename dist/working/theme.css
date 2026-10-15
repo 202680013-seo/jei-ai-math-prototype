@@ -1002,11 +1002,11 @@ body.has-long-learning-list :is(.heading,#diagnosis-section,.program-card){scrol
 .completed-card-cue>.card-state-icon{width:var(--card-status-symbol);height:var(--card-status-symbol)}
 /* Enlarge the solid status badge within the shared 40px anchor to balance the lock tile visually. */
 .grid>.program-card .card-footer .card-lock{width:var(--card-status-slot);height:var(--card-status-slot);padding:0;border:0;background:transparent}
-.completed-first-tooltip{position:absolute;z-index:3;right:-12px;bottom:calc(100% + 8px);width:max-content;max-width:210px;padding:8px 11px;border-radius:12px;background:var(--status-pass-fill);color:#fff;font-size:12px;font-weight:800;line-height:1.5;white-space:nowrap;pointer-events:none;box-shadow:0 3px 10px var(--jei-c-16330012,#16330012);animation:completed-hint-arrive .4s .15s ease-out both,completed-hint-float 3.6s .55s ease-in-out infinite}
+.completed-first-tooltip{position:absolute;z-index:3;right:-12px;bottom:calc(100% + 8px);width:max-content;max-width:210px;padding:8px 11px;border-radius:12px;background:var(--status-pass-fill);color:#fff;font-size:12px;font-weight:800;line-height:1.5;white-space:nowrap;pointer-events:none;box-shadow:0 3px 10px var(--jei-c-16330012,#16330012);will-change:transform;animation:completed-hint-arrive .35s ease-out both,completed-hint-float 4s ease-in-out infinite}
 .completed-first-tooltip::after{--completed-hint-tail:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 8'%3E%3Cpath d='M0 0H18C15.4 0 14.4 1.5 12.8 3.7L10.6 6.8C9.8 7.9 8.2 7.9 7.4 6.8L5.2 3.7C3.6 1.5 2.6 0 0 0Z'/%3E%3C/svg%3E");content:"";position:absolute;right:23px;top:calc(100% - 1px);width:18px;height:8px;background:inherit;-webkit-mask:var(--completed-hint-tail) center/100% 100% no-repeat;mask:var(--completed-hint-tail) center/100% 100% no-repeat}
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) .completed-first-tooltip{background:var(--theme-brand);color:#fff}
-@keyframes completed-hint-arrive{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-@keyframes completed-hint-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes completed-hint-arrive{from{opacity:0}to{opacity:1}}
+@keyframes completed-hint-float{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-3px,0)}}
 @media(hover:hover){.grid>.program-card.is-complete:hover:not(:disabled){transform:translateY(-3px);box-shadow:0 10px 22px var(--jei-c-1633000d,#1633000d)}}
 @media(prefers-reduced-motion:reduce){.grid>.program-card.is-complete:hover:not(:disabled){transform:none}}
 
@@ -1071,7 +1071,7 @@ body.has-long-learning-list :is(.heading,#diagnosis-section,.program-card){scrol
 .learning-context[hidden]{display:none}
 .learning-context-copy{flex:1;min-width:0}
 .learning-context h2{margin:0;color:var(--forest);font-size:18px;font-weight:800;line-height:1.5}
-.learning-context p{margin:4px 0 0;color:var(--muted);font-size:13px;line-height:1.7;word-break:keep-all;overflow-wrap:anywhere}
+.learning-context p{margin:0;color:var(--muted);font-size:13px;line-height:1.7;word-break:keep-all;overflow-wrap:anywhere}
 body.has-personalized-learning .heading{margin-bottom:14px}
 #learning-context #diagnostic-result-slot{flex:none;margin-left:0}
 #learning-context #diagnostic-result-slot>.diagnostic-summary-trigger{flex-direction:row;justify-content:center;gap:8px;min-height:42px;width:auto;padding:9px 12px;border-radius:12px}
@@ -1087,3 +1087,9 @@ body.has-long-learning-list .learning-context{scroll-margin-top:var(--learning-h
   .learning-context p{font-size:12px}
   #learning-context #diagnostic-result-slot{margin-left:auto}
 }
+
+/* V3.8.1: one explanatory line and a distinct grade/topic identifier. */
+#grade-badge.grade-label{gap:0;padding:7px 11px;border-radius:11px;background:var(--theme-brand,var(--jei-c-49702e,#49702e));color:#fff}
+#grade-badge>.grade-topic-number{margin-left:9px;padding-left:9px;border-left:1px solid #ffffff40;font-size:15px;font-weight:800;line-height:1.2;font-variant-numeric:tabular-nums}
+@media(max-width:650px){#grade-badge.grade-label{padding:6px 9px;border-radius:9px}#grade-badge>.grade-topic-number{margin-left:7px;padding-left:7px;font-size:13px}}
+@media(prefers-reduced-motion:reduce){.completed-first-tooltip{will-change:auto}}

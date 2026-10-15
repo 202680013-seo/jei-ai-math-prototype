@@ -49,7 +49,8 @@ test('preparation retains its topic identity and connects the ready count to the
 
 test('the result control belongs to the card explanation and the rail consistently names learning topics',()=>{
   const html=fs.readFileSync('dist/working/index.html','utf8'),context=html.match(/<section id="learning-context"[^>]*>(.*?)<\/section>/)[1];
-  assert(context.includes('나에게 필요한 맞춤 학습'));
+  assert(!context.includes('나에게 필요한 맞춤 학습'));
+  assert(context.includes('<h2 id="personalized-title" class="sr-only">맞춤 학습</h2>'));
   assert(context.indexOf('personalized-summary')<context.indexOf('diagnostic-result-slot'));
   assert(html.indexOf('id="learning-context"')<html.indexOf('id="programs"'));
   assert(html.includes('aria-labelledby="group-title personalized-title"'));
@@ -59,4 +60,37 @@ test('the result control belongs to the card explanation and the rail consistent
   assert(h.node('#group-panel').innerHTML.includes('<h2>학습 주제</h2>'));
   assert(!h.node('#group-panel').innerHTML.includes('학습 목차'));
   assert.equal(h.node('.groups-trigger')['aria-label'],'학습 주제 닫기');
+});
+
+test('unchanged guidance renders retain mounted card hints while progress and dismissal still update',()=>{
+  const h=harness(undefined,{reducedMotion:false});h.seed('passed');
+  const cards=h.node('#programs');let html=cards.innerHTML,writes=0;
+  Object.defineProperty(cards,'innerHTML',{configurable:true,get:()=>html,set:value=>{html=value;writes++;}});
+  assert(html.includes('id="first-passed-card-hint"'));
+  h.evaluate('render();daily().variant++;render();render()');
+  assert.equal(writes,0,'unchanged cards must not restart their tooltip animation');
+  const beforeProgress=h.evaluate('current().programs[1].progress');
+  h.evaluate('M.setProgress(current().programs[1],60);render()');
+  const progress=h.evaluate('current().programs[1].progress');
+  assert.notEqual(progress,beforeProgress);
+  assert.equal(writes,1);assert(html.includes(`value="${progress}"`));
+  h.evaluate('render()');assert.equal(writes,1);
+  h.click('completed-card',0);
+  assert.equal(writes,2);assert(!html.includes('id="first-passed-card-hint"'));
+  assert.equal(h.node('#activity').open,true);
+});
+
+test('the grade badge follows the selected topic ordinal independently of learning card progress',()=>{
+  const h=harness();
+  assert(h.node('#grade-badge').innerHTML.includes('<strong>D</strong>'));
+  assert(h.node('#grade-badge').innerHTML.includes('class="grade-topic-number">01</span>'));
+  h.evaluate('select(3,1)');
+  assert(h.node('#grade-badge').innerHTML.includes('class="grade-topic-number">02</span>'));
+  h.evaluate("current().diagnosis='done';current().programs=M.programs(8,3,1);M.setProgress(current().programs[0],100);render()");
+  assert(h.node('#grade-badge').innerHTML.includes('class="grade-topic-number">02</span>'));
+  h.evaluate('select(3,9)');
+  assert(h.node('#grade-badge').innerHTML.includes('class="grade-topic-number">10</span>'));
+  h.evaluate('select(0,0)');
+  assert(h.node('#grade-badge').innerHTML.includes('<strong>A</strong>'));
+  assert(h.node('#grade-badge').innerHTML.includes('class="grade-topic-number">01</span>'));
 });
