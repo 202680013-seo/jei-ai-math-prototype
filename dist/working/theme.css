@@ -1066,6 +1066,40 @@ body.has-long-learning-list :is(.heading,#diagnosis-section,.program-card){scrol
 #group-panel .group-list:has(.group-item:focus-visible){-webkit-mask-image:none;mask-image:none}
 @media(forced-colors:active){#group-panel .group-list{-webkit-mask-image:none;mask-image:none}}
 
+/* V3.9: keep the final diagnosis behind the same result flow, presented as a popup. */
+#learning.diagnosis-screen.diagnosis-post-flow{overflow:hidden}
+#learning.diagnosis-post-flow>.dialog-view{height:100%;min-height:100%;position:relative}
+.diagnosis-post-background{position:absolute;inset:0;overflow:hidden;pointer-events:none;user-select:none}
+.diagnosis-post-layer{position:fixed;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--theme-overlay,#1b2e1852);backdrop-filter:blur(3px)}
+.diagnosis-post-popup{position:relative;width:640px;max-width:100%;max-height:calc(100dvh - 48px);overflow:auto;overscroll-behavior:contain;border:1px solid var(--theme-line,var(--line));border-radius:30px;background:var(--theme-surface,var(--paper));color:var(--theme-brand,var(--forest));box-shadow:0 24px 90px #18351d26;scrollbar-width:thin}
+.diagnosis-post-popup>.diagnosis-screen-top{padding:16px 22px;gap:10px;background:var(--theme-surface,var(--paper));border-color:var(--theme-line,var(--line));border-radius:29px 29px 0 0}
+.diagnosis-post-popup>.diagnosis-screen-top strong{font-size:14px}
+.diagnosis-post-popup>.diagnosis-screen-top button{font-size:12px}
+.diagnosis-post-popup .pass-screen{min-height:0;max-width:none;padding:32px 38px 28px;animation:none}
+.diagnosis-post-popup .pass-screen h1{font-size:28px}
+.diagnosis-post-popup .pass-mentor{font-size:16px}
+.diagnosis-post-popup .achievement-stamp{margin-bottom:22px}
+.diagnosis-post-popup .achievement-record{margin:20px 0 24px}
+.diagnosis-post-popup .next-part-card{margin:22px 0 18px}
+#learning .diagnosis-post-popup .diagnosis-preparation{min-height:390px;max-width:none;padding:40px 28px}
+.diagnosis-post-popup .diagnosis-preparation .composition h2{font-size:25px}
+.diagnosis-post-popup .diagnosis-preparation .composition p{font-size:16px}
+.diagnosis-post-popup:has(>.dialog-top){padding:26px}
+@media(max-width:650px){
+  .diagnosis-post-layer{padding:12px}
+  .diagnosis-post-popup{max-height:calc(100dvh - 24px);border-radius:24px}
+  .diagnosis-post-popup>.diagnosis-screen-top{padding:13px 16px;border-radius:23px 23px 0 0}
+  .diagnosis-post-popup>.diagnosis-screen-top strong{font-size:12px}
+  .diagnosis-post-popup>.diagnosis-screen-top button{font-size:11px}
+  .diagnosis-post-popup .pass-screen{padding:28px 22px 24px}
+  .diagnosis-post-popup .pass-screen h1{font-size:24px}
+  .diagnosis-post-popup .pass-mentor{font-size:14px}
+  #learning .diagnosis-post-popup .diagnosis-preparation{min-height:360px;padding:34px 20px}
+  .diagnosis-post-popup .diagnosis-preparation .composition h2{font-size:22px}
+  .diagnosis-post-popup .diagnosis-preparation .composition p{font-size:15px}
+  .diagnosis-post-popup:has(>.dialog-top){padding:20px}
+}
+
 /* V3.8: topics are parents; the diagnosis explains the personalized learning cards. */
 .learning-context{display:flex;align-items:center;justify-content:space-between;gap:20px;margin:0 0 20px}
 .learning-context[hidden]{display:none}
