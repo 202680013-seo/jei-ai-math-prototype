@@ -786,13 +786,13 @@ body.learning-navigation-open .learning-workspace main{width:calc(100% - 136px);
 #group-panel{width:var(--group-drawer-width);border-radius:0 24px 24px 0;box-shadow:4px 0 18px var(--jei-c-16330005,#16330005);border-right:1px solid var(--line);transition:transform .6s var(--navigation-ease)}
 #group-panel[data-panel-phase=closing]{transition-timing-function:var(--navigation-ease)}
 #group-panel[data-panel-phase] .panel-head,#group-panel[data-panel-phase] .panel-content{opacity:1;transform:none;transition:none}
-#group-panel .panel-head{padding:24px 20px 16px;border:0;gap:12px;background:transparent}
+#group-panel .panel-head{min-height:76px;padding:24px 20px 16px;border:0;gap:12px;justify-content:flex-end;background:transparent}
 #group-panel .panel-head h2{font-size:18px;font-weight:800;letter-spacing:0}
 #group-panel .panel-content{padding:0 16px 24px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
 #group-panel .nav-close,#group-panel .nav-help,#group-panel .nav-grade-arrow{display:grid;place-items:center;flex:none;width:34px;height:34px;padding:7px;border:0;border-radius:10px;background:transparent;color:var(--muted)}
 #group-panel .nav-close:hover,#group-panel .nav-help:hover,#group-panel .nav-grade-arrow:hover:not(:disabled){background:var(--soft);color:var(--forest)}
 #group-panel .nav-close svg,#group-panel .nav-grade-arrow svg,#group-panel .nav-help svg{display:block;width:100%;height:100%}
-#group-panel .panel-head>.group-nav{flex:1;min-width:0;padding:0;margin:0;gap:8px;align-items:center}
+#group-panel .panel-content>.group-nav{flex:none;min-height:36px;padding:0;margin:0 0 18px;gap:14px;align-items:center;justify-content:center}
 #group-panel .group-nav>h2{display:flex;align-items:center;gap:5px;margin:0;font-size:18px;font-weight:800;color:var(--forest)}
 #group-panel .nav-grade-arrow{width:36px;height:36px;padding:9px;background:var(--jei-c-f8fbf5,#f8fbf5)}
 #group-panel .nav-grade-arrow:disabled{opacity:.32;cursor:default}
@@ -844,7 +844,7 @@ body.learning-navigation-open .learning-workspace main{width:calc(100% - 136px);
   #group-panel{position:relative;left:auto;right:auto;top:auto;width:calc(100% - 32px);max-width:none;height:0;max-height:none;margin:0 16px;border:0;border-radius:20px;transform:none;transition:height .6s var(--navigation-ease),margin .6s var(--navigation-ease);box-shadow:0 4px 16px var(--jei-c-16330005,#16330005)}
   #group-panel[data-panel-phase=open]{height:min(55dvh,460px);margin:16px;transform:none}
   #group-panel[data-panel-phase=closing]{height:0;margin:0 16px}
-  #group-panel .panel-head{padding:16px 18px 12px}
+  #group-panel .panel-head{min-height:64px;padding:16px 18px 12px}
   #group-panel .panel-content{padding-bottom:18px}
   .groups-trigger[aria-expanded=true],.groups-trigger[aria-expanded=true]:hover:not(:disabled),.groups-trigger[aria-expanded=true]:active:not(:disabled){transform:none}
 }
