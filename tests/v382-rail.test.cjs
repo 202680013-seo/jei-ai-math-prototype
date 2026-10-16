@@ -11,9 +11,11 @@ function finishCourse(h){
   h.evaluate('guidanceClosingTimer')?.fn();h.evaluate('cardRevealTimer')?.fn();
 }
 
-test('V3.8.2 shows arrows only between earned grades, keeps the selected study unchanged, and cannot browse unavailable grades',()=>{
+test('V3.8.2 always shows grade arrows, disables unavailable directions, and keeps the selected study unchanged',()=>{
   const h=setup();h.click('groups');
-  assert.deepEqual(h.data('availableRailGrades()'),[3]);assert(!h.node('#group-panel').innerHTML.includes('class="nav-grade-arrow"'));
+  assert.deepEqual(h.data('availableRailGrades()'),[3]);
+  const arrows=[...h.node('#group-panel').innerHTML.matchAll(/<button class="nav-grade-arrow"[^>]*>/g)].map(m=>m[0]);
+  assert.equal(arrows.length,2);assert(arrows.every(arrow=>arrow.includes('disabled')));
   h.click('next-grade');assert.equal(h.evaluate('browseGrade'),3);
   h.evaluate("state.grades[1][0].diagnosis='done';state.grades[4][0].diagnosis='active';renderPanel()");
   assert.deepEqual(h.data('availableRailGrades()'),[1,3,4]);
@@ -22,6 +24,72 @@ test('V3.8.2 shows arrows only between earned grades, keeps the selected study u
   h.click('next-grade');assert.equal(h.evaluate('browseGrade'),3);
   h.click('next-grade');assert.equal(h.evaluate('browseGrade'),4);h.click('next-grade');assert.equal(h.evaluate('browseGrade'),4);
   assert.equal(h.evaluate('state.index'),0);assert.equal(h.node('#learning').open,false);
+});
+
+function motionSetup({reducedMotion=false,width=1280,count=12}={}){
+  const h=setup(reducedMotion),calls=[];h.context.innerWidth=width;
+  h.node('#learning-workspace').getBoundingClientRect=()=>({width:width-276});
+  const cards=Array.from({length:count},(_,i)=>{
+    const card=h.node('moving-card-'+i);
+    card.getBoundingClientRect=()=>{
+      if(card.visual)return card.visual;
+      const open=h.node('body').classList.contains('learning-navigation-open'),columns=open?3:4;
+      const left=(open?342:110)+i%columns*244,top=240+Math.floor(i/columns)*248;
+      return {left,top,width:228,height:232,right:left+228,bottom:top+232};
+    };
+    card.animate=(frames,options)=>{
+      let finish;const animation={cancelled:false,finished:new Promise(resolve=>{finish=resolve;}),cancel(){this.cancelled=true;card.visual=null;}};
+      calls.push({i,frames,options,animation,finish});return animation;
+    };return card;
+  });
+  h.document.querySelectorAll=selector=>selector==='#programs>.program-card'?cards:[];
+  h.node('main').animate=()=>assert.fail('the main should not flash during card movement');
+  return {h,cards,calls};
+}
+
+test('V3.8.2 carries cards into three columns with a bounded gentle stagger and retains card width',()=>{
+  const {h,cards,calls}=motionSetup({count:20});h.evaluate('M.preset(state,4);render()');const before=h.data('current()');h.click('groups');
+  assert.equal(h.node('#learning-workspace').style['--navigation-columns'],'3');
+  assert.equal(h.node('#learning-workspace').style['--navigation-card-width'],'228px');
+  assert(calls.length>4);assert(calls.length<cards.length,'offscreen-only cards do not animate');
+  const wrapped=calls.find(call=>call.i===3);
+  assert.equal(wrapped.frames[0].transform,'translate3d(500px,-248px,0)');
+  assert.equal(wrapped.frames[1].transform,'none');assert.equal(wrapped.options.duration,420);
+  assert.deepEqual(calls.map(c=>c.options.delay),calls.map((_,i)=>Math.min(i,5)*24));
+  assert(calls.every(c=>c.options.fill==='both'&&!('opacity' in c.frames[0])));
+  assert.deepEqual(h.data('current()'),before);assert.equal(h.node('#overlay').hidden,true);
+});
+
+test('V3.8.2 reflow resumes from an interrupted visual position and releases animations after completion or content replacement',async()=>{
+  const {h,cards,calls}=motionSetup();h.click('groups');const first=calls.slice();
+  cards[3].visual={left:600,top:340,width:228,height:232,right:828,bottom:572};
+  h.click('close-panel');assert(first.every(c=>c.animation.cancelled));
+  const reverse=calls.slice(first.length),wrapped=reverse.find(c=>c.i===3);
+  assert.equal(wrapped.frames[0].transform,'translate3d(-242px,100px,0)');
+  first.forEach(c=>c.finish());await Promise.resolve();assert(reverse.every(c=>!c.animation.cancelled),'stale finishes leave the new run alone');
+  reverse.forEach(c=>c.finish());await Promise.resolve();
+  assert(reverse.every(c=>c.animation.cancelled));assert.equal(h.evaluate('studyLayoutAnimations.length'),0);
+  h.click('groups');const mounted=calls.filter(c=>!c.animation.cancelled);
+  h.evaluate('current().diagnosis="done";current().programs=M.programs(8);render()');
+  assert(mounted.every(c=>c.animation.cancelled));assert.equal(h.evaluate('studyLayoutAnimations.length'),0);
+});
+
+test('V3.8.2 keeps FHD stationary, respects reduced motion, and preserves the separate course reveal',()=>{
+  for(const options of [{width:1920},{width:650},{reducedMotion:true}]){
+    const {h,calls}=motionSetup(options);h.click('groups');h.click('close-panel');assert.equal(calls.length,0);
+  }
+  const {h,calls}=motionSetup();
+  h.evaluate('cardRevealRun={target:current(),cards:[],remaining:500}');h.evaluate('changeNavigationDock(true)');
+  assert.equal(calls.length,0);assert(h.evaluate('!!cardRevealRun'));
+});
+
+test('mentor bubbles no longer advertise the retiring help feature, including legacy unread-answer states',()=>{
+  const h=setup();
+  for(let preset=0;preset<=9;preset++){
+    h.evaluate(`M.preset(state,${preset});daily().unreadAnswers=2;render()`);
+    const lines=h.data('[mentorOverviewLine(),...mentorReminderLines()]');
+    assert(lines.length>1);assert(lines.every(line=>!line.includes('도와줘요')&&!line.includes('새 답변')));
+  }
 });
 
 test('the pinned grade progress counts completed diagnoses, including prescriptions still being studied, rather than finished cards',()=>{
