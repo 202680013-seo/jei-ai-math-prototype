@@ -65,12 +65,13 @@ test('reflow batches all style reads, moves headings with the cards, and synchro
   const {h,calls}=motionSetup(),events=[],headings=[];
   h.document.timeline={currentTime:1234};
   h.context.getComputedStyle=()=>{events.push('read');return {transform:'none'};};
-  for(const selector of ['.ai','.heading','#learning-context']){
+  h.node('#learning-context').animate=()=>assert.fail('the nested result control should inherit the heading motion');
+  for(const selector of ['.ai','.heading']){
     const element=h.node(selector);element.hidden=false;
     element.getBoundingClientRect=()=>{const left=h.node('body').classList.contains('learning-navigation-open')?342:110;return {left,top:50,width:920,height:50,right:left+920,bottom:100};};
     element.animate=(frames,options)=>{events.push('animate');let finish;const animation={finished:new Promise(resolve=>{finish=resolve;}),cancel(){}};headings.push({frames,options,animation,finish});return animation;};
   }
-  h.click('groups');assert.equal(headings.length,3);
+  h.click('groups');assert.equal(headings.length,2);
   assert(headings.every(c=>c.options.delay===0&&c.frames[0].transform==='translate3d(-232px,0px,0)'));
   assert([...headings,...calls].every(c=>c.animation.startTime===1234));
   assert(!events.slice(events.indexOf('animate')).includes('read'),'no style read after native animations have started');

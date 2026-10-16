@@ -1081,26 +1081,25 @@ body.has-long-learning-list :is(.heading,#diagnosis-section,.program-card){scrol
 #group-panel .group-list:has(.group-item:focus-visible){-webkit-mask-image:none;mask-image:none}
 @media(forced-colors:active){#group-panel .group-list{-webkit-mask-image:none;mask-image:none}}
 
-/* V3.8: topics are parents; the diagnosis explains the personalized learning cards. */
-.learning-context{position:relative;z-index:1;isolation:isolate;display:flex;align-items:center;justify-content:space-between;gap:20px;margin:0 0 20px}
+/* Keep the result control on the topic row; reserve a quiet lane for its left-hand hint. */
+.heading{position:relative;z-index:1;isolation:isolate}
+.heading-copy{flex:1;min-width:0}
+.learning-context{position:relative;display:flex;align-items:center;justify-content:flex-end;flex:none;min-width:0;gap:0;margin:0 0 0 auto;padding-left:236px}
 .learning-context[hidden]{display:none}
-.learning-context-copy{flex:1;min-width:0}
-.learning-context h2{margin:0;color:var(--forest);font-size:18px;font-weight:800;line-height:1.5}
-.learning-context p{margin:0;color:var(--muted);font-size:13px;line-height:1.7;word-break:keep-all;overflow-wrap:anywhere}
-body.has-personalized-learning .heading{margin-bottom:14px}
-#learning-context #diagnostic-result-slot{flex:none;margin-left:0}
-#learning-context #diagnostic-result-slot>.diagnostic-summary-trigger{flex-direction:row;justify-content:center;gap:8px;min-height:42px;width:auto;padding:9px 12px;border-radius:12px}
+#learning-context #diagnostic-result-slot{flex:none;margin:0}
+#learning-context #diagnostic-result-slot>.diagnostic-summary-trigger{flex-direction:row;justify-content:center;gap:8px;min-height:42px;width:auto;padding:9px 12px;border-radius:12px;white-space:nowrap}
 #learning-context .diagnostic-summary-trigger .result-icon{width:21px;height:21px}
 #learning-context .diagnostic-summary-trigger .result-copy strong{font-size:12px;font-weight:700;line-height:1.5}
 #learning-context .diagnostic-summary-trigger .result-arrow{display:block;width:13px;height:13px;margin-left:0}
 #composition .composition-topic-context{min-height:0;margin:6px 0 8px;color:var(--theme-brand,var(--forest));font-size:13px;font-weight:700;line-height:1.6;word-break:keep-all;overflow-wrap:anywhere}
-body.has-long-learning-list .learning-context{scroll-margin-top:var(--learning-header-clearance,180px)}
-@container learning (max-width:650px){
-  .learning-context{flex-wrap:wrap;gap:12px;margin-bottom:18px}
-  .learning-context-copy{flex-basis:100%}
-  .learning-context h2{font-size:17px}
-  .learning-context p{font-size:12px}
-  #learning-context #diagnostic-result-slot{margin-left:auto}
+@container learning (max-width:1000px){
+  body.has-personalized-learning .heading{flex-wrap:wrap;row-gap:10px}
+  body.has-personalized-learning .heading-copy{flex-basis:100%}
+}
+@container learning (max-width:500px){
+  .learning-context{width:100%;padding-left:0}
+  #learning-context #diagnostic-result-slot>.diagnostic-summary-trigger{gap:6px;padding:9px}
+  #learning-context .diagnostic-summary-trigger .result-icon{width:18px;height:18px}
 }
 
 /* V3.8.1: one explanatory line and a distinct grade/topic identifier. */
@@ -1123,9 +1122,10 @@ body.has-long-learning-list .learning-context{scroll-margin-top:var(--learning-h
 #group-panel .nav-grade-progress progress::-moz-progress-bar{border-radius:999px;background:var(--theme-brand,var(--jei-c-49702e,#49702e))}
 #group-panel .group-item:disabled .nav-topic-status{pointer-events:auto}
 #diagnostic-result-slot{position:relative}
-.diagnosis-result-hint{right:0;bottom:calc(100% + 12px);z-index:15;max-width:none}
+.diagnosis-result-hint{right:calc(100% + 12px);top:50%;bottom:auto;translate:0 -50%;z-index:15;max-width:224px}
 .diagnosis-result-hint[hidden]{display:none}
-.diagnosis-result-hint::after{right:30px}
+.diagnosis-result-hint::after{right:-12px;top:calc(50% - 4px);transform:rotate(-90deg)}
+@container learning (max-width:500px){.diagnosis-result-hint{max-width:calc(100cqw - 250px);white-space:normal;text-align:center}}
 @media(max-width:650px){#group-panel .nav-grade-progress{padding:14px 18px calc(36px + env(safe-area-inset-bottom,0px))}}
 @media(prefers-reduced-motion:reduce){#group-panel .nav-grade-progress progress::-webkit-progress-value{transition:none}}
 

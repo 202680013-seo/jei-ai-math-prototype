@@ -531,7 +531,6 @@ document.addEventListener('visibilitychange',()=>syncDiagnosisResultHint());
 function syncLearningContext(topic){
   const ready=!composing&&topic.diagnosis==='done'&&topic.programs.length>0;
   $('#learning-context').hidden=!ready;
-  $('#personalized-summary').textContent=ready?'실력알기 결과에 맞춰 '+topic.programs.length+'개의 학습을 준비했어요.':'';
   if(ready)document.body.classList.add('has-personalized-learning');else document.body.classList.remove('has-personalized-learning');
 }
 function render(){if(cardRevealRun&&cardRevealRun.target!==current())clearPrescribedCardReveal();daily();const s=current();syncLearningHeader(s);syncLearningContext(s);$('#diagnosis-slot').append($('#diagnostic'));$('#diagnostic').classList.remove('grid-diagnostic','card','clean-passed','diagnostic-summary-trigger');$('#diagnostic').setAttribute('aria-label','실력알기');$('#diagnostic-result-slot').hidden=true;$('#diagnosis-section').hidden=false;$('#grade-badge').innerHTML=`<strong>${grade(state.grade)}</strong><span>등급</span><span class="grade-topic-number">${String(state.index+1).padStart(2,'0')}</span>`;$('#group-title').textContent=groupName(state.index);$('#diagnostic').innerHTML=`<div><strong>실력알기</strong>${s.diagnosis==='done'?`<small>${s.programs.length?'처방 프로그램 '+s.programs.length+'개':'부족한 학습 목표 0개'}</small>`:''}</div>${badge(s.diagnosis==='done'?(s.programs.length?'passed':'clean'):s.diagnosis)}`;renderProgramCards(s);const rec=M.recommend(state);setRecommendationText(rec.text);$('#recommend').disabled=!!composing||['done','locked'].includes(rec.kind);
@@ -543,7 +542,7 @@ d.innerHTML=`<span class="result-icon" aria-hidden="true"><svg viewBox="0 0 28 2
 $('#diagnostic-result-slot').hidden=false;$('#diagnostic-result-slot').append(d);$('#diagnosis-section').hidden=true;
 if(reveal)revealPrescribedCards();reveal=false;
 }}
-const pieces=skyState().items.reduce((n,x)=>n+x.pieces,0);$('#star-balance').textContent=String(pieces);$('.constellation-trigger').setAttribute('aria-label','나의 별자리 · 별 조각 '+pieces+'개');syncRecommendation(isCleanPass(s)&&!composing?cleanPassInfo().next:rec.kind==='today'?M.learningRecommend(state):rec);animateMessage();renderPanel();if(myOpen)renderMy();syncGuidanceReminders();const viewKey=state.grade+':'+state.index;if(overviewViewKey!==null&&overviewViewKey!==viewKey&&!myOpen){softReveal($('.heading'));if(!$('#learning-context').hidden)softReveal($('#learning-context'));if(!$('#programs').hidden)softReveal($('#programs'));}overviewViewKey=viewKey;}
+const pieces=skyState().items.reduce((n,x)=>n+x.pieces,0);$('#star-balance').textContent=String(pieces);$('.constellation-trigger').setAttribute('aria-label','나의 별자리 · 별 조각 '+pieces+'개');syncRecommendation(isCleanPass(s)&&!composing?cleanPassInfo().next:rec.kind==='today'?M.learningRecommend(state):rec);animateMessage();renderPanel();if(myOpen)renderMy();syncGuidanceReminders();const viewKey=state.grade+':'+state.index;if(overviewViewKey!==null&&overviewViewKey!==viewKey&&!myOpen){softReveal($('.heading'));if(!$('#programs').hidden)softReveal($('#programs'));}overviewViewKey=viewKey;}
 const COURSE_REVEAL={wait:440,stagger:105,card:680,limit:15,invite:760};
 let cardRevealRun=null;
 function clearPrescribedCardReveal(){
@@ -650,7 +649,7 @@ function applyNavigationGrid(preferred){
 function cancelStudyLayoutAnimations(){const previous=studyLayoutAnimations;studyLayoutAnimations=[];previous.forEach(a=>a.cancel?.());$('#programs').removeAttribute('data-layout-motion');}
 function changeNavigationDock(open){
   const cards=Array.from(document.querySelectorAll?.('#programs>.program-card')||[]);
-  const headings=[$('.ai'),$('.heading'),$('#learning-context')].filter(element=>element&&!element.hidden);
+  const headings=[$('.ai'),$('.heading')].filter(element=>element&&!element.hidden);
   const elements=[...headings,...cards];
   // Capture the visible position before cancelling an interrupted transition.
   const before=elements.map(element=>element.getBoundingClientRect()),preferred=before[headings.length]?.width;
