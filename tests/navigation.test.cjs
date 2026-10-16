@@ -21,7 +21,7 @@ test('the outline shows grade navigation, topic numbers and accessible status ic
   assert(!html.includes('진단 그룹'));assert(!html.includes('진단 완료율'));assert(html.includes('복습 필요'));
   const arrows=[...html.matchAll(/<button class="nav-grade-arrow"[^>]*>(.*?)<\/button>/g)].map(m=>m[1]);
   assert.equal(arrows.length,2);assert(arrows.every(x=>x.startsWith('<svg')&&!x.includes('이전')&&!x.includes('다음')));
-  h.evaluate('browseGrade=0;renderPanel()');assert(h.node('#group-panel').innerHTML.includes('title="이전 등급" disabled'));
+  h.evaluate("state.grades[0][0].diagnosis='active';state.grades[9][0].diagnosis='active';browseGrade=0;renderPanel()");assert(h.node('#group-panel').innerHTML.includes('title="이전 등급" disabled'));
   h.click('prev-grade');assert.equal(h.evaluate('browseGrade'),0);
   h.evaluate('browseGrade=9;renderPanel()');h.click('next-grade');assert.equal(h.evaluate('browseGrade'),9);
 });
@@ -61,7 +61,7 @@ test('stable panel renders retain the mounted content and stale reveal or exit t
 });
 
 test('the grade-only heading follows browsing without changing the current learning',()=>{
-  const h=harness();h.evaluate('M.preset(state,4);render()');const before=h.data('current().programs[0]');
+  const h=harness();h.evaluate("M.preset(state,4);state.grades[4][0].diagnosis='active';render()");const before=h.data('current().programs[0]');
   h.click('groups');const html=h.node('#group-panel').innerHTML;
   assert(!html.includes('nav-summary'));assert(!html.includes('현재 학습'));
   assert(html.includes('<h2 id="nav-grade-title"><span>D</span>등급</h2>'));
@@ -78,8 +78,8 @@ test('docked grid geometry preserves the closed card width and wraps before any 
   const narrow=h.data('navigationGridMetrics(800,400,220)');assert.equal(narrow.columns,1);assert.equal(narrow.width,220);
 });
 
-test('rail reflow uses one short fade without individual travel, cancels interruptions, and honors reduced motion',()=>{
-  const h=harness(undefined,{reducedMotion:false}),first=h.node('motion-card-1'),main=h.node('main'),calls=[];
+test('V3.9 retains its alternative short fade, cancellation and reduced motion',()=>{
+  const h=harness(undefined,{reducedMotion:false,appSource:fs.readFileSync('dist/versions/v49/app.js','utf8')}),first=h.node('motion-card-1'),main=h.node('main'),calls=[];
   h.context.innerWidth=1280;h.node('#learning-workspace').getBoundingClientRect=()=>({width:1004});
   first.classList.add('program-card');first.getBoundingClientRect=()=>({width:228,height:232});
   main.animate=(frames,options)=>{const animation={cancelled:false,cancel(){this.cancelled=true;}};calls.push({frames,options,animation});return animation;};

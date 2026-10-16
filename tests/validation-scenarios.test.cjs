@@ -2,7 +2,7 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 const {harness}=require('./helpers/ui-harness.cjs');
 
 for(const version of ['working','versions/v48','versions/v49']){
-  const appSource=fs.readFileSync(`dist/${version}/app.js`,'utf8'),popup=version!=='versions/v48';
+  const appSource=fs.readFileSync(`dist/${version}/app.js`,'utf8'),popup=version==='versions/v49';
   const setup=()=>harness(undefined,{reducedMotion:false,appSource});
 
   test(version+' first-entry fixture replays the intro after prior visits without erasing another topic, and genuine resume keeps answers',()=>{

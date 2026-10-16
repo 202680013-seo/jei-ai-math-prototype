@@ -1,5 +1,8 @@
 const test=require('node:test'),assert=require('node:assert/strict');
-const {harness}=require('./helpers/ui-harness.cjs');
+const {harness:baseHarness}=require('./helpers/ui-harness.cjs');
+// The popup alternative belongs to immutable V3.9; new working designs may use the full-screen flow.
+const popupSource=require('node:fs').readFileSync('dist/versions/v49/app.js','utf8');
+const harness=(saved,options={})=>baseHarness(saved,{...options,appSource:popupSource});
 
 function finish(h,passed){
   h.click('diagnosis');h.click('diagnosis-begin');
