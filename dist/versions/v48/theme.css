@@ -14,7 +14,7 @@ h1,h2,h3{font-weight:700;letter-spacing:0;color:var(--forest)}
 main{width:calc(100% - clamp(128px,25vw,480px));max-width:1440px;margin:0 auto;padding:84px 0 100px}
 .my-trigger{right:max(clamp(64px,12.5vw,240px),calc((100vw - 1440px)/2));top:22px;min-height:40px;padding:8px 14px;gap:9px;border:1px solid var(--line);border-radius:999px;background:#fff;font-size:13px;color:var(--forest)}
 .my-trigger svg{flex:none}
-.settings-trigger{top:auto;bottom:22px;right:20px;color:var(--jei-c-66775a,#66775a);opacity:.65;border-radius:50%;width:38px;height:38px}
+.settings-trigger{top:auto;bottom:22px;right:20px;color:var(--jei-c-66775a,#66775a);opacity:.4;border-radius:50%;width:38px;height:38px}
 .ai{width:100%;max-width:900px;grid-template-columns:minmax(0,1.5fr) minmax(210px,1fr) 96px;gap:14px;align-items:stretch;margin:0}
 .ai-top{min-height:96px;padding:16px 20px;gap:16px;border:1px solid var(--line);border-radius:22px;background:var(--paper);box-shadow:0 2px 8px var(--jei-c-16330003,#16330003)}
 .symbol{width:46px;min-width:46px;padding:0;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:4px}
@@ -794,7 +794,7 @@ body.learning-navigation-open .learning-workspace main{width:calc(100% - 136px);
 #group-panel .nav-close svg,#group-panel .nav-grade-arrow svg,#group-panel .nav-help svg{display:block;width:100%;height:100%}
 #group-panel .panel-content>.group-nav{flex:none;min-height:44px;padding:0;margin:0 0 16px;gap:14px;align-items:center;justify-content:center}
 #group-panel .group-nav>h2{display:flex;align-items:center;gap:5px;margin:0;font-size:18px;font-weight:800;color:var(--forest)}
-#group-panel .nav-grade-arrow{width:44px;height:44px;padding:13px;border-radius:50%;background:color-mix(in srgb,var(--theme-brand,var(--forest)) 10%,var(--paper));color:var(--theme-brand,var(--forest))}
+#group-panel .nav-grade-arrow{width:40px;height:40px;padding:11px;border-radius:50%;background:color-mix(in srgb,var(--theme-brand,var(--forest)) 10%,var(--paper));color:var(--theme-brand,var(--forest))}
 #group-panel .nav-grade-arrow:disabled{opacity:1;cursor:default}
 #group-panel .nav-grade-arrow:disabled svg{opacity:.38}
 #group-panel .nav-list-heading{display:flex;align-items:center;justify-content:space-between;margin:0 4px 10px;gap:10px}
@@ -1082,7 +1082,8 @@ body.has-long-learning-list :is(.heading,#diagnosis-section,.program-card){scrol
 @media(forced-colors:active){#group-panel .group-list{-webkit-mask-image:none;mask-image:none}}
 
 /* Keep the result control on the topic row; reserve a quiet lane for its left-hand hint. */
-.heading{position:relative;z-index:1;isolation:isolate}
+.heading{position:relative;z-index:1;isolation:isolate;margin-top:34px;margin-bottom:30px}
+@media(max-width:650px){.heading{margin-top:30px;margin-bottom:26px}}
 .heading-copy{flex:1;min-width:0}
 .learning-context{position:relative;display:flex;align-items:center;justify-content:flex-end;flex:none;min-width:0;gap:0;margin:0 0 0 auto;padding-left:236px}
 .learning-context[hidden]{display:none}
@@ -1113,7 +1114,7 @@ body.has-long-learning-list :is(.heading,#diagnosis-section,.program-card){scrol
 
 /* V3.8.2: a pinned grade summary beneath the independently scrolling topic list. */
 #group-panel .panel-content{padding-bottom:12px}
-#group-panel .nav-grade-progress{flex:none;margin:0;padding:18px 20px calc(40px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--theme-line,var(--line));background:var(--theme-surface-alt,var(--soft));color:var(--forest);font-size:12px;line-height:1.5}
+#group-panel .nav-grade-progress{flex:none;margin:0;padding:24px 20px calc(46px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--theme-line,var(--line));background:var(--theme-surface-alt,var(--soft));color:var(--forest);font-size:12px;line-height:1.5}
 #group-panel .nav-progress-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
 #group-panel .nav-progress-heading>span:first-child{font-weight:700}
 #group-panel .nav-grade-progress progress{display:block;width:100%;height:7px;margin:10px 0 0;overflow:hidden;border:0;border-radius:999px;appearance:none;accent-color:var(--theme-brand,var(--jei-c-49702e,#49702e));background:var(--theme-line,var(--line))}
@@ -1126,7 +1127,7 @@ body.has-long-learning-list :is(.heading,#diagnosis-section,.program-card){scrol
 .diagnosis-result-hint[hidden]{display:none}
 .diagnosis-result-hint::after{right:-12px;top:calc(50% - 4px);transform:rotate(-90deg)}
 @container learning (max-width:500px){.diagnosis-result-hint{max-width:calc(100cqw - 250px);white-space:normal;text-align:center}}
-@media(max-width:650px){#group-panel .nav-grade-progress{padding:14px 18px calc(36px + env(safe-area-inset-bottom,0px))}}
+@media(max-width:650px){#group-panel .nav-grade-progress{padding:20px 18px calc(42px + env(safe-area-inset-bottom,0px))}}
 @media(prefers-reduced-motion:reduce){#group-panel .nav-grade-progress progress::-webkit-progress-value{transition:none}}
 
 /* A single diagnosis metric, plus a clear continuation at the scroll boundary. */
