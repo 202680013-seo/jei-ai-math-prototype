@@ -34,10 +34,12 @@ test('the pinned grade progress counts completed diagnoses, including prescripti
   assert.match(html,/<\/div><\/div><footer class="nav-grade-progress/);
   assert.match(html,/<progress max="19" value="2" aria-label="D등급 실력 알기 진행률"/);
   assert.match(html,/전체 19개 중 2개 완료, 11%/);
+  const visibleFooter=html.slice(html.indexOf('<footer')).replace(/<[^>]+>/g,'').replace(/\s+/g,' ');
+  assert.match(visibleFooter,/D등급 실력알기완료 2 \/ 19/);assert(!visibleFooter.includes('진행률'));assert(!visibleFooter.includes('%'));
   h.evaluate("state.grades[3][2].diagnosis='done';renderPanel()");assert.equal(h.evaluate('railGradeProgress().completed'),3);
   h.evaluate("state.grades[4][0].diagnosis='active';renderPanel()");h.click('next-grade');
   assert.deepEqual(h.data('railGradeProgress()'),{total:27,completed:0,percent:0});
-  assert.match(h.node('#group-panel').innerHTML,/E등급 진행률/);assert.equal(h.evaluate('state.grade'),3);
+  assert.match(h.node('#group-panel').innerHTML,/E등급 실력알기/);assert.equal(h.evaluate('state.grade'),3);
   assert.deepEqual(h.data('railGradeProgress(99)'),{total:0,completed:0,percent:0});
 });
 
@@ -83,4 +85,23 @@ test('validation cases deliberately re-arm the result cue, stale cue timers cann
   h.click('preset',0);assert.equal(h.node('#diagnosis-result-hint').hidden,true);finish(h,true);
   assert.equal(h.evaluate('current().programs.length'),0);assert.equal(h.node('#diagnosis-result-hint').hidden,true);
   assert.equal(h.node('#learning').classList.contains('diagnosis-post-flow'),false);
+});
+
+
+test('the rail retains all topics and updates its continuation cue from actual scroll distance without rebinding on stable renders',()=>{
+  const h=setup(),list=h.node('#group-panel .group-list');let bindings=0;
+  const subscribe=list.addEventListener.bind(list);list.addEventListener=(type,fn,options)=>{if(type==='scroll')bindings++;subscribe(type,fn,options);};
+  Object.assign(list,{scrollHeight:1300,clientHeight:470,scrollTop:0});h.click('groups');
+  assert.equal(bindings,1);assert.equal(h.node('#rail-list-more').hidden,false);assert.equal(list.getAttribute('data-has-more'),'true');
+  assert.equal(list.getAttribute('aria-describedby'),'rail-scroll-hint');
+  const html=h.node('#group-panel').innerHTML;
+  assert.equal((html.match(/class="nav-topic-number"/g)||[]).length,19);assert(html.includes('>08</span>'));assert(html.includes('>19</span>'));
+  assert(html.includes('aria-labelledby="nav-topic-heading" tabindex="0"'));
+  list.scrollTop=400;list.emit('scroll');h.evaluate('renderPanel();renderPanel()');assert.equal(bindings,1);assert.equal(list.scrollTop,400);
+  assert.equal(h.node('#rail-list-more').hidden,false);
+  list.scrollTop=830;list.emit('scroll');assert.equal(h.node('#rail-list-more').hidden,true);assert.equal(list.getAttribute('data-has-more'),'false');assert.equal(list.getAttribute('aria-describedby'),null);
+  list.scrollTop=0;list.emit('scroll');assert.equal(h.node('#rail-list-more').hidden,false);
+  list.clientHeight=1500;h.evaluate('syncRailOverflow()');assert.equal(h.node('#rail-list-more').hidden,true);
+  list.clientHeight=0;h.evaluate('syncRailOverflow()');assert.equal(h.node('#rail-list-more').hidden,true);
+  assert.equal(h.evaluate('railHasMoreBelow(500,500,0)'),false);assert.equal(h.evaluate('railHasMoreBelow(1000,400,-5)'),true);
 });
