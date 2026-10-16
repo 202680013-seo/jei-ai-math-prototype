@@ -2,7 +2,7 @@
   "id": "v48",
   "date": "2026-10-15",
   "files": {
-    "app.js": "9894286f13262b17c9736ff3d263f00525fab6d12ea7a2da57595f998901b099",
+    "app.js": "e280d54af6816525cd6d093b0f228e10a0a3bd850e879947ee98bb9086aa4a9d",
     "catalog.js": "742f16551eb158b5651a65391ec595cbffa1e1fb3912266c3588f52a1d26c517",
     "fonts/OFL.txt": "82e9c8a4b203261f10ddba1296422d64914ff3d4b7bd8a12896d03f0f088d70a",
     "fonts/PretendardVariable.woff2": "9599f12fd42fc0bce1cd50b47a0c022e108d7aa64dd0d1bb0ed44f3282d900b4",
@@ -10,6 +10,7 @@
     "model.js": "f685f09eeb53e74fdb9983209ba07f1e5d255ba9b6017c0b14598c22a1458f9e",
     "sky.js": "0839e3db0daf10e9ce3dcac4220419aa401ba8b578d1bd5c2c7b07ee02aa180b",
     "style.css": "b3744d2102d6fb6f9ce40fff7bfb7b21b5bc39bd51b7a84d6eec64099725642e",
-    "theme.css": "ac16739a8dbcd22319279c160c55b54dfb227600d6fec94a19cdccee95a55f9c"
-  }
+    "theme.css": "16522599a54514db39f51135d59830d27e9861725e914db0e96aae2688fe2813"
+  },
+  "updatedAt": "2026-10-16"
 }

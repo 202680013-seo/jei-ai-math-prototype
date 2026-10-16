@@ -64,9 +64,9 @@ test('the grade-only heading follows browsing without changing the current learn
   const h=harness();h.evaluate('M.preset(state,4);render()');const before=h.data('current().programs[0]');
   h.click('groups');const html=h.node('#group-panel').innerHTML;
   assert(!html.includes('nav-summary'));assert(!html.includes('현재 학습'));
-  assert(html.includes('<strong><span>D</span>등급</strong>'));
+  assert(html.includes('<h2 id="nav-grade-title"><span>D</span>등급</h2>'));
   h.click('next-grade');assert.equal(h.evaluate('browseGrade'),4);
-  assert(h.node('#group-panel').innerHTML.includes('<strong><span>E</span>등급</strong>'));
+  assert(h.node('#group-panel').innerHTML.includes('<h2 id="nav-grade-title"><span>E</span>등급</h2>'));
   assert.equal(h.evaluate('state.grade'),3);assert.equal(h.evaluate('state.index'),0);
   assert.equal(h.node('#learning').open,false);assert.deepEqual(h.data('current().programs[0]'),before);
 });

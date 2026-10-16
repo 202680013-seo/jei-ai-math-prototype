@@ -792,8 +792,8 @@ body.learning-navigation-open .learning-workspace main{width:calc(100% - 136px);
 #group-panel .nav-close,#group-panel .nav-help,#group-panel .nav-grade-arrow{display:grid;place-items:center;flex:none;width:34px;height:34px;padding:7px;border:0;border-radius:10px;background:transparent;color:var(--muted)}
 #group-panel .nav-close:hover,#group-panel .nav-help:hover,#group-panel .nav-grade-arrow:hover:not(:disabled){background:var(--soft);color:var(--forest)}
 #group-panel .nav-close svg,#group-panel .nav-grade-arrow svg,#group-panel .nav-help svg{display:block;width:100%;height:100%}
-#group-panel .group-nav{padding:0 2px;margin:0 0 18px;gap:12px;align-items:center}
-#group-panel .group-nav>strong{display:flex;align-items:center;gap:5px;font-size:18px;font-weight:800;color:var(--forest)}
+#group-panel .panel-head>.group-nav{flex:1;min-width:0;padding:0;margin:0;gap:8px;align-items:center}
+#group-panel .group-nav>h2{display:flex;align-items:center;gap:5px;margin:0;font-size:18px;font-weight:800;color:var(--forest)}
 #group-panel .nav-grade-arrow{width:36px;height:36px;padding:9px;background:var(--jei-c-f8fbf5,#f8fbf5)}
 #group-panel .nav-grade-arrow:disabled{opacity:.32;cursor:default}
 #group-panel .nav-list-heading{display:flex;align-items:center;justify-content:space-between;margin:0 4px 10px;gap:10px}
@@ -819,16 +819,21 @@ body.learning-navigation-open .learning-workspace main{width:calc(100% - 136px);
 @keyframes learning-nav-arrive{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .groups-trigger,.groups-trigger:hover:not(:disabled),.groups-trigger:active:not(:disabled){transition-duration:.6s;transition-timing-function:var(--navigation-ease)}
 #overlay[data-panel-kind=groups]{display:none!important}
+/* Keep tablet guidance and both shortcuts in one row; compact the gaps first. */
 @container learning (max-width:1100px){
-  .ai{grid-template-columns:minmax(0,1fr);row-gap:14px}
-  .top-shortcuts{grid-column:1;grid-row:1;justify-content:flex-end}
-  .mentor-cluster{grid-column:1;grid-row:2;grid-template-columns:minmax(0,1fr) 280px}
+  .ai{grid-template-columns:minmax(0,1fr) auto;column-gap:12px;row-gap:12px}
+  .top-shortcuts{grid-column:2;grid-row:1;justify-content:flex-end;gap:8px;margin:0}
+  .mentor-cluster{grid-column:1;grid-row:1;grid-template-columns:minmax(0,1fr) clamp(200px,24cqw,250px);column-gap:12px}
 }
 @container learning (max-width:980px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @container learning (max-width:760px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @container learning (max-width:650px){
-  .mentor-cluster{grid-template-columns:minmax(0,1fr);row-gap:14px}
-  .mentor-cluster>.recommend{grid-column:1;grid-row:2;width:100%;margin:0}
+  /* On a narrow workspace, the mentor gets its own row. Recommendations and shortcuts stay together. */
+  .ai{grid-template-columns:minmax(0,1fr) auto;column-gap:12px;row-gap:12px}
+  .mentor-cluster{display:contents}
+  .mentor-cluster>.ai-top{grid-column:1/-1;grid-row:1;min-width:0;padding:0}
+  .mentor-cluster>.recommend{grid-column:1;grid-row:2;width:auto;min-width:0;margin:0;padding:7px 12px;border:1px solid var(--ai-recommend-emphasis);border-radius:14px;background:#ffffffa6}
+  .top-shortcuts{grid-column:2;grid-row:2;justify-content:flex-end;gap:8px;margin:0}
   .heading-title-row{gap:8px}.heading-title-row #group-title{font-size:23px}
 }
 :root:is([data-preview-theme=teal],[data-preview-theme=green]) #group-panel .nav-grade-arrow{background:var(--theme-surface-alt)}

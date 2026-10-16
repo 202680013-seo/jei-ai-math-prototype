@@ -56,10 +56,18 @@ test('the result control belongs to the card explanation and the rail consistent
   assert(html.includes('aria-labelledby="group-title personalized-title"'));
   assert(html.includes('aria-describedby="personalized-summary"'));
   assert(!html.includes('학습 목차'));
-  const h=harness();h.click('groups');
-  assert(h.node('#group-panel').innerHTML.includes('<h2>학습 주제</h2>'));
-  assert(!h.node('#group-panel').innerHTML.includes('학습 목차'));
-  assert.equal(h.node('.groups-trigger')['aria-label'],'학습 주제 닫기');
+  for(const version of ['working','versions/v48','versions/v49']){
+    const h=harness(undefined,{appSource:fs.readFileSync(`dist/${version}/app.js`,'utf8')});h.click('groups');
+    const markup=h.node('#group-panel').innerHTML;
+    assert(markup.indexOf('<h2 id="nav-grade-title">')<markup.indexOf('<h3 id="nav-topic-heading">'));
+    assert(markup.includes('<h3 id="nav-topic-heading">학습 주제 <span>'));
+    assert(!markup.includes('<h2>학습 주제</h2>'));assert(!markup.includes('학습 목차'));
+    assert(markup.includes('class="group-list" role="group" aria-labelledby="nav-topic-heading"'));
+    assert.equal(h.node('.groups-trigger')['aria-label'],'학습 주제 닫기');
+    h.click('next-grade');
+    assert(h.node('#group-panel').innerHTML.includes('<h2 id="nav-grade-title"><span>E</span>등급</h2>'));
+    assert.equal(h.evaluate('state.grade'),3);
+  }
 });
 
 test('unchanged guidance renders retain mounted card hints while progress and dismissal still update',()=>{
