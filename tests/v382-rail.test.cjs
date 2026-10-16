@@ -47,17 +47,35 @@ function motionSetup({reducedMotion=false,width=1280,count=12}={}){
   return {h,cards,calls};
 }
 
-test('V3.8.2 carries cards into three columns with a bounded gentle stagger and retains card width',()=>{
+test('V3.8.2 carries cards into three columns on a shared smooth timeline and retains card width',()=>{
   const {h,cards,calls}=motionSetup({count:20});h.evaluate('M.preset(state,4);render()');const before=h.data('current()');h.click('groups');
   assert.equal(h.node('#learning-workspace').style['--navigation-columns'],'3');
   assert.equal(h.node('#learning-workspace').style['--navigation-card-width'],'228px');
   assert(calls.length>4);assert(calls.length<cards.length,'offscreen-only cards do not animate');
   const wrapped=calls.find(call=>call.i===3);
   assert.equal(wrapped.frames[0].transform,'translate3d(500px,-248px,0)');
-  assert.equal(wrapped.frames[1].transform,'none');assert.equal(wrapped.options.duration,420);
-  assert.deepEqual(calls.map(c=>c.options.delay),calls.map((_,i)=>Math.min(i,5)*24));
+  assert.equal(wrapped.frames[1].transform,'none');assert.equal(wrapped.options.duration,600);
+  assert.deepEqual(calls.map(c=>c.options.delay),calls.map((_,i)=>Math.min(i,4)*14));
   assert(calls.every(c=>c.options.fill==='both'&&!('opacity' in c.frames[0])));
   assert.deepEqual(h.data('current()'),before);assert.equal(h.node('#overlay').hidden,true);
+  assert.equal(h.node('#programs').getAttribute('data-layout-motion'),'true');
+});
+
+test('reflow batches all style reads, moves headings with the cards, and synchronizes native start times',async()=>{
+  const {h,calls}=motionSetup(),events=[],headings=[];
+  h.document.timeline={currentTime:1234};
+  h.context.getComputedStyle=()=>{events.push('read');return {transform:'none'};};
+  for(const selector of ['.ai','.heading','#learning-context']){
+    const element=h.node(selector);element.hidden=false;
+    element.getBoundingClientRect=()=>{const left=h.node('body').classList.contains('learning-navigation-open')?342:110;return {left,top:50,width:920,height:50,right:left+920,bottom:100};};
+    element.animate=(frames,options)=>{events.push('animate');let finish;const animation={finished:new Promise(resolve=>{finish=resolve;}),cancel(){}};headings.push({frames,options,animation,finish});return animation;};
+  }
+  h.click('groups');assert.equal(headings.length,3);
+  assert(headings.every(c=>c.options.delay===0&&c.frames[0].transform==='translate3d(-232px,0px,0)'));
+  assert([...headings,...calls].every(c=>c.animation.startTime===1234));
+  assert(!events.slice(events.indexOf('animate')).includes('read'),'no style read after native animations have started');
+  [...headings,...calls].forEach(c=>c.finish());await Promise.resolve();
+  assert.equal(h.node('#programs').getAttribute('data-layout-motion'),null);
 });
 
 test('V3.8.2 reflow resumes from an interrupted visual position and releases animations after completion or content replacement',async()=>{
@@ -69,6 +87,7 @@ test('V3.8.2 reflow resumes from an interrupted visual position and releases ani
   first.forEach(c=>c.finish());await Promise.resolve();assert(reverse.every(c=>!c.animation.cancelled),'stale finishes leave the new run alone');
   reverse.forEach(c=>c.finish());await Promise.resolve();
   assert(reverse.every(c=>c.animation.cancelled));assert.equal(h.evaluate('studyLayoutAnimations.length'),0);
+  assert.equal(h.node('#programs').getAttribute('data-layout-motion'),null);
   h.click('groups');const mounted=calls.filter(c=>!c.animation.cancelled);
   h.evaluate('current().diagnosis="done";current().programs=M.programs(8);render()');
   assert(mounted.every(c=>c.animation.cancelled));assert.equal(h.evaluate('studyLayoutAnimations.length'),0);
@@ -128,7 +147,8 @@ test('the result cue waits for both the dim exit and the actual card reveal, app
   assert.equal(h.node('#diagnosis-result-hint').hidden,true);h.evaluate('guidanceClosingTimer').fn();
   assert.equal(h.node('#diagnosis-result-hint').hidden,true,'cards are still arriving');
   h.evaluate('cardRevealTimer').fn();assert.equal(h.node('#diagnosis-result-hint').hidden,false);
-  assert.equal(h.node('#diagnosis-result-hint').textContent,'실력 알기 결과를 확인해보세요!');
+  assert.equal(h.node('#diagnosis-result-hint').textContent,'실력알기 결과를 확인해보세요!');
+  assert(h.node('#diagnostic').innerHTML.includes('<strong>실력알기 결과 확인</strong>'));
   assert.equal(h.node('#diagnostic').getAttribute('aria-describedby'),'diagnosis-result-hint');
   assert.equal(h.evaluate('state.ui.diagnosisResultHintSeen'),true);
   const timer=h.evaluate('diagnosisResultHintTimer');h.evaluate('render();render()');assert.equal(h.evaluate('diagnosisResultHintTimer'),timer);
@@ -156,20 +176,21 @@ test('validation cases deliberately re-arm the result cue, stale cue timers cann
 });
 
 
-test('the rail retains all topics and updates its continuation cue from actual scroll distance without rebinding on stable renders',()=>{
+test('the rail retains all topics and uses scroll overflow for its fading list and accessible hint without a down-arrow',()=>{
   const h=setup(),list=h.node('#group-panel .group-list');let bindings=0;
   const subscribe=list.addEventListener.bind(list);list.addEventListener=(type,fn,options)=>{if(type==='scroll')bindings++;subscribe(type,fn,options);};
   Object.assign(list,{scrollHeight:1300,clientHeight:470,scrollTop:0});h.click('groups');
-  assert.equal(bindings,1);assert.equal(h.node('#rail-list-more').hidden,false);assert.equal(list.getAttribute('data-has-more'),'true');
+  assert.equal(bindings,1);assert.equal(h.node('#rail-scroll-hint').hidden,false);assert.equal(list.getAttribute('data-has-more'),'true');
   assert.equal(list.getAttribute('aria-describedby'),'rail-scroll-hint');
   const html=h.node('#group-panel').innerHTML;
+  assert(!html.includes('rail-list-more'));assert(!appSource.includes('rail-list-more'));
   assert.equal((html.match(/class="nav-topic-number"/g)||[]).length,19);assert(html.includes('>08</span>'));assert(html.includes('>19</span>'));
   assert(html.includes('aria-labelledby="nav-topic-heading" tabindex="0"'));
   list.scrollTop=400;list.emit('scroll');h.evaluate('renderPanel();renderPanel()');assert.equal(bindings,1);assert.equal(list.scrollTop,400);
-  assert.equal(h.node('#rail-list-more').hidden,false);
-  list.scrollTop=830;list.emit('scroll');assert.equal(h.node('#rail-list-more').hidden,true);assert.equal(list.getAttribute('data-has-more'),'false');assert.equal(list.getAttribute('aria-describedby'),null);
-  list.scrollTop=0;list.emit('scroll');assert.equal(h.node('#rail-list-more').hidden,false);
-  list.clientHeight=1500;h.evaluate('syncRailOverflow()');assert.equal(h.node('#rail-list-more').hidden,true);
-  list.clientHeight=0;h.evaluate('syncRailOverflow()');assert.equal(h.node('#rail-list-more').hidden,true);
+  assert.equal(h.node('#rail-scroll-hint').hidden,false);
+  list.scrollTop=830;list.emit('scroll');assert.equal(h.node('#rail-scroll-hint').hidden,true);assert.equal(list.getAttribute('data-has-more'),'false');assert.equal(list.getAttribute('aria-describedby'),null);
+  list.scrollTop=0;list.emit('scroll');assert.equal(h.node('#rail-scroll-hint').hidden,false);
+  list.clientHeight=1500;h.evaluate('syncRailOverflow()');assert.equal(h.node('#rail-scroll-hint').hidden,true);
+  list.clientHeight=0;h.evaluate('syncRailOverflow()');assert.equal(h.node('#rail-scroll-hint').hidden,true);
   assert.equal(h.evaluate('railHasMoreBelow(500,500,0)'),false);assert.equal(h.evaluate('railHasMoreBelow(1000,400,-5)'),true);
 });

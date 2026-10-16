@@ -523,7 +523,7 @@ function syncDiagnosisResultHint(){
   }
   if(!visible||!topic.diagnosisResultHintPending||state.ui?.diagnosisResultHintSeen){$('#diagnosis-result-hint').hidden=true;return;}
   const run=diagnosisResultHintRun={target:topic};state.ui??={testControls:false};state.ui.diagnosisResultHintSeen=true;topic.diagnosisResultHintPending=false;
-  const hint=$('#diagnosis-result-hint');hint.textContent='실력 알기 결과를 확인해보세요!';hint.hidden=false;
+  const hint=$('#diagnosis-result-hint');hint.textContent='실력알기 결과를 확인해보세요!';hint.hidden=false;
   $('#diagnostic').setAttribute('aria-describedby','diagnosis-result-hint');save();
   diagnosisResultHintTimer=setTimeout(()=>{if(diagnosisResultHintRun===run)hideDiagnosisResultHint();},8000);
 }
@@ -531,15 +531,15 @@ document.addEventListener('visibilitychange',()=>syncDiagnosisResultHint());
 function syncLearningContext(topic){
   const ready=!composing&&topic.diagnosis==='done'&&topic.programs.length>0;
   $('#learning-context').hidden=!ready;
-  $('#personalized-summary').textContent=ready?'실력 알기 결과에 맞춰 '+topic.programs.length+'개의 학습을 준비했어요.':'';
+  $('#personalized-summary').textContent=ready?'실력알기 결과에 맞춰 '+topic.programs.length+'개의 학습을 준비했어요.':'';
   if(ready)document.body.classList.add('has-personalized-learning');else document.body.classList.remove('has-personalized-learning');
 }
 function render(){if(cardRevealRun&&cardRevealRun.target!==current())clearPrescribedCardReveal();daily();const s=current();syncLearningHeader(s);syncLearningContext(s);$('#diagnosis-slot').append($('#diagnostic'));$('#diagnostic').classList.remove('grid-diagnostic','card','clean-passed','diagnostic-summary-trigger');$('#diagnostic').setAttribute('aria-label','실력알기');$('#diagnostic-result-slot').hidden=true;$('#diagnosis-section').hidden=false;$('#grade-badge').innerHTML=`<strong>${grade(state.grade)}</strong><span>등급</span><span class="grade-topic-number">${String(state.index+1).padStart(2,'0')}</span>`;$('#group-title').textContent=groupName(state.index);$('#diagnostic').innerHTML=`<div><strong>실력알기</strong>${s.diagnosis==='done'?`<small>${s.programs.length?'처방 프로그램 '+s.programs.length+'개':'부족한 학습 목표 0개'}</small>`:''}</div>${badge(s.diagnosis==='done'?(s.programs.length?'passed':'clean'):s.diagnosis)}`;renderProgramCards(s);const rec=M.recommend(state);setRecommendationText(rec.text);$('#recommend').disabled=!!composing||['done','locked'].includes(rec.kind);
 if(isCleanPass(s)&&!composing){const pass=cleanPassInfo();$('#diagnostic').classList.add('clean-passed');$('#diagnostic').innerHTML=`<div><strong>진단 통과</strong><small>추가 학습 없이 통과했어요 · 결과 보기</small></div><span class="badge clean">✓ 통과</span>`;setRecommendationText(pass.next?cleanPassPrepareLabel(pass):'이번 등급 학습 완료');$('#recommend').disabled=!pass.next;}
 if(composing){setRecommendationText('맞춤 프로그램을 준비하고 있어요');$('#diagnostic').innerHTML='<div><strong>실력알기</strong><small>진단 결과에 맞춰 필요한 학습을 구성하고 있습니다.</small></div><span class="badge active">진단 완료 · 구성 중</span>';$('#diagnostic').disabled=true;$('#programs').hidden=true;$('#composition').hidden=false;renderComposition();}
 else{$('#diagnostic').disabled=false;$('#composition').hidden=true;$('#programs').hidden=s.programs.length===0;
-if(s.diagnosis==='done'&&s.programs.length){const d=$('#diagnostic');d.classList.add('diagnostic-summary-trigger');d.setAttribute('aria-label',groupName(state.index)+' · 실력 알기 결과 확인');
-d.innerHTML=`<span class="result-icon" aria-hidden="true"><svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="5" width="16" height="20" rx="4"/><path d="M11 4h6v4h-6zM10 13h8M10 17h5M10 21h3"/></svg></span><span class="result-copy"><strong>실력 알기 결과 확인</strong></span><svg class="result-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 4 4 4-4 4"/></svg>`;
+if(s.diagnosis==='done'&&s.programs.length){const d=$('#diagnostic');d.classList.add('diagnostic-summary-trigger');d.setAttribute('aria-label',groupName(state.index)+' · 실력알기 결과 확인');
+d.innerHTML=`<span class="result-icon" aria-hidden="true"><svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="5" width="16" height="20" rx="4"/><path d="M11 4h6v4h-6zM10 13h8M10 17h5M10 21h3"/></svg></span><span class="result-copy"><strong>실력알기 결과 확인</strong></span><svg class="result-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 4 4 4-4 4"/></svg>`;
 $('#diagnostic-result-slot').hidden=false;$('#diagnostic-result-slot').append(d);$('#diagnosis-section').hidden=true;
 if(reveal)revealPrescribedCards();reveal=false;
 }}
@@ -598,7 +598,7 @@ function renderComposition(){
     c.mounted=true;
   }
   container.setAttribute('data-compose-step',String(c.step));container.setAttribute('data-compose-paused',document.visibilityState==='hidden'?'true':'false');
-  $('#composition-topic-context').textContent=c.topicName+' · '+(c.step===0?'실력 알기 완료':c.step===1?'실력 알기 결과로 준비 중':'더 연습할 학습 '+c.count+'개');
+  $('#composition-topic-context').textContent=c.topicName+' · '+(c.step===0?'실력 알기 완료':c.step===1?'실력알기 결과로 준비 중':'더 연습할 학습 '+c.count+'개');
   $('#composition-title').textContent=c.step===0?'수고했어요!':c.step===1?'맞춤 학습을 찾고 있어요':c.name+'님을 위한 학습이 준비됐어요';
   $('#composition-copy').textContent=c.step===0?'실력알기를 마쳤어요.':c.step===1?'더 익힐 내용을 모으고 있어요.':c.text||'';
   $('#composition-caret').hidden=c.step!==2;
@@ -647,32 +647,41 @@ function applyNavigationGrid(preferred){
     if(host.style.setProperty)host.style.setProperty(key,value);else host.style[key]=value;
   }
 }
-function cancelStudyLayoutAnimations(){const previous=studyLayoutAnimations;studyLayoutAnimations=[];previous.forEach(a=>a.cancel?.());}
+function cancelStudyLayoutAnimations(){const previous=studyLayoutAnimations;studyLayoutAnimations=[];previous.forEach(a=>a.cancel?.());$('#programs').removeAttribute('data-layout-motion');}
 function changeNavigationDock(open){
   const cards=Array.from(document.querySelectorAll?.('#programs>.program-card')||[]);
+  const headings=[$('.ai'),$('.heading'),$('#learning-context')].filter(element=>element&&!element.hidden);
+  const elements=[...headings,...cards];
   // Capture the visible position before cancelling an interrupted transition.
-  const before=cards.map(card=>card.getBoundingClientRect()),preferred=before[0]?.width;
+  const before=elements.map(element=>element.getBoundingClientRect()),preferred=before[headings.length]?.width;
   const changed=document.body.classList.contains('learning-navigation-open')!==open;
   cancelStudyLayoutAnimations();
   if(open)document.body.classList.add('learning-navigation-open');else document.body.classList.remove('learning-navigation-open');
   if(open)applyNavigationGrid(preferred);
+  fitMentorBubble();measureLearningHeader();
   void $('#learning-workspace').offsetWidth;
   if(changed&&!cardRevealRun&&window.innerWidth>650&&window.innerWidth<1800&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
-    const after=cards.map(card=>card.getBoundingClientRect());
+    // Finish all geometry/style reads before starting any animation. Header and cards
+    // share one clock, so a wrapped row never chases an already-snapped heading.
+    $('#programs').setAttribute('data-layout-motion','true');
+    const after=elements.map(element=>element.getBoundingClientRect());
+    const resting=elements.map(element=>window.getComputedStyle?.(element).transform||'none');
+    const start=document.timeline?.currentTime;
     let order=0;
-    cards.forEach((card,i)=>{
+    elements.forEach((element,i)=>{
       const from=before[i],to=after[i],x=from.left-to.left,y=from.top-to.top;
       if(!Number.isFinite(x)||!Number.isFinite(y)||Math.abs(x)+Math.abs(y)<1)return;
       if((from.bottom<=0||from.top>=window.innerHeight)&&(to.bottom<=0||to.top>=window.innerHeight))return;
-      const resting=window.getComputedStyle?.(card).transform||'none',base=resting==='none'?'':` ${resting}`;
-      const animation=card.animate?.([{transform:`translate3d(${x}px,${y}px,0)${base}`},{transform:resting}],{duration:420,delay:Math.min(order++,5)*24,easing:'cubic-bezier(.22,.61,.36,1)',fill:'both'});
+      const base=resting[i]==='none'?'':` ${resting[i]}`,delay=i<headings.length?0:Math.min(order++,4)*14;
+      const animation=element.animate?.([{transform:`translate3d(${x}px,${y}px,0)${base}`},{transform:resting[i]}],{duration:600,delay,easing:'cubic-bezier(.25,.1,.25,1)',fill:'both'});
       if(!animation)return;
+      if(Number.isFinite(start))animation.startTime=start;
       studyLayoutAnimations.push(animation);
-      const release=()=>{if(!studyLayoutAnimations.includes(animation))return;studyLayoutAnimations=studyLayoutAnimations.filter(a=>a!==animation);animation.cancel?.();};
+      const release=()=>{if(!studyLayoutAnimations.includes(animation))return;studyLayoutAnimations=studyLayoutAnimations.filter(a=>a!==animation);animation.cancel?.();if(!studyLayoutAnimations.length)$('#programs').removeAttribute('data-layout-motion');};
       animation.finished?.then(release,release);
     });
+    if(!studyLayoutAnimations.length)$('#programs').removeAttribute('data-layout-motion');
   }
-  fitMentorBubble();measureLearningHeader();
 }
 window.addEventListener?.('resize',()=>{cancelStudyLayoutAnimations();applyNavigationGrid();});
 let lastPanel='groups',groupPanelPhase='closed',panelMotionTimer=null,panelMotionGeneration=0;
@@ -750,7 +759,7 @@ function syncRailOverflow(){
   if(panel!=='groups')return;
   const list=$('#group-panel .group-list');if(!list)return;
   const more=railHasMoreBelow(list.scrollHeight,list.clientHeight,list.scrollTop);
-  list.setAttribute('data-has-more',String(more));$('#rail-list-more').hidden=!more;$('#rail-scroll-hint').hidden=!more;
+  list.setAttribute('data-has-more',String(more));$('#rail-scroll-hint').hidden=!more;
   if(more)list.setAttribute('aria-describedby','rail-scroll-hint');else list.removeAttribute('aria-describedby');
 }
 function bindRailOverflow(){
@@ -770,7 +779,7 @@ function renderPanel(){
   if(panel==='groups'){
     const topics=state.grades[browseGrade],labels={idle:'시작 전',active:'학습 중',clean:'완료',passed:'완료',failed:'복습 필요',locked:'시작 전'};
     const grades=availableRailGrades(),position=grades.indexOf(browseGrade),progress=railGradeProgress();
-    const markup=`<div class="panel-head nav-stagger" style="--nav-delay:60ms"><button class="nav-close" data-action="close-panel" aria-label="학습 주제 닫기"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg></button></div><div class="panel-content"><div class="group-nav nav-stagger" style="--nav-delay:120ms" role="group" aria-label="등급 선택">${railGradeArrow('prev',position<=0)}<h2 id="nav-grade-title"><span>${grade(browseGrade)}</span>등급</h2>${railGradeArrow('next',position>=grades.length-1)}</div><div class="nav-list-heading nav-stagger" style="--nav-delay:200ms"><h3 id="nav-topic-heading">학습 주제 <span>${topics.length}개</span></h3><button class="nav-help" data-action="help" aria-label="학습 상태 안내"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 9v4M10 6h.01"/></svg></button></div><div class="nav-list-scroll"><div class="group-list" role="group" aria-labelledby="nav-topic-heading" tabindex="0">${topics.map((topic,i)=>{const status=M.status(topic,state.policy),selected=browseGrade===state.grade&&i===state.index;return `<button data-state="${status}" class="group-item nav-stagger ${selected?'selected':''}" style="--nav-delay:${260+Math.min(i,10)*30}ms" data-action="select-group" data-id="${i}" aria-current="${selected?'true':'false'}" ${canNavigateTopic(topic)?'':'disabled aria-disabled="true"'}><span class="nav-topic-number" aria-hidden="true">${String(i+1).padStart(2,'0')}</span><span class="nav-topic-copy"><strong>${esc(groupName(i,browseGrade))}</strong></span><span class="nav-topic-status ${status}" title="${labels[status]||'시작 전'}"><span class="sr-only">${labels[status]||'시작 전'}</span>${navigationStatusIcon(status)}</span></button>`;}).join('')}</div><span id="rail-list-more" class="nav-list-more" aria-hidden="true" hidden><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 8 4 4 4-4"/></svg></span><span id="rail-scroll-hint" class="sr-only" hidden>아래에 학습 주제가 더 있어요. 스크롤해서 확인해요.</span></div></div><footer class="nav-grade-progress nav-stagger" style="--nav-delay:620ms" aria-labelledby="rail-progress-title"><div class="nav-progress-heading"><span id="rail-progress-title">${grade(browseGrade)}등급 실력알기</span><span class="nav-progress-count">완료 <b>${progress.completed}</b> / ${progress.total}</span></div><progress max="${progress.total||1}" value="${progress.completed}" aria-label="${grade(browseGrade)}등급 실력 알기 진행률" aria-valuetext="전체 ${progress.total}개 중 ${progress.completed}개 완료, ${progress.percent}%"></progress></footer>`;
+    const markup=`<div class="panel-head nav-stagger" style="--nav-delay:60ms"><button class="nav-close" data-action="close-panel" aria-label="학습 주제 닫기"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg></button></div><div class="panel-content"><div class="group-nav nav-stagger" style="--nav-delay:120ms" role="group" aria-label="등급 선택">${railGradeArrow('prev',position<=0)}<h2 id="nav-grade-title"><span>${grade(browseGrade)}</span>등급</h2>${railGradeArrow('next',position>=grades.length-1)}</div><div class="nav-list-heading nav-stagger" style="--nav-delay:200ms"><h3 id="nav-topic-heading">학습 주제 <span>${topics.length}개</span></h3><button class="nav-help" data-action="help" aria-label="학습 상태 안내"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 9v4M10 6h.01"/></svg></button></div><div class="nav-list-scroll"><div class="group-list" role="group" aria-labelledby="nav-topic-heading" tabindex="0">${topics.map((topic,i)=>{const status=M.status(topic,state.policy),selected=browseGrade===state.grade&&i===state.index;return `<button data-state="${status}" class="group-item nav-stagger ${selected?'selected':''}" style="--nav-delay:${260+Math.min(i,10)*30}ms" data-action="select-group" data-id="${i}" aria-current="${selected?'true':'false'}" ${canNavigateTopic(topic)?'':'disabled aria-disabled="true"'}><span class="nav-topic-number" aria-hidden="true">${String(i+1).padStart(2,'0')}</span><span class="nav-topic-copy"><strong>${esc(groupName(i,browseGrade))}</strong></span><span class="nav-topic-status ${status}" title="${labels[status]||'시작 전'}"><span class="sr-only">${labels[status]||'시작 전'}</span>${navigationStatusIcon(status)}</span></button>`;}).join('')}</div><span id="rail-scroll-hint" class="sr-only" hidden>아래에 학습 주제가 더 있어요. 스크롤해서 확인해요.</span></div></div><footer class="nav-grade-progress nav-stagger" style="--nav-delay:620ms" aria-labelledby="rail-progress-title"><div class="nav-progress-heading"><span id="rail-progress-title">${grade(browseGrade)}등급 실력알기</span><span class="nav-progress-count">완료 <b>${progress.completed}</b> / ${progress.total}</span></div><progress max="${progress.total||1}" value="${progress.completed}" aria-label="${grade(browseGrade)}등급 실력 알기 진행률" aria-valuetext="전체 ${progress.total}개 중 ${progress.completed}개 완료, ${progress.percent}%"></progress></footer>`;
     if(markup!==groupPanelMarkup){const scroll=$('#group-panel .group-list')?.scrollTop||0,focused=gp.contains?.(document.activeElement)?document.activeElement?.closest?.('[data-action]')?.dataset:null;gp.innerHTML=markup;groupPanelMarkup=markup;$('#group-panel .group-list').scrollTop=scroll;if(focused&&['close-panel','prev-grade','next-grade','help','select-group'].includes(focused.action))focusNavigationAction(focused.action,focused.id);}
     bindRailOverflow();
   }

@@ -2,15 +2,15 @@
   "id": "v48",
   "date": "2026-10-15",
   "files": {
-    "app.js": "97ae5a3a0512c6b2039d6c0b689fd3ef54fd245ca534a9d988ce6cf8a68bd2be",
+    "app.js": "fff940998ac1e7afac800ab31212a72bc2b77fc75e8fa6ce8739eb19bfd7c5b1",
     "catalog.js": "742f16551eb158b5651a65391ec595cbffa1e1fb3912266c3588f52a1d26c517",
     "fonts/OFL.txt": "82e9c8a4b203261f10ddba1296422d64914ff3d4b7bd8a12896d03f0f088d70a",
     "fonts/PretendardVariable.woff2": "9599f12fd42fc0bce1cd50b47a0c022e108d7aa64dd0d1bb0ed44f3282d900b4",
-    "index.html": "b8f7290d0c895d2ea97433c56286f1e57b3c8bac9e3169397f3c17faa08130be",
+    "index.html": "aee9fff588c9a15154e2d59afba627ad32068977c25b4b82eb413cca60500992",
     "model.js": "f685f09eeb53e74fdb9983209ba07f1e5d255ba9b6017c0b14598c22a1458f9e",
     "sky.js": "0839e3db0daf10e9ce3dcac4220419aa401ba8b578d1bd5c2c7b07ee02aa180b",
     "style.css": "b3744d2102d6fb6f9ce40fff7bfb7b21b5bc39bd51b7a84d6eec64099725642e",
-    "theme.css": "e55f99f84dbb5d045d1b2e35c81c3981aaf15bdd1c0ae2e392b92ec7972680da"
+    "theme.css": "9bca84f6fcdec60ac199f71c66cb63210256f98840e3cefdf366dc76a0b439e2"
   },
   "updatedAt": "2026-10-16"
 }
