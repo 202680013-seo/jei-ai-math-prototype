@@ -57,7 +57,9 @@ test('the result control belongs to the card explanation and the rail consistent
   assert(html.includes('aria-describedby="personalized-summary"'));
   assert(!html.includes('학습 목차'));
   for(const version of ['working','versions/v48','versions/v49']){
-    const h=harness(undefined,{appSource:fs.readFileSync(`dist/${version}/app.js`,'utf8')});h.click('groups');
+    const h=harness(undefined,{appSource:fs.readFileSync(`dist/${version}/app.js`,'utf8')});
+    if(version==='versions/v48')h.evaluate("state.grades[4][0].diagnosis='active'");
+    h.click('groups');
     const markup=h.node('#group-panel').innerHTML;
     assert(markup.indexOf('<h2 id="nav-grade-title">')<markup.indexOf('<h3 id="nav-topic-heading">'));
     assert(markup.includes('<h3 id="nav-topic-heading">학습 주제 <span>'));

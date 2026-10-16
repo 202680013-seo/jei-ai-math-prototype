@@ -1108,3 +1108,25 @@ body.has-long-learning-list .learning-context{scroll-margin-top:var(--learning-h
 
 /* Validation guidance stays inside the developer settings panel. */
 #test-panel .validation-note{margin:10px 0;color:var(--muted);font-size:12px;line-height:1.7}
+
+/* V3.8.2: a pinned grade summary beneath the independently scrolling topic list. */
+#group-panel .panel-content{padding-bottom:12px}
+#group-panel .nav-grade-progress{flex:none;margin:0;padding:18px 20px calc(18px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--theme-line,var(--line));background:var(--theme-surface-alt,var(--soft));color:var(--forest);font-size:12px;line-height:1.5}
+#group-panel .nav-progress-heading,#group-panel .nav-progress-caption{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#group-panel .nav-progress-heading>span{font-weight:700}
+#group-panel .nav-progress-heading>strong{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
+#group-panel .nav-progress-heading>strong>small{margin-left:2px;font-size:11px;color:inherit}
+#group-panel .nav-grade-progress progress{display:block;width:100%;height:7px;margin:10px 0 9px;overflow:hidden;border:0;border-radius:999px;appearance:none;accent-color:var(--theme-brand,var(--jei-c-49702e,#49702e));background:var(--theme-line,var(--line))}
+#group-panel .nav-grade-progress progress::-webkit-progress-bar{border-radius:999px;background:var(--theme-line,var(--line))}
+#group-panel .nav-grade-progress progress::-webkit-progress-value{border-radius:999px;background:var(--theme-brand,var(--jei-c-49702e,#49702e));transition:width .4s ease}
+#group-panel .nav-grade-progress progress::-moz-progress-bar{border-radius:999px;background:var(--theme-brand,var(--jei-c-49702e,#49702e))}
+#group-panel .nav-progress-caption{font-size:11px;color:var(--muted)}
+#group-panel .nav-progress-caption b{color:var(--theme-brand,var(--forest));font-weight:800}
+#group-panel .group-item:disabled .nav-topic-status{pointer-events:auto}
+#diagnostic-result-slot{position:relative}
+.diagnosis-result-hint{position:absolute;right:0;bottom:calc(100% + 12px);z-index:15;padding:10px 13px;border:1px solid var(--theme-line-strong,var(--jei-c-c1d8af,#c1d8af));border-radius:13px;background:var(--theme-surface,var(--paper));color:var(--theme-brand,var(--jei-c-49702e,#49702e));box-shadow:0 5px 16px var(--jei-c-16330012,#16330012);font-size:12px;font-weight:700;line-height:1.5;white-space:nowrap;pointer-events:none;animation:diagnosis-result-hint-arrive .35s ease both}
+.diagnosis-result-hint[hidden]{display:none}
+.diagnosis-result-hint::after{content:'';position:absolute;right:30px;bottom:-5px;width:9px;height:9px;border-right:1px solid var(--theme-line-strong,var(--jei-c-c1d8af,#c1d8af));border-bottom:1px solid var(--theme-line-strong,var(--jei-c-c1d8af,#c1d8af));border-radius:0 0 3px 0;background:inherit;transform:rotate(45deg)}
+@keyframes diagnosis-result-hint-arrive{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media(max-width:650px){#group-panel .nav-grade-progress{padding:14px 18px calc(14px + env(safe-area-inset-bottom,0px))}.diagnosis-result-hint{padding:9px 11px;font-size:11px}}
+@media(prefers-reduced-motion:reduce){.diagnosis-result-hint{animation:none}#group-panel .nav-grade-progress progress::-webkit-progress-value{transition:none}}
