@@ -12,8 +12,8 @@ test('the supplied status SVGs retain every geometric and line-style attribute a
     assert.deepEqual(geometry(applied),geometry(original));assert(applied.includes('var(--status-'));
   }
   h.evaluate('M.preset(state,6);render()');h.click('groups');
-  assert(h.node('#group-panel').innerHTML.includes(h.evaluate("statusSVG('failed')")));
-  assert(h.node('#programs').innerHTML.includes(h.evaluate("statusSVG('passed')")));
+  assert(h.node('#group-panel').innerHTML.includes(h.evaluate("figmaStatusIcon('failed')")));
+  assert(h.node('#programs').innerHTML.includes(h.evaluate("figmaStatusIcon('passed')")));
 });
 
 test('a failed card opens a choice dialog without changing canonical results or the next active program',()=>{

@@ -3,7 +3,7 @@
   const T=window.JeiTheme;if(!T)return;
   // V4 has its own palette. Shared themes and earlier immutable designs stay intact.
   const original=T.presetPalette,previous={...T.THEMES.teal.roles};
-  const roles={page:'#ffffff',pageEnd:'#ffffff',surface:'#ffffff',surfaceAlt:'#fafbfc',soft:'#eef2f4',softStrong:'#cdf1ee',title:'#414f62',text:'#414f62',muted:'#758391',line:'#dce1e5',lineStrong:'#0ec7ae',accent:'#0ec7ae',primary:'#0c9f8b',primaryHover:'#078c7c',onPrimary:'#ffffff',brand:'#0c9f8b',active:'#0ec7ae',onActive:'#ffffff',completed:'#e5f5fd',locked:'#fafbfc',disabled:'#b7bec3',night:'#142c35',nightSurface:'#23434d',nightLine:'#527783',nightText:'#e5f5fd',overlay:'#24354555'};
+  const roles={page:'#ffffff',pageEnd:'#ffffff',surface:'#ffffff',surfaceAlt:'#f8f9fa',soft:'#eef2f4',softStrong:'#cdf1ee',title:'#414f62',text:'#414f62',muted:'#758391',line:'#dce1e5',lineStrong:'#0ec7ae',accent:'#0ec7ae',primary:'#0c9f8b',primaryHover:'#078c7c',onPrimary:'#ffffff',brand:'#0c9f8b',active:'#0ec7ae',onActive:'#ffffff',completed:'#e5f5fd',locked:'#f8f9fa',disabled:'#b7bec3',night:'#142c35',nightSurface:'#23434d',nightLine:'#527783',nightText:'#e5f5fd',overlay:'#24354555'};
   T.THEMES.current={name:'V4 민트',description:'화이트 · 민트 학습 카드 · 하늘색 완료 카드',roles};
   T.presetPalette=function(id){
     if(id!=='current')return original(id);

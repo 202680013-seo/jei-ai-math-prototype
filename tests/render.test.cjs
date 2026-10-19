@@ -133,7 +133,7 @@ assert(!node('#learning').innerHTML.includes('data-action="pass-next"'));
 click('diagnosis-leave');assert.equal(node('#learning').open,false);
 assert.equal(vm.runInContext('state.grade',c),9);
 assert(!html.includes('id="ai-state"'));
-assert(/class="groups-trigger"[^>]+aria-label="학습 주제 열기"[^>]*>\s*<svg/.test(html));
+assert(/class="groups-trigger"[^>]+aria-label="학습 주제 열기"[^>]*>\s*<img[^>]+rail-tab\.svg/.test(html));
 console.log('V3.3 celebration, preparation, explicit start, grade accuracy, pause/persistence and progress preservation passed');
 
 // The decorative morph follows real typing, and stale timers cannot restart it.
@@ -212,7 +212,7 @@ for(const width of [210,460]){
     const longMessage='학습 안내 '.repeat(length);
     node('#ai-message').textContent=longMessage;
     vm.runInContext("setBubblePhase('holding')",c);
-    assert.equal(node('#mentor-bubble').style.height,'44px');
+    assert.equal(node('#mentor-bubble').style.height,'48px');
     assert(parseFloat(node('#mentor-bubble').style.width)<=width-56);
     assert.equal(node('#ai-message').textContent,longMessage); // full content remains readable by horizontal scrolling
   }
@@ -385,7 +385,7 @@ vm.runInContext("cancelComposition();state=M.create();M.preset(state,3);lastMess
 vm.runInContext('thinkTimer',c).fn();
 for(let i=0;i<500&&vm.runInContext('aiState',c)==='반응 중';i++)vm.runInContext('animTimer',c).fn();
 const fullMentorCopy=node('#ai-message').textContent;
-assert.equal(node('#mentor-bubble').style.height,'44px');
+assert.equal(node('#mentor-bubble').style.height,'48px');
 assert.equal(node('#mentor-read-controls').hidden,false);
 assert.equal(node('#ai-message').tabIndex,0);
 assert.equal(node('#ai-message').scrollLeft,0);

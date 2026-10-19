@@ -57,11 +57,11 @@ test('mentor width leaves reserved space and remains capped on desktop and narro
   h.node('.ai-top').getBoundingClientRect=()=>({width:1000,height:44});
   h.node('#mentor-measure').getBoundingClientRect=()=>({width:2000,height:22});
   h.evaluate("animateMessage(true,'학습 안내 '.repeat(100))");
-  assert.equal(h.node('#mentor-bubble').style.width,'320px');
+  assert.equal(h.node('#mentor-bubble').style.width,'286px');
   h.context.innerWidth=375;h.node('.ai-top').getBoundingClientRect=()=>({width:220,height:44});
   h.evaluate('fitMentorBubble()');
-  assert.equal(h.node('#mentor-bubble').style.width,'148px');
-  assert.equal(h.node('#mentor-bubble').style.height,'44px');
+  assert.equal(h.node('#mentor-bubble').style.width,'164px');
+  assert.equal(h.node('#mentor-bubble').style.height,'48px');
   assert(h.node('#ai-message').textContent.length>100); // manual overflow retains all content
 });
 

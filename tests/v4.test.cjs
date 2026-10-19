@@ -14,18 +14,18 @@ test('V4 applies the supplied semantic palette locally without changing earlier 
   const T=c.window.JeiTheme,before=JSON.stringify(T.THEMES.teal);
   vm.runInNewContext(fs.readFileSync('dist/working/v4-theme.js','utf8'),c);
   const p=T.presetPalette('current');
-  for(const [key,value]of Object.entries({'--theme-page':'#ffffff','--theme-title':'#414f62','--theme-active':'#0ec7ae','--theme-completed':'#e5f5fd','--theme-locked':'#fafbfc','--theme-disabled':'#b7bec3','--theme-primary':'#0c9f8b','--theme-on-active':'#ffffff'}))assert.equal(p[key],value);
+  for(const [key,value]of Object.entries({'--theme-page':'#ffffff','--theme-title':'#414f62','--theme-active':'#0ec7ae','--theme-completed':'#e5f5fd','--theme-locked':'#f8f9fa','--theme-disabled':'#b7bec3','--theme-primary':'#0c9f8b','--theme-on-active':'#ffffff'}))assert.equal(p[key],value);
   assert.equal(JSON.stringify(T.THEMES.teal),before);assert.equal(T.presetPalette('teal')['--theme-page'],'#edf8f8');
   assert.equal(require('../dist/theme-model.js').THEMES.current.roles.page,'#f7f9f4');
 });
 test('iPad V4 opens the SVG example once, preserves state on reload, and leaves selected test scenarios alone',()=>{
   const {state,c,store}=seed(),topic=state.grades[3][0];
   assert.equal(topic.diagnosis,'done');assert.equal(topic.programs.length,8);
-  assert.equal(topic.programs[0].name,'모임의 크기 비교(짝짓기)');assert.equal(topic.programs[0].status,'passed');
+  assert.equal(topic.programs[0].name,'모임의 크기 비교(짝짓기)');assert.equal(topic.programs[0].status,'passed');assert.equal(topic.programs[1].status,'failed');
   const current=M.currentProgram(topic);assert.equal(current.name,'수가 같은 모임');assert.equal(current.progress,50);
-  assert(M.canStudy(topic,current));assert(!M.canStudy(topic,topic.programs[2]));
-  topic.programs[1].progress=75;store.set(STATE_KEY,JSON.stringify(state));vm.runInNewContext(entry,c);
-  assert.equal(JSON.parse(store.get(STATE_KEY)).grades[3][0].programs[1].progress,75);
+  assert(M.canStudy(topic,current));assert(!M.canStudy(topic,topic.programs[3]));
+  topic.programs[2].progress=75;store.set(STATE_KEY,JSON.stringify(state));vm.runInNewContext(entry,c);
+  assert.equal(JSON.parse(store.get(STATE_KEY)).grades[3][0].programs[2].progress,75);
   assert.equal(seed({standalone:false}).state,null);assert.equal(seed({scenario:'0'}).state,null);
 });
 test('V4 demo cards remain interactive and a reset replays the full first diagnosis intro',()=>{
@@ -36,7 +36,7 @@ test('V4 demo cards remain interactive and a reset replays the full first diagno
   h.click('diagnosis-begin');assert.equal(h.evaluate('editing.intro'),false);
 });
 test('V4 iPad entry is a real responsive document with no external review pane or iframe',()=>{
-  const registry=JSON.parse(fs.readFileSync('dist/versions.json','utf8')),version=registry.versions.find(v=>v.label==='V4');assert(version);
+  const registry=JSON.parse(fs.readFileSync('dist/versions.json','utf8')),version=registry.versions.filter(v=>/^V4(?:\.|$)/.test(v.label)).at(-1);assert(version);
   const html=fs.readFileSync('dist/v4.html','utf8');
   assert.match(html,new RegExp('data-version="'+version.id+'"'));assert.match(html,/data-v4-standalone="true"/);
   assert.match(html,/width=device-width,initial-scale=1/);assert.match(html,/apple-mobile-web-app-capable/);

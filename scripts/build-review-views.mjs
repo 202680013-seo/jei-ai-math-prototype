@@ -34,7 +34,7 @@ export function buildReviewViews(root=defaultRoot){
     html=html.replace(/<\/body>/i,`<script src="/preview-controls.js?r=${controlsHash}"></script><script src="/history-ui.js?r=${historyUiHash}"></script></body>`);writeFileSync(join(out,version.id+'.html'),applyTypography(html));
   }
   // A stable native document for iPad/Safari: no workspace, iframe or redirect.
-  const v4=registry.versions.find(version=>version.label==='V4');
+  const v4=registry.versions.filter(version=>/^V4(?:\.|$)/.test(version.label)).at(-1);
   if(v4){
     let html=readFileSync(join(out,v4.id+'.html'),'utf8');
     html=html.replace(/<html([^>]*)>/i,'<html$1 data-v4-standalone="true">');

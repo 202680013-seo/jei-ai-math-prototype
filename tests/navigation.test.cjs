@@ -13,14 +13,14 @@ test('the outline shows grade navigation, topic numbers and accessible status ic
   h.click('groups');const html=h.node('#group-panel').innerHTML;
   assert(!html.includes('data-action="nav-resume"'));assert(!html.includes('현재 학습'));assert(!html.includes('완료한 주제'));
   assert(html.includes('class="nav-topic-number" aria-hidden="true">01</span>'));
-  assert(html.includes('class="sr-only">완료</span>'));assert(html.includes('fill="currentColor"'));
+  assert(html.includes('class="sr-only">완료</span>'));assert(html.includes('assets/figma-v4-1/rail-passed.svg'));
   assert(!html.includes('지금 보고 있어요'));assert(!html.includes('nav-topic-icon'));
   const visible=html.replace(/<span class="sr-only">.*?<\/span>/gs,'').replace(/<[^>]*>/g,'');
   assert(!visible.includes('복습 필요'));assert(!visible.includes('시작 전'));assert(!visible.includes('학습 중'));
   assert(!html.includes('nav-summary'));assert(html.indexOf('group-nav')<html.indexOf('nav-list-heading'));
   assert(!html.includes('진단 그룹'));assert(!html.includes('진단 완료율'));assert(html.includes('복습 필요'));
-  const arrows=[...html.matchAll(/<button class="nav-grade-arrow"[^>]*>(.*?)<\/button>/g)].map(m=>m[1]);
-  assert.equal(arrows.length,2);assert(arrows.every(x=>x.startsWith('<svg')&&!x.includes('이전')&&!x.includes('다음')));
+  const arrows=[...html.matchAll(/<button class="nav-grade-arrow [^"]+"[^>]*>(.*?)<\/button>/g)].map(m=>m[1]);
+  assert.equal(arrows.length,2);assert(arrows.every(x=>x.startsWith('<img')&&!x.includes('이전')&&!x.includes('다음')));
   h.evaluate("state.grades[0][0].diagnosis='active';state.grades[9][0].diagnosis='active';browseGrade=0;renderPanel()");assert(h.node('#group-panel').innerHTML.includes('title="이전 등급" disabled'));
   h.click('prev-grade');assert.equal(h.evaluate('browseGrade'),0);
   h.evaluate('browseGrade=9;renderPanel()');h.click('next-grade');assert.equal(h.evaluate('browseGrade'),9);
