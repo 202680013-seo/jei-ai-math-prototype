@@ -103,14 +103,15 @@
     },
     {
       "name": "rail-report",
-      "nodeId": "3:357",
+      "nodeId": "3:87",
       "file": "rail-report.svg",
       "nodeWidth": 24.123088836669922,
       "nodeHeight": 29.39004135131836,
       "svgWidth": "25",
       "svgHeight": "30",
       "viewBox": "0 0 25 30",
-      "sha256": "65d74af284604affd3cdcbbfc212ac03083bc2c02b4185c2e08b862ab272dfe7"
+      "sha256": "66166458a98adc466f71f57209f0a71fed778e0ae2eadd7fdebb30f448c6b912",
+      "ink": "#8492a7"
     },
     {
       "name": "active-card-art",

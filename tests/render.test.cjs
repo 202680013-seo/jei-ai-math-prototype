@@ -1,7 +1,7 @@
 // UI state-flow smoke checks with a minimal DOM substitute; not browser layout QA.
 const vm=require('node:vm'),fs=require('node:fs'),assert=require('node:assert/strict');
 const nodes=new Map(),timers=[],listeners={};
-function node(key){if(nodes.has(key))return nodes.get(key);const classes=new Set();const n={style:{},hidden:false,disabled:false,innerHTML:'',textContent:'',value:8,offsetWidth:1,children:[],classList:{add(...a){a.forEach(x=>classes.add(x));},remove(...a){a.forEach(x=>classes.delete(x));},contains(x){return classes.has(x);}},setAttribute(k,v){this[k]=v;},removeAttribute(k){delete this[k];},getBoundingClientRect(){return {left:0,top:0,width:240,height:240};},append(x){if(x.parent)x.parent.children=x.parent.children.filter(y=>y!==x);this.children.push(x);x.parent=this;},prepend(x){if(x.parent)x.parent.children=x.parent.children.filter(y=>y!==x);this.children.unshift(x);x.parent=this;},animate(){},focus(){},close(){this.open=false;},showModal(){this.open=true;},addEventListener(k,f){(this.listeners??={})[k]=f;},contains(t){for(let p=t;p;p=p.parent)if(p===this)return true;return false;},querySelectorAll(){return [];}};nodes.set(key,n);return n;}
+function node(key){if(nodes.has(key))return nodes.get(key);const classes=new Set();const n={style:{},hidden:false,disabled:false,innerHTML:'',textContent:'',value:8,offsetWidth:1,children:[],classList:{add(...a){a.forEach(x=>classes.add(x));},remove(...a){a.forEach(x=>classes.delete(x));},contains(x){return classes.has(x);}},setAttribute(k,v){this[k]=v;},removeAttribute(k){delete this[k];},getBoundingClientRect(){return {left:0,top:0,width:key==='#mentor-measure'?this.textContent.length*8:key==='.ai-top'?616:240,height:240};},append(x){if(x.parent)x.parent.children=x.parent.children.filter(y=>y!==x);this.children.push(x);x.parent=this;},prepend(x){if(x.parent)x.parent.children=x.parent.children.filter(y=>y!==x);this.children.unshift(x);x.parent=this;},animate(){},focus(){},close(){this.open=false;},showModal(){this.open=true;},addEventListener(k,f){(this.listeners??={})[k]=f;},contains(t){for(let p=t;p;p=p.parent)if(p===this)return true;return false;},querySelectorAll(){return [];}};nodes.set(key,n);return n;}
 const c=vm.createContext({console,SkyModel:require('../dist/working/sky.js').SkyModel,window:{innerWidth:1200,innerHeight:800,scrollY:0,scrollTo(){}},MathModel:require('../dist/working/model.js').MathModel,document:{querySelector:node,addEventListener(k,f){const previous=listeners[k];listeners[k]=previous?e=>{previous(e);f(e);}:f;},body:node('body')},localStorage:{getItem(){return null;},setItem(){}},matchMedia:()=>({matches:false}),setTimeout:(fn,ms)=>{const t={fn,ms};timers.push(t);return t;},clearTimeout:t=>{if(t)t.cancelled=true;},setInterval:()=>0,clearInterval(){}});
 // Real-document adapter runs before the application's original event handlers.
 c.innerWidth=1200;c.innerHeight=800;c.scrollY=0;c.scrollTo=()=>{};c.window=c;
@@ -374,61 +374,27 @@ assert(!node('#programs').classList.contains('reveal'));
 assert.equal(node('#prescription').open,false);
 console.log('Prescription scan mount continuity, typing, hidden pause, one-time reveal, interrupted replay, selection and reduced-motion passed');
 
-// The whole long mentor message remains available; reading reaches its end before collapse.
-prepareOverview();c.mentorTestCopy='긴 학습 안내를 끝까지 읽을 수 있어요. '.repeat(5);
+// Long guidance advances between complete readable clauses rather than scrolling sideways.
+prepareOverview();c.mentorTestCopy='먼저 첫 번째 내용을 읽어보세요. 잠깐 뒤 다음 내용이 이어져요.';
 c.matchMedia=()=>({matches:false});c.document.visibilityState='visible';
 const originalMentorRect=node('.ai-top').getBoundingClientRect,originalMentorMeasure=node('#mentor-measure').getBoundingClientRect;
-node('.ai-top').getBoundingClientRect=()=>({width:300,height:44});
+node('.ai-top').getBoundingClientRect=()=>({width:616,height:48});
 node('#mentor-measure').getBoundingClientRect=function(){return {width:this.textContent.length*10,height:22};};
-node('#ai-message').clientWidth=130;node('#ai-message').scrollWidth=680;
-vm.runInContext("cancelComposition();state=M.create();M.preset(state,3);lastMessage='';render();animateMessage(true,mentorTestCopy)",c);
-vm.runInContext('thinkTimer',c).fn();
-for(let i=0;i<500&&vm.runInContext('aiState',c)==='반응 중';i++)vm.runInContext('animTimer',c).fn();
-const fullMentorCopy=node('#ai-message').textContent;
-assert.equal(node('#mentor-bubble').style.height,'48px');
-assert.equal(node('#mentor-read-controls').hidden,false);
-assert.equal(node('#ai-message').tabIndex,0);
-assert.equal(node('#ai-message').scrollLeft,0);
-assert.equal(vm.runInContext('bubbleTimer',c),null); // no expiry while words are still outside the viewport
-assert.equal(vm.runInContext('mentorReadTimer',c).ms,1800);
-for(let i=0;i<500&&vm.runInContext('mentorReadTimer',c);i++)vm.runInContext('mentorReadTimer',c).fn();
-assert.equal(node('#ai-message').scrollLeft,550);
-assert.equal(node('#mentor-read-next').disabled,true);
-assert.equal(node('#ai-message').textContent,fullMentorCopy);
-assert.equal(node('.ai-top')['data-bubble-phase'],'holding');
-assert.equal(vm.runInContext('bubbleTimer',c).ms,5000); // final words get their own reading hold
-vm.runInContext('bubbleTimer',c).fn();assert.equal(node('.ai-top')['data-bubble-phase'],'rest');
-// Pause on hover/focus and leave manual navigation in the learner's control.
-node('#ai-message').scrollLeft=0;vm.runInContext("setBubblePhase('holding');scheduleBubbleRest()",c);
-const staleRead=vm.runInContext('mentorReadTimer',c);
-node('#mentor-bubble').listeners.pointerenter({pointerType:'mouse'});
-assert.equal(vm.runInContext('mentorReadTimer',c),null);staleRead.fn();assert.equal(node('#ai-message').scrollLeft,0);
-node('#mentor-bubble').listeners.pointerleave();
-const hiddenRead=vm.runInContext('mentorReadTimer',c);
-c.document.visibilityState='hidden';listeners.visibilitychange();
-assert.equal(vm.runInContext('mentorReadTimer',c),null);
-c.document.visibilityState='visible';listeners.visibilitychange();hiddenRead.fn();
-assert.equal(node('#ai-message').scrollLeft,0);
 vm.runInContext('animateMessage(true,mentorTestCopy)',c);finishSpeech();
-node('#mentor-bubble').listeners.focusin();click('mentor-read-next');
-assert.equal(node('#ai-message').scrollLeft,104);
-assert.equal(vm.runInContext('mentorReadTimer',c),null);
-assert.equal(vm.runInContext('bubbleTimer',c),null);
-let keyHandled=false;node('#ai-message').listeners.keydown({key:'ArrowRight',preventDefault(){keyHandled=true;}});
-assert.equal(keyHandled,true);assert.equal(node('#ai-message').scrollLeft,208);
-click('mentor-read-back');assert.equal(node('#ai-message').scrollLeft,104);
-node('#mentor-bubble').listeners.focusout({relatedTarget:null});
-assert(vm.runInContext('mentorReadTimer',c));
-// Reduced motion still exposes all words with the arrows; the bubble does not expire unseen.
-c.matchMedia=()=>({matches:true});vm.runInContext('animateMessage(true,mentorTestCopy)',c);
-assert.equal(vm.runInContext('mentorReadTimer',c),null);
-assert.equal(vm.runInContext('bubbleTimer',c),null);
-assert.equal(node('#mentor-read-controls').hidden,false);
-assert.equal(node('#ai-message').textContent,fullMentorCopy);
-click('mentor-read-next');assert.equal(node('#ai-message').scrollLeft,104);
+assert.equal(vm.runInContext('mentorRun.pages.length',c),2);
+assert.equal(node('#mentor-read-controls').hidden,true);
+assert.equal(node('#ai-message').scrollLeft,0);
+assert.equal(node('#ai-message').textContent,vm.runInContext('mentorRun.pages[0]',c));
+const firstPage=node('#ai-message').textContent;
+vm.runInContext('bubbleTimer',c).fn();assert.equal(node('.ai-top')['data-bubble-phase'],'paging');
+assert.equal(node('#ai-message').textContent,firstPage);assert.equal(vm.runInContext('mentorReadTimer',c).ms,380);
+vm.runInContext('mentorReadTimer',c).fn();finishSpeech();
+assert.equal(node('#ai-message').textContent,vm.runInContext('mentorRun.pages[1]',c));
+assert.equal(node('#ai-message').scrollLeft,0);assert.equal(vm.runInContext('mentorTargetText',c),c.mentorTestCopy);
+vm.runInContext('bubbleTimer',c).fn();assert.equal(node('.ai-top')['data-bubble-phase'],'rest');
 node('.ai-top').getBoundingClientRect=originalMentorRect;node('#mentor-measure').getBoundingClientRect=originalMentorMeasure;
-delete node('#ai-message').clientWidth;delete node('#ai-message').scrollWidth;
-console.log('Long single-line mentor copy reaches its end, supports arrows/keyboard, pauses for reading, and remains readable with reduced motion');
+console.log('Long mentor copy is shown as two complete clauses with a short quiet transition and no horizontal scrolling');
+
 
 // Acknowledgment, search and preparation each have reading time, including repeated prescriptions.
 c.matchMedia=()=>({matches:false});

@@ -23,7 +23,7 @@ function harness(saved,{reducedMotion=true,appSource}={}){
       setAttribute(name,value){attrs.set(name,String(value));this[name]=value;},
       getAttribute(name){return attrs.get(name)??null;},
       removeAttribute(name){attrs.delete(name);delete this[name];},
-      getBoundingClientRect(){return {left:0,top:0,width:240,height:240,right:240,bottom:240};},
+      getBoundingClientRect(){const width=selector==='#mentor-measure'?this.textContent.length*8:selector==='.ai-top'?616:240;return {left:0,top:0,width,height:240,right:width,bottom:240};},
       append(child){if(child.parent)child.parent.children=child.parent.children.filter(item=>item!==child);this.children.push(child);child.parent=this;},
       prepend(child){if(child.parent)child.parent.children=child.parent.children.filter(item=>item!==child);this.children.unshift(child);child.parent=this;},
       contains(child){return this.children.includes(child);},

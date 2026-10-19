@@ -1,4 +1,4 @@
-/* V4.1 — QmDlOvkNKFdZJHCY89h0vY / main 3:11, main2 3:96.
+/* V4.2 — QmDlOvkNKFdZJHCY89h0vY / main 3:11, main2 3:96.
    Keep the existing learning flows; apply the supplied component geometry. */
 :root{--forest:var(--theme-title);--muted:var(--theme-muted);--line:var(--theme-line);--soft:var(--theme-soft);--paper:var(--theme-surface);--lime:var(--theme-accent);--learning-page:var(--theme-page);--top-action-height:48px;--group-drawer-width:min(320px,calc(100vw - 24px));--card-status-slot:44px;--card-status-symbol:44px;--status-pass-fill:#3b82f6;--status-pass-mark:#fff;--status-review-fill:#f2b642;--status-review-mark:#fff;--status-lock-surface:#edf0f3;--status-lock-fill:#b7bec3;--completed-card-fill:var(--theme-completed);--study-action-hover:var(--theme-primary-hover);--study-action-on-hover:#fff;--navigation-idle:#b7bec3}
 html,body{background:var(--theme-page);color:var(--theme-text)}
@@ -7,8 +7,8 @@ html,body{background:var(--theme-page);color:var(--theme-text)}
 .ai{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 104px;column-gap:8px;row-gap:0;align-items:center;width:100%;max-width:none;margin:0;padding:40px 0 69px;border:0;background:var(--theme-page)}
 .ai::after{content:'';position:absolute;left:0;right:0;bottom:36px;height:1px;background:#eef2f4;pointer-events:none}
 body.has-long-learning-list .ai{top:0}
-body.has-long-learning-list .ai::before{inset:0 -16px}
-.mentor-cluster{grid-column:1;grid-row:1;display:grid;grid-template-columns:minmax(0,1fr) 276px;column-gap:32px;row-gap:0;align-items:center;min-width:0;padding:0;border:0;background:transparent}
+body.has-long-learning-list .ai::before{content:none;box-shadow:none}
+.mentor-cluster{grid-column:1;grid-row:1;display:grid;grid-template-columns:minmax(0,1fr) 320px;column-gap:32px;row-gap:0;align-items:center;min-width:0;padding:0;border:0;background:transparent}
 .mentor-cluster>.ai-top{grid-column:1;grid-row:1;min-width:0;height:48px;min-height:48px;gap:12px;padding:0;border:0;background:transparent;box-shadow:none}
 .ai-top .symbol{width:44px;min-width:44px;height:44px}
 .mentor-piece,.mentor-core{background:var(--theme-accent)}
@@ -16,7 +16,8 @@ body.has-long-learning-list .ai::before{inset:0 -16px}
 .mentor-morph[data-shape=times]{transform:scale(1) rotate(45deg)}
 .mentor-bubble{height:48px;max-width:min(286px,calc(100% - 56px));border:0;border-radius:16px 16px 16px 5px;background:linear-gradient(99.258786314deg,#fff .33441%,#f2f8ff 30.128%,#ffffef 99.666%);box-shadow:3px 3px 7px #1f725126}
 .mentor-bubble::before{padding:2px;background:linear-gradient(102deg,#84b5ff .355%,#00bdad 96.511%);opacity:1;animation:none}
-.ai #ai-message{padding:0 18px;color:var(--theme-title);font-size:17px;font-weight:800;line-height:22px}
+.ai #ai-message{padding:0 18px;color:var(--theme-title);font-size:17px;font-weight:800;line-height:22px;overflow:hidden;white-space:nowrap;transition:opacity .18s ease}
+.ai-top[data-bubble-phase=paging] .mentor-dots{opacity:0;visibility:hidden}
 #mentor-measure{font-size:17px;font-weight:800;line-height:22px}
 .mentor-cluster>.recommend{grid-column:2;grid-row:1;width:auto;max-width:none;height:48px;min-height:48px;margin:0;padding:2px 12px;border:2px solid #dce1e5;border-radius:16px;background:var(--theme-surface)}
 .mentor-cluster .recommend button{position:relative;display:flex;align-items:center;gap:12px;width:100%;height:100%;min-height:0;padding:0;border:0;border-radius:8px;background:transparent;color:var(--theme-title);font-size:15px;font-weight:700;line-height:18px;white-space:nowrap;overflow:visible}
@@ -25,7 +26,7 @@ body.has-long-learning-list .ai::before{inset:0 -16px}
 .mentor-cluster .recommend button:disabled{opacity:1}
 .mentor-cluster .recommend-label{position:static;display:flex;align-items:center;justify-content:center;flex:none;height:26px;padding:5px 8px;border:1px solid #0ec7ae;border-radius:7px;background:transparent;color:#0db79d;font-size:12px;font-weight:800;line-height:14px;animation:none;transform:none}
 .mentor-cluster .recommend-content{position:relative;display:block;flex:1;min-width:0;height:20px}
-.mentor-cluster #recommend-copy{height:20px;font-size:15px;font-weight:700;line-height:20px}
+.mentor-cluster #recommend-copy{height:20px;font-size:15px;font-weight:700;line-height:20px;overflow:visible;text-overflow:clip;white-space:nowrap}
 .mentor-cluster .recommend-arrow{display:block;flex:none;transition:opacity .3s ease}
 .mentor-cluster .recommend[data-recommend-state=loading] .recommend-arrow{opacity:0;visibility:hidden;width:0;margin-left:-12px}
 .mentor-cluster .recommend-content>.recommend-loader{gap:4px;color:#0db79d}
@@ -35,9 +36,10 @@ body.has-long-learning-list .ai::before{inset:0 -16px}
 .top-shortcuts .compact-shortcut{position:relative;inset:auto;flex:none;width:48px;min-width:48px;height:48px;min-height:48px;padding:0;gap:0;border:2px solid #dce1e5;border-radius:16px;background:var(--theme-surface)}
 .top-shortcuts .compact-shortcut:hover:not(:disabled){border-color:#c5ced7;background:var(--theme-surface-alt)}
 .my-learning-art{position:relative;display:block;width:32px;height:32px}
-.my-learning-art .my-profile{position:absolute;left:3.65625px;top:3.39139px}
-.my-learning-art .my-report{position:absolute;left:17.527344px;top:12.618816px}
-.top-shortcuts .compact-shortcut .star-glyph{position:absolute;left:5px;top:7.742188px;height:auto}
+.my-learning-art .shortcut-profile-art{position:absolute;left:3.65625px;top:3.39139px;display:block;padding:0;margin:0;border:0;background:none}
+.my-learning-art .shortcut-report-art{position:absolute;left:17.527344px;top:12.618816px;display:block;padding:0;margin:0;border:0;background:none}
+.top-shortcuts .compact-shortcut .constellation-art{position:absolute;left:5px;top:7.742188px;display:block;height:auto}
+.top-shortcuts .compact-shortcut .constellation-art>img{display:block}
 #star-balance{background:var(--theme-primary);color:#fff}
 #star-balance:is(:empty),#star-balance[data-empty=true]{display:none}
 .heading{min-height:48px;margin:0 0 28px;gap:12px;align-items:center;flex-direction:row}
@@ -122,7 +124,7 @@ body.has-long-learning-list .ai::before{inset:0 -16px}
 .groups-trigger:focus-visible{outline:2px solid #84b5ff;outline-offset:2px;border-radius:0 72px 72px 0}
 .settings-trigger{color:#b7bec3}
 @media(max-width:1100px){.mentor-cluster{column-gap:12px}}
-@media(max-width:980px){.grid,body.learning-navigation-open #programs.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.mentor-cluster{grid-template-columns:minmax(0,1fr) 274px}}
+@media(max-width:980px){.grid,body.learning-navigation-open #programs.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.mentor-cluster{grid-template-columns:minmax(0,1fr) 320px}}
 @media(max-width:760px){.grid,body.learning-navigation-open #programs.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){
   .learning-workspace main,body.learning-navigation-open .learning-workspace main{width:calc(100% - 40px)}
@@ -134,7 +136,8 @@ body.has-long-learning-list .ai::before{inset:0 -16px}
   .top-shortcuts{grid-column:2;grid-row:2;margin:0;gap:8px}
   .mentor-cluster .recommend button{gap:8px}
   .mentor-cluster .recommend-label{padding:5px 6px}
-  .mentor-cluster #recommend-copy,.mentor-cluster .recommend-loader small{font-size:12px}
+  .mentor-cluster .recommend-content{height:auto;min-height:20px}
+  .mentor-cluster #recommend-copy,.mentor-cluster .recommend-loader small{font-size:12px;white-space:normal;line-height:18px;height:auto}
   .mentor-cluster .recommend[data-recommend-state=loading] .recommend-arrow{margin-left:-8px}
   .heading{flex-wrap:wrap;gap:12px;margin:0 0 24px}
   body.has-personalized-learning .heading>.heading-copy{flex-basis:auto}

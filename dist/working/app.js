@@ -259,54 +259,87 @@ function setAIState(label){
 document.addEventListener('visibilitychange',()=>syncMentorMotion(mentorMode));
 matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change',()=>syncMentorMotion(mentorMode));
 let bubblePhase='rest',bubbleTimer=null,bubbleGeneration=0,bubbleHold=4000,mentorReadTimer=null,mentorReadToken=0,mentorReadingOverflow=false,mentorPointerPaused=false,mentorFocusPaused=false;
-let mentorReminderTimer=null,mentorReminderToken=0,mentorReminderIndex=0,lastMentorContext='',mentorTargetText='';
-function mentorScrollLimit(){const text=$('#ai-message');return Math.max(0,(text.scrollWidth||0)-(text.clientWidth||0));}
-function updateMentorReadButtons(){
-  const at=$('#ai-message').scrollLeft||0,limit=mentorScrollLimit();
-  $('#mentor-read-back').disabled=at<=1;$('#mentor-read-next').disabled=at>=limit-1;
-}
-function fitMentorBubble(){
-  const bubble=$('#mentor-bubble'),measure=$('#mentor-measure');if(!bubble||!measure)return;
-  const text=$('#ai-message'),cap=286,available=Math.min(cap,Math.max(56,$('.ai-top').getBoundingClientRect().width-56));
-  if(!['speaking','holding'].includes(bubblePhase)){
-    bubble.style.width='56px';bubble.style.height='48px';mentorReadingOverflow=false;
-  }else{
-    measure.style.maxWidth='none';measure.textContent=bubblePhase==='speaking'&&mentorTargetText?mentorTargetText:text.textContent||' ';
-    const rect=measure.getBoundingClientRect();
-    bubble.style.width=Math.min(available,Math.max(56,Math.ceil(rect.width)+36))+'px';bubble.style.height='48px';
-    mentorReadingOverflow=bubblePhase==='holding'&&rect.width+36>available;
-    if(bubblePhase==='speaking')text.scrollLeft=mentorScrollLimit();
+let mentorReminderTimer=null,mentorReminderToken=0,mentorReminderIndex=0,lastMentorContext='',mentorTargetText='',mentorRun=null;
+const MENTOR_PAGE_GAP=380;
+function mentorBubbleAvailable(){return Math.min(286,Math.max(56,$('.ai-top').getBoundingClientRect().width-56));}
+function mentorTextCapacity(){return Math.max(20,mentorBubbleAvailable()-38);}
+function measureMentorText(copy){const measure=$('#mentor-measure');measure.style.maxWidth='none';measure.textContent=copy;return measure.getBoundingClientRect().width;}
+function mentorCharacters(copy){return typeof Intl.Segmenter==='function'?[...new Intl.Segmenter('ko',{granularity:'grapheme'}).segment(copy)].map(x=>x.segment):Array.from(copy);}
+// Prefer two balanced clauses. Very narrow screens or exceptional input can use
+// additional pages, so no word ever has to scroll out of the speech bubble.
+function splitMentorMessage(copy,limit=mentorTextCapacity(),measure=measureMentorText){
+  copy=String(copy).trim();if(!copy)return [''];if(measure(copy)<=limit)return [copy];
+  const chars=mentorCharacters(copy),length=chars.length;
+  function fit(start,end,suffix=false){let low=0,high=end-start;while(low<high){const count=Math.ceil((low+high)/2),part=suffix?chars.slice(end-count,end):chars.slice(start,start+count);if(measure(part.join('').trim())<=limit)low=count;else high=count-1;}return low;}
+  function boundaryScore(i){const previous=chars[i-1],next=chars[i];return /[.!?。！？]/u.test(previous)?0:/\s/u.test(previous)||/\s/u.test(next)?4:40;}
+  const prefix=fit(0,length),suffix=fit(0,length,true),first=Math.max(1,length-suffix),last=Math.min(length-1,prefix);
+  if(first<=last){
+    let best=first,score=Infinity;
+    for(let i=first;i<=last;i++){const a=chars.slice(0,i).join('').trim(),b=chars.slice(i).join('').trim();if(!a||!b)continue;const value=boundaryScore(i)+Math.abs(measure(a)-measure(b))*.03;if(value<score){score=value;best=i;}}
+    return [chars.slice(0,best).join('').trim(),chars.slice(best).join('').trim()];
   }
-  bubble.setAttribute('data-overflow',mentorReadingOverflow?'true':'false');
-  $('#mentor-read-controls').hidden=!mentorReadingOverflow;text.tabIndex=mentorReadingOverflow?0:-1;
-  updateMentorReadButtons();
+  const pages=[];let start=0;
+  while(start<length){
+    while(start<length&&/\s/u.test(chars[start]))start++;if(start>=length)break;
+    const count=Math.max(1,fit(start,length));let end=start+count;
+    if(end<length)for(let i=end;i>=start+Math.ceil(count*.6);i--)if(boundaryScore(i)<40){end=i;break;}
+    pages.push(chars.slice(start,end).join('').trim());start=end;
+  }
+  return pages;
+}
+function prepareMentorPages(run){run.capacity=mentorTextCapacity();run.pages=splitMentorMessage(run.fullText,run.capacity);run.index=Math.min(run.index,run.pages.length-1);run.width=Math.max(56,...run.pages.map(page=>Math.ceil(measureMentorText(page))+38));}
+function updateMentorReadButtons(){const index=mentorRun?.index||0,total=mentorRun?.pages.length||1;$('#mentor-read-back').disabled=index===0;$('#mentor-read-next').disabled=index>=total-1;}
+function fitMentorBubble(){
+  const bubble=$('#mentor-bubble');if(!bubble)return;const text=$('#ai-message');
+  if(!['speaking','holding','paging'].includes(bubblePhase))bubble.style.width='56px';
+  else bubble.style.width=Math.min(mentorBubbleAvailable(),mentorRun&&mentorRun.generation===bubbleGeneration?mentorRun.width:Math.max(56,Math.ceil(measureMentorText(text.textContent||' '))+36))+'px';
+  bubble.style.height='48px';text.scrollLeft=0;mentorReadingOverflow=false;bubble.setAttribute('data-overflow','false');
+  $('#mentor-read-controls').hidden=true;text.tabIndex=mentorRun?.pages.length>1?0:-1;updateMentorReadButtons();
 }
 function setBubblePhase(phase){bubblePhase=phase;$('.ai-top').setAttribute('data-bubble-phase',phase);fitMentorBubble();scheduleMentorReminder();}
 function clearMentorReading(){clearTimeout(bubbleTimer);clearTimeout(mentorReadTimer);bubbleTimer=null;mentorReadTimer=null;mentorReadToken++;}
 function scheduleBubbleRest(){
-  scheduleMentorReminder();clearMentorReading();if(bubblePhase!=='holding'||!mainGuidanceVisible()||mentorPointerPaused||mentorFocusPaused)return;
-  const generation=bubbleGeneration,token=mentorReadToken;
-  const valid=()=>generation===bubbleGeneration&&token===mentorReadToken&&bubblePhase==='holding'&&mainGuidanceVisible();
-  function restAfter(ms){bubbleTimer=setTimeout(()=>{if(!valid())return;setBubblePhase('rest');bubbleTimer=null;},ms);}
-  if(!mentorReadingOverflow){restAfter(bubbleHold);return;}
-  // A long message remains open until its final words have been shown. Reduced motion uses the arrows/swipe.
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-  function read(){
-    if(!valid())return;const text=$('#ai-message'),limit=mentorScrollLimit(),at=text.scrollLeft||0;
-    if(at>=limit-1){text.scrollLeft=limit;updateMentorReadButtons();mentorReadTimer=null;restAfter(5000);return;}
-    text.scrollLeft=Math.min(limit,at+1.6);updateMentorReadButtons();mentorReadTimer=setTimeout(read,50);
+  scheduleMentorReminder();clearMentorReading();if(!['holding','paging'].includes(bubblePhase)||!mainGuidanceVisible()||mentorPointerPaused||mentorFocusPaused)return;
+  const run=mentorRun,generation=bubbleGeneration,token=mentorReadToken;
+  const valid=()=>generation===bubbleGeneration&&token===mentorReadToken&&run===mentorRun&&mainGuidanceVisible();
+  if(bubblePhase==='paging'){
+    mentorReadTimer=setTimeout(()=>{if(!valid())return;mentorReadTimer=null;run.index++;showMentorPage(run);},MENTOR_PAGE_GAP);return;
   }
-  mentorReadTimer=setTimeout(read,1800);
+  bubbleTimer=setTimeout(()=>{
+    if(!valid())return;bubbleTimer=null;
+    if(run&&run.index<run.pages.length-1){$('#ai-message').setAttribute('aria-busy','true');setBubblePhase('paging');scheduleBubbleRest();}
+    else setBubblePhase('rest');
+  },bubbleHold);
+}
+function showMentorPage(run){
+  if(run!==mentorRun||run.generation!==bubbleGeneration)return;if(!mainGuidanceVisible()){suspendMentor();return;}
+  if(run.capacity!==mentorTextCapacity())prepareMentorPages(run);
+  const el=$('#ai-message'),page=run.pages[run.index];el.textContent='';el.scrollLeft=0;el.setAttribute('aria-busy','true');
+  el.setAttribute('data-page',String(run.index+1));el.setAttribute('data-pages',String(run.pages.length));
+  const finish=()=>{if(run!==mentorRun||run.generation!==bubbleGeneration)return;el.classList.remove('generating');el.setAttribute('aria-busy','false');setAIState('대기');setBubblePhase('holding');bubbleHold=run.index<run.pages.length-1?Math.max(2400,Math.min(3600,page.length*110)):Math.max(4000,Math.min(10000,page.length*110));scheduleBubbleRest();};
+  if(run.immediate||matchMedia('(prefers-reduced-motion: reduce)').matches){el.textContent=page;finish();return;}
+  setAIState('반응 중');el.classList.add('generating');setBubblePhase('speaking');const characters=mentorCharacters(page);let i=0;
+  function type(){
+    if(run!==mentorRun||run.generation!==bubbleGeneration)return;if(!mainGuidanceVisible()){suspendMentor();return;}
+    if(i>=characters.length){finish();return;}const char=characters[i++];el.textContent=characters.slice(0,i).join('');el.scrollLeft=0;
+    if(i===characters.length){finish();return;}animTimer=setTimeout(type,/[.!?。！？]/u.test(char)?130:48);
+  }
+  animTimer=setTimeout(type,run.index===0?300:80);
 }
 function moveMentorReading(direction){
-  if(!mentorReadingOverflow||bubblePhase!=='holding')return;clearMentorReading();
-  const text=$('#ai-message'),step=Math.max(40,(text.clientWidth||120)*.8);
-  text.scrollLeft=Math.max(0,Math.min(mentorScrollLimit(),(text.scrollLeft||0)+direction*step));
-  updateMentorReadButtons();scheduleBubbleRest();
+  if(!mentorRun||mentorRun.pages.length<2||!mainGuidanceVisible()||bubblePhase!=='holding')return;
+  const next=Math.max(0,Math.min(mentorRun.pages.length-1,mentorRun.index+direction));if(next===mentorRun.index)return;
+  clearMentorReading();clearTimeout(animTimer);mentorRun.index=next;showMentorPage(mentorRun);
+}
+function refitMentorMessage(force=false){
+  if(mentorRun&&mentorRun.generation===bubbleGeneration&&mainGuidanceVisible()&&(force===true||mentorRun.capacity!==mentorTextCapacity())){
+    mentorRun.index=0;prepareMentorPages(mentorRun);if(['speaking','holding','paging'].includes(bubblePhase)){clearMentorReading();clearTimeout(animTimer);showMentorPage(mentorRun);return;}
+  }
+  fitMentorBubble();if(bubblePhase==='holding')scheduleBubbleRest();
 }
 document.addEventListener('visibilitychange',scheduleBubbleRest);
-window.addEventListener?.('resize',()=>{fitMentorBubble();if(bubblePhase==='holding')scheduleBubbleRest();});
-document.fonts?.ready?.then(()=>fitMentorBubble());
+window.addEventListener?.('resize',refitMentorMessage);
+document.fonts?.ready?.then(()=>refitMentorMessage(true));
 $('#mentor-bubble').addEventListener('pointerenter',e=>{if(e.pointerType==='touch')return;mentorPointerPaused=true;scheduleBubbleRest();});
 $('#mentor-bubble').addEventListener('pointerleave',()=>{mentorPointerPaused=false;scheduleBubbleRest();});
 $('#mentor-bubble').addEventListener('pointerdown',()=>{mentorPointerPaused=true;scheduleBubbleRest();});
@@ -314,8 +347,7 @@ $('#mentor-bubble').addEventListener('pointerup',e=>{mentorPointerPaused=e.point
 $('#mentor-bubble').addEventListener('pointercancel',()=>{mentorPointerPaused=false;scheduleBubbleRest();});
 $('#mentor-bubble').addEventListener('focusin',()=>{mentorFocusPaused=true;scheduleBubbleRest();});
 $('#mentor-bubble').addEventListener('focusout',e=>{if($('#mentor-bubble').contains?.(e.relatedTarget))return;mentorFocusPaused=false;scheduleBubbleRest();});
-$('#ai-message').addEventListener('scroll',updateMentorReadButtons);
-$('#ai-message').addEventListener('keydown',e=>{if(mentorReadingOverflow&&['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();moveMentorReading(e.key==='ArrowRight'?1:-1);}});
+$('#ai-message').addEventListener('keydown',e=>{if(mentorRun?.pages.length>1&&['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();moveMentorReading(e.key==='ArrowRight'?1:-1);}});
 matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change',scheduleBubbleRest);
 let guidanceClosing=false,guidanceClosingTimer=null,guidanceReleaseToken=0,mentorNeedsResume=false;
 function mainGuidanceVisible(){return document.visibilityState!=='hidden'&&!myOpen&&panel!=='test'&&!guidanceClosing&&!composing&&!skyBusy&&!activityKind&&!$('#learning').open&&!$('#help').open&&!$('#activity').open&&!$('#prescription').open;}
@@ -376,21 +408,11 @@ $('.ai-top').setAttribute('data-clean-pass',passed?'true':'false');
 const baseMessage=mentorOverviewLine(),context=mentorContext(),signature=context+':'+baseMessage;
 if(context!==lastMentorContext){lastMentorContext=context;mentorReminderIndex=0;reminderMessage=null;}
 if(signature===lastMessage&&!force&&!resuming)return;lastMessage=signature;const msg=reminderMessage??baseMessage;mentorTargetText=msg;const generation=++bubbleGeneration;clearTimeout(thinkTimer);clearTimeout(animTimer);clearMentorReading();
-const el=$('#ai-message');el.scrollLeft=0;el.textContent='';el.classList.remove('generating');el.setAttribute('aria-busy','true');setAIState('생각 중');setBubblePhase('thinking');
-const finish=()=>{if(generation!==bubbleGeneration)return;el.classList.remove('generating');el.setAttribute('aria-busy','false');setAIState('대기');el.scrollLeft=0;setBubblePhase('holding');bubbleHold=Math.max(4000,Math.min(10000,msg.length*110));scheduleBubbleRest();};
-if(passed||matchMedia('(prefers-reduced-motion: reduce)').matches){el.textContent=msg;finish();return;}
-thinkTimer=setTimeout(()=>{
-  if(generation!==bubbleGeneration)return;if(!mainGuidanceVisible()){suspendMentor();return;}setAIState('반응 중');el.classList.add('generating');
-  // Expand to the final measured width once, then reveal individual characters in a steady viewport.
-  setBubblePhase('speaking');const characters=typeof Intl.Segmenter==='function'?[...new Intl.Segmenter('ko',{granularity:'grapheme'}).segment(msg)].map(x=>x.segment):Array.from(msg);let i=0;
-  function type(){
-    if(generation!==bubbleGeneration)return;if(!mainGuidanceVisible()){suspendMentor();return;}if(i>=characters.length){finish();return;}
-    const char=characters[i++];el.textContent=characters.slice(0,i).join('');el.scrollLeft=mentorScrollLimit();
-    if(i===characters.length){finish();return;}
-    animTimer=setTimeout(type,/[.!?。！？]/.test(char)?130:48);
-  }
-  animTimer=setTimeout(type,300);
-},450);
+const el=$('#ai-message');el.scrollLeft=0;el.textContent='';el.classList.remove('generating');el.setAttribute('aria-busy','true');setAIState('생각 중');
+mentorRun={generation,fullText:msg,pages:[],index:0,immediate:!!passed};prepareMentorPages(mentorRun);setBubblePhase('thinking');
+const run=mentorRun;
+if(run.immediate||matchMedia('(prefers-reduced-motion: reduce)').matches){showMentorPage(run);return;}
+thinkTimer=setTimeout(()=>{if(generation!==bubbleGeneration||run!==mentorRun)return;showMentorPage(run);},450);
 }
 // Local recommendation preparation motion; no extra network request is needed.
 let recommendationTimer=null,recommendationGeneration=0,recommendationSignature='',recommendationPending=false,recommendationDisabled=false;
@@ -410,7 +432,24 @@ function scheduleRecommendation(){
   if(reduced){finishRecommendation(generation);return;}
   recommendationTimer=setTimeout(()=>finishRecommendation(generation),1400);
 }
-function setRecommendationText(text){$('#recommend-copy').textContent=text;$('#recommend').setAttribute('aria-label','AI 추천 · '+text);}
+// The action stays in the model; the compact labels follow the supplied activity list.
+function recommendationLabel(text){
+  if(text==='오늘의 목표 학습 시간 정하기')return '목표 학습 시간 조정하기';
+  if(text==='리포트 확인하며 오늘의 학습 정리하기')return '오늘의 학습 기록 확인하기';
+  if(text==='새로 모은 별로 하늘 꾸미기')return '완성한 별자리 확인하기';
+  if(text==='오답노트 속 문제 풀기'||text.startsWith('복습하기 · '))return '틀린 문제 다시 풀기';
+  if(text.startsWith('시작하기 · '))return '새로운 학습 시작하기';
+  if(text.startsWith('이어하기 · '))return '오늘의 학습 이어가기';
+  if(text.startsWith('결과 확인 · '))return '내 학습 현황 보기';
+  if(text==='실력알기 이어하기')return '내 실력 이어서 알아보기';
+  if(text==='실력알기 시작하기')return state.index===0?'첫 실력 알기 시작하기':'실력 알기 진행하기';
+  if(text==='다음 진단 그룹으로 이동'||text==='다음 등급의 첫 진단 그룹으로 이동')return '다음 실력 알아보기';
+  if(text==='이전 학습을 완료하면 다음 학습이 열려요')return '오늘의 학습 이어가기';
+  if(text==='마지막 진단 그룹까지 완료했어요'||text==='이번 등급 학습 완료')return '내 학습 현황 보기';
+  if(text==='맞춤 프로그램을 준비하고 있어요')return '활동을 고르고 있어요';
+  return text;
+}
+function setRecommendationText(text){const label=recommendationLabel(text);$('#recommend-copy').textContent=label;$('#recommend').setAttribute('aria-label','AI 추천 · '+label);}
 function syncRecommendation(action){
   const button=$('#recommend'),signature=JSON.stringify([state.grade,state.index,action,$('#recommend-copy').textContent,button.disabled]);
   if(signature!==recommendationSignature){

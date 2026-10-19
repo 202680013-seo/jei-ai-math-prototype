@@ -55,14 +55,16 @@ test('prescription completion keeps mentor copy frozen until its dim transition 
 test('mentor width leaves reserved space and remains capped on desktop and narrow screens',()=>{
   const h=harness(undefined,{reducedMotion:true});
   h.node('.ai-top').getBoundingClientRect=()=>({width:1000,height:44});
-  h.node('#mentor-measure').getBoundingClientRect=()=>({width:2000,height:22});
+  h.node('#mentor-measure').getBoundingClientRect=function(){return {width:this.textContent.length*8,height:22};};
   h.evaluate("animateMessage(true,'학습 안내 '.repeat(100))");
-  assert.equal(h.node('#mentor-bubble').style.width,'286px');
+  assert(parseFloat(h.node('#mentor-bubble').style.width)<=286);
   h.context.innerWidth=375;h.node('.ai-top').getBoundingClientRect=()=>({width:220,height:44});
-  h.evaluate('fitMentorBubble()');
-  assert.equal(h.node('#mentor-bubble').style.width,'164px');
+  h.evaluate('refitMentorMessage()');
+  assert(parseFloat(h.node('#mentor-bubble').style.width)<=164);
   assert.equal(h.node('#mentor-bubble').style.height,'48px');
-  assert(h.node('#ai-message').textContent.length>100); // manual overflow retains all content
+  assert(h.evaluate('mentorTargetText.length')>100);
+  assert(h.data('mentorRun.pages').every(page=>page.length*8<=h.evaluate('mentorTextCapacity()')));
+  assert.equal(h.node('#ai-message').scrollLeft,0);
 });
 
 test('recommendation loading keeps both label and content layers mounted without restarting on a stable render',()=>{
