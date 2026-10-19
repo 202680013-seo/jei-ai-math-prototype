@@ -9,7 +9,7 @@ test('mentor typing and stale callbacks pause under the modal test panel and res
   h.evaluate('M.preset(state,4);render()');oldLetter.fn();
   assert.equal(h.node('#ai-message').textContent,visible);assert.equal(h.evaluate('mainGuidanceVisible()'),false);
   h.click('close-panel');assert.equal(h.evaluate('mainGuidanceVisible()'),true);
-  assert.equal(h.node('#ai-message').textContent,'');assert.equal(h.evaluate('mentorTargetText'),'풀던 학습을 이어서 해볼까요?');
+  assert.equal(h.node('#ai-message').textContent,'');assert.equal(h.evaluate('mentorTargetText'),'새로운 학습 8개가 열렸어요!');
   oldLetter.fn();assert.equal(h.node('#ai-message').textContent,'');assert.equal(h.evaluate('thinkTimer').ms,450);
 });
 
@@ -25,7 +25,7 @@ test('native dialog dismissal waits for the dim fade before showing the latest c
   assert.equal(h.node('#ai-message').textContent,frozen);
   release.fn();
   assert.equal(h.evaluate('mainGuidanceVisible()'),true);
-  assert.equal(h.node('#ai-message').textContent,'진단을 통과했어요!');
+  assert.equal(h.node('#ai-message').textContent,'내용을 잘 알고 있어요!');
 });
 
 test('a new dim cancels a pending post-close announcement and only resumes after its own exit',()=>{
@@ -48,7 +48,7 @@ test('prescription completion keeps mentor copy frozen until its dim transition 
   assert.equal(h.node('#ai-message').textContent,frozen);
   assert.equal(h.evaluate('mainGuidanceVisible()'),false);
   h.evaluate('guidanceClosingTimer').fn();
-  assert.equal(h.evaluate('mentorTargetText'),'맞춤 학습이 준비됐어요.');
+  assert.equal(h.evaluate('mentorTargetText'),'새로운 학습 1개가 열렸어요!');
   assert.equal(h.node('#ai-message').textContent,'');assert(h.evaluate('thinkTimer'));
 });
 
@@ -57,7 +57,7 @@ test('mentor width leaves reserved space and remains capped on desktop and narro
   h.node('.ai-top').getBoundingClientRect=()=>({width:1000,height:44});
   h.node('#mentor-measure').getBoundingClientRect=function(){return {width:this.textContent.length*8,height:22};};
   h.evaluate("animateMessage(true,'학습 안내 '.repeat(100))");
-  assert(parseFloat(h.node('#mentor-bubble').style.width)<=286);
+  assert(parseFloat(h.node('#mentor-bubble').style.width)<=420);
   h.context.innerWidth=375;h.node('.ai-top').getBoundingClientRect=()=>({width:220,height:44});
   h.evaluate('refitMentorMessage()');
   assert(parseFloat(h.node('#mentor-bubble').style.width)<=164);

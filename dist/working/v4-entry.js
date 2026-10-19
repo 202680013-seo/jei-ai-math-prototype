@@ -11,7 +11,7 @@
     topic.programs[0].status='passed';MathModel.setProgress(topic.programs[0],100);
     topic.programs[1].status='failed';MathModel.setProgress(topic.programs[1],100);
     topic.programs[2].status='active';MathModel.setProgress(topic.programs[2],50);
-    topic.recent='V4.3 · 피그마 메인 화면';
+    topic.recent='V4.4 · 피그마 메인 화면';
     state.ui={passedCardHintSeen:true,failedCardHintSeen:true,diagnosisResultHintSeen:true};
     localStorage.setItem(key,JSON.stringify(state));
   }catch{}

@@ -57,7 +57,7 @@ test('a stale second clause cannot appear under a dim or after the learning cont
   h.click('test');stale.fn();assert.equal(h.node('#ai-message').textContent,visible);
   h.evaluate('M.preset(state,4);render()');stale.fn();assert.equal(h.node('#ai-message').textContent,visible);
   h.click('close-panel');stale.fn();assert.equal(h.node('#ai-message').textContent,'');
-  assert.equal(h.evaluate('mentorTargetText'),'풀던 학습을 이어서 해볼까요?');finishPage(h);
+  assert.equal(h.evaluate('mentorTargetText'),'새로운 학습 8개가 열렸어요!');finishPage(h);
   assert.notEqual(h.node('#ai-message').textContent,h.data('splitMentorMessage(copy)')[1]);
 });
 

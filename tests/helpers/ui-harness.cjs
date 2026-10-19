@@ -4,6 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 const {MathModel:M}=require('../../dist/working/model.js');
+const MentorPolicy=require('../../dist/working/mentor-policy.js');
 const {SkyModel}=require('../../dist/working/sky.js');
 const source=()=>fs.readFileSync(path.join(__dirname,'../../dist/working/app.js'),'utf8');
 const STATE_KEY='ai-math-prototype-diagnosis-v1';
@@ -36,7 +37,7 @@ function harness(saved,{reducedMotion=true,appSource}={}){
     nodes.set(selector,element);return element;
   }
   const document={visibilityState:'visible',querySelector:node,querySelectorAll(){return [];},body:node('body'),addEventListener(type,fn){subscribe(events,type,fn);}};
-  const c=vm.createContext({console,MathModel:M,SkyModel,document,
+  const c=vm.createContext({console,MathModel:M,SkyModel,MentorPolicy,document,
     localStorage:{getItem(key){return storage.get(key)??null;},setItem(key,value){storage.set(key,String(value));}},
     matchMedia:()=>media,
     setTimeout(fn,ms){const timer={fn,ms,cancelled:false};timers.push(timer);return timer;},

@@ -375,7 +375,7 @@ assert.equal(node('#prescription').open,false);
 console.log('Prescription scan mount continuity, typing, hidden pause, one-time reveal, interrupted replay, selection and reduced-motion passed');
 
 // Long guidance advances between complete readable clauses rather than scrolling sideways.
-prepareOverview();c.mentorTestCopy='먼저 첫 번째 내용을 읽어보세요. 잠깐 뒤 다음 내용이 이어져요.';
+prepareOverview();c.mentorTestCopy='한 문제씩 천천히 풀면서 먼저 첫 번째 내용을 읽어보세요. 잠깐 뒤 다음 내용이 이어지니 차근차근 확인해 봐요.';
 c.matchMedia=()=>({matches:false});c.document.visibilityState='visible';
 const originalMentorRect=node('.ai-top').getBoundingClientRect,originalMentorMeasure=node('#mentor-measure').getBoundingClientRect;
 node('.ai-top').getBoundingClientRect=()=>({width:616,height:48});
@@ -558,7 +558,7 @@ click('groups');
 assert.equal(node('.groups-trigger')['data-tab-phase'],'closing');
 assert.equal(node('.groups-trigger')['aria-expanded'],'false');
 assert.equal(node('#group-panel').hidden,false);
-assert.equal(vm.runInContext('panelMotionTimer',c).ms,320);
+assert.equal(vm.runInContext('panelMotionTimer',c).ms,500);
 vm.runInContext('panelMotionTimer',c).fn();
 assert.equal(node('#group-panel').hidden,true);
 assert.equal(node('.groups-trigger')['data-tab-phase'],'closed');

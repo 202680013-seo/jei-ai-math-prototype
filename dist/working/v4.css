@@ -1,13 +1,13 @@
-/* V4.3 — QmDlOvkNKFdZJHCY89h0vY / main 3:11, main2 3:96.
+/* V4.4 — QmDlOvkNKFdZJHCY89h0vY / main 3:11, main2 3:96.
    Keep the existing learning flows; apply the supplied component geometry. */
 :root{--forest:var(--theme-title);--muted:var(--theme-muted);--line:var(--theme-line);--soft:var(--theme-soft);--paper:var(--theme-surface);--lime:var(--theme-accent);--learning-page:var(--theme-page);--top-action-height:48px;--group-drawer-width:min(320px,calc(100vw - 24px));--card-status-slot:44px;--card-status-symbol:44px;--status-pass-fill:#3b82f6;--status-pass-mark:#fff;--status-review-fill:#f2b642;--status-review-mark:#fff;--status-lock-surface:#edf0f3;--status-lock-fill:#b7bec3;--completed-card-fill:var(--theme-completed);--study-action-hover:var(--theme-primary-hover);--study-action-on-hover:#fff;--navigation-idle:#b7bec3}
 html,body{background:var(--theme-page);color:var(--theme-text)}
-:root{--rail-tab-width:72px;--rail-tab-gap:16px;--learning-content-max:1080px;--learning-start-gutter:calc(var(--rail-tab-width) + var(--rail-tab-gap) + env(safe-area-inset-left,0px));--learning-end-gutter:max(16px,env(safe-area-inset-right,0px))}
+:root{--rail-tab-width:60px;--rail-tab-gap:16px;--learning-content-max:1080px;--learning-gutter:max(calc(var(--rail-tab-width) + var(--rail-tab-gap)),env(safe-area-inset-left,0px),env(safe-area-inset-right,0px))}
+/* Match both tablet gutters. The smaller tab always stays outside the canvas. */
 .learning-workspace,body.learning-navigation-open .learning-workspace{width:100%;margin-left:0;transition:none}
-/* Reserve the closed tab's full width before centering the content. On a wide
-   screen the existing 1080px canvas stays centered; tablet gutters never fall
-   below the tab width plus 16px. The end gutter uses only the space it needs. */
-.learning-workspace main,body.learning-navigation-open .learning-workspace main{width:min(var(--learning-content-max),calc(100% - var(--learning-start-gutter) - var(--learning-end-gutter)));max-width:none;margin:0 auto;margin-left:max(var(--learning-start-gutter),calc((100% - var(--learning-content-max))/2));padding:0 0 100px;transition:none}
+.learning-workspace main{width:min(var(--learning-content-max),calc(100% - var(--learning-gutter)*2));max-width:none;margin:0 auto;padding:0 0 100px;transition:none;container-name:learning-content;container-type:inline-size}
+body.learning-navigation-open .learning-workspace{width:calc(100% - var(--group-drawer-width));margin-left:var(--group-drawer-width)}
+body.learning-navigation-open .learning-workspace main{width:min(calc(100% - 48px),var(--navigation-content-width,1080px));max-width:none;margin:0 auto;padding:0 0 100px;transition:none}
 .ai{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 104px;column-gap:8px;row-gap:0;align-items:center;width:100%;max-width:none;margin:0;padding:40px 0 69px;border:0;background:var(--theme-page)}
 .ai::after{content:'';position:absolute;left:0;right:0;bottom:36px;height:1px;background:#eef2f4;pointer-events:none}
 body.has-long-learning-list .ai{top:0}
@@ -18,7 +18,7 @@ body.has-long-learning-list .ai::before{content:none;box-shadow:none}
 .mentor-piece,.mentor-core{background:var(--theme-accent)}
 .mentor-morph{transform:scale(1);filter:none}
 .mentor-morph[data-shape=times]{transform:scale(1) rotate(45deg)}
-.mentor-bubble{height:48px;max-width:min(286px,calc(100% - 56px));border:0;border-radius:16px 16px 16px 5px;background:linear-gradient(99.258786314deg,#fff .33441%,#f2f8ff 30.128%,#ffffef 99.666%);box-shadow:3px 3px 7px #1f725126}
+.mentor-bubble{height:48px;max-width:min(420px,calc(100% - 56px));border:0;border-radius:16px 16px 16px 5px;background:linear-gradient(99.258786314deg,#fff .33441%,#f2f8ff 30.128%,#ffffef 99.666%);box-shadow:3px 3px 7px #1f725126}
 .mentor-bubble::before{padding:2px;background:linear-gradient(102deg,#84b5ff .355%,#00bdad 96.511%);opacity:1;animation:none}
 .ai #ai-message{padding:0 18px;color:var(--theme-title);font-size:17px;font-weight:800;line-height:22px;overflow:hidden;white-space:nowrap;transition:opacity .18s ease}
 .ai-top[data-bubble-phase=paging] .mentor-dots{opacity:0;visibility:hidden}
@@ -89,8 +89,8 @@ body.has-long-learning-list .ai::before{content:none;box-shadow:none}
 .diagnosis-result-hint::after{right:-10px;top:calc(50% - 8px);transform:rotate(-90deg)}
 .primary{background:var(--theme-primary);border-color:var(--theme-primary);color:var(--theme-on-primary)}
 .primary:hover:not(:disabled){background:var(--theme-primary-hover);border-color:var(--theme-primary-hover);color:var(--theme-on-primary)}
-/* The open Figma rail overlays the main canvas, without shrinking its cards. */
-#group-panel{width:var(--group-drawer-width);max-width:none;background:var(--theme-surface);border-radius:0 28px 28px 0;border-right:1px solid #eef2f4;box-shadow:none}
+/* Dock the rail; FLIP motion carries the existing cards into their next slots. */
+#group-panel{width:var(--group-drawer-width);max-width:none;background:var(--theme-surface);border-radius:0 28px 28px 0;border-right:1px solid #eef2f4;box-shadow:none;transition:transform .48s var(--navigation-ease)}
 #group-panel .panel-head{position:absolute;z-index:1;top:12px;right:31px;min-height:0;height:36px;padding:0;border:0}
 #group-panel .nav-close{display:grid;place-items:center;width:36px;height:36px;padding:0;background:transparent;border:0}
 #group-panel .panel-content{display:flex;flex-direction:column;min-height:0;padding:60px 20px 40px;overflow:hidden}
@@ -121,9 +121,9 @@ body.has-long-learning-list .ai::before{content:none;box-shadow:none}
 #group-panel .nav-grade-progress progress::-webkit-progress-bar{background:#edf0f3}
 #group-panel .nav-grade-progress progress::-webkit-progress-value{background:#0ec7ae}
 #group-panel .nav-grade-progress progress::-moz-progress-bar{background:#0ec7ae}
-.groups-trigger,.groups-trigger:hover:not(:disabled),.groups-trigger:active:not(:disabled){position:fixed;left:env(safe-area-inset-left,0px);top:calc(50% - 72px);bottom:auto;display:block;width:var(--rail-tab-width);height:144px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
-.groups-trigger .side-tab-surface{position:absolute;left:0;top:0}
-.groups-trigger .side-tab-content{position:absolute;left:11px;top:54px;display:grid;place-items:center;width:36px;height:36px;padding:0}
+.groups-trigger,.groups-trigger:hover:not(:disabled),.groups-trigger:active:not(:disabled){position:fixed;left:env(safe-area-inset-left,0px);top:calc(50% - 60px);bottom:auto;display:block;width:var(--rail-tab-width);height:120px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+.groups-trigger .side-tab-surface{position:absolute;left:0;top:0;transform:scale(.8333333333);transform-origin:top left}
+.groups-trigger .side-tab-content{position:absolute;left:6px;top:42px;display:grid;place-items:center;width:36px;height:36px;padding:0}
 .groups-trigger:hover:not(:disabled){filter:brightness(.98)}
 .groups-trigger:focus-visible{outline:2px solid #84b5ff;outline-offset:2px;border-radius:0 72px 72px 0}
 .settings-trigger{color:#b7bec3}
@@ -160,3 +160,30 @@ body.has-long-learning-list .ai::before{content:none;box-shadow:none}
 }
 @media(max-width:359px){#group-panel .group-item{padding-inline:12px}#group-panel .nav-topic-copy strong{font-size:15px}}
 @media(prefers-reduced-motion:reduce){.mentor-cluster .recommend-loader .recommend-spinner{animation:none}.mentor-cluster .recommend-arrow{transition:none}}
+
+/* Updated Figma tooltip: original JRound outlines, with accessible live text. */
+.completed-first-tooltip{width:219px;height:43px;padding:0;border:0;border-radius:0;background:transparent!important;font-size:0;line-height:0;max-width:none}
+.completed-first-tooltip .hint-art{display:block}
+.diagnosis-result-hint{font-family:JRound,NanumSquareRound,sans-serif}
+.diagnosis-result-hint::after{width:20px;height:19px;right:-10px;top:calc(50% - 9.5px);transform:none;background:url('assets/figma-v4-1/result-hint-tail.svg') center no-repeat}
+#group-panel[data-panel-phase=open][data-reveal=true] .nav-stagger{animation:learning-nav-arrive .28s cubic-bezier(.22,.61,.36,1) both;animation-delay:var(--nav-delay,0ms)}
+@keyframes learning-nav-arrive{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+body.learning-navigation-open #programs.grid{grid-template-columns:repeat(var(--navigation-columns,3),minmax(0,1fr))}
+@container learning-content (max-width:700px){
+ .ai{grid-template-columns:minmax(0,1fr) 104px;row-gap:16px}
+ .mentor-cluster{display:contents}
+ .mentor-cluster>.ai-top{grid-column:1/-1;grid-row:1}
+ .mentor-cluster>.recommend{grid-column:1;grid-row:2}
+ .top-shortcuts{grid-column:2;grid-row:2}
+}
+@media(min-width:1800px){
+ body.learning-navigation-open .learning-workspace{width:100%;margin-left:0}
+ body.learning-navigation-open .learning-workspace main{width:min(1080px,calc(100% - var(--learning-gutter)*2))}
+ body.learning-navigation-open #programs.grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:650px){
+ body.learning-navigation-open .learning-workspace{width:100%;margin-left:0}
+ body.learning-navigation-open .learning-workspace main{width:min(1080px,calc(100% - var(--learning-gutter)*2));margin:0 auto}
+ .completed-first-tooltip{width:219px;height:43px;max-width:none}
+}
+@media(prefers-reduced-motion:reduce){#group-panel[data-panel-phase=open][data-reveal=true] .nav-stagger{animation:none}}

@@ -51,7 +51,7 @@ test('stable panel renders retain the mounted content and stale reveal or exit t
   Object.defineProperty(panel,'innerHTML',{get:()=>markup,set:value=>{markup=value;writes++;},configurable:true});
   h.click('groups');const firstWrites=writes,oldReveal=h.evaluate('groupRevealTimer');
   h.evaluate('render();renderPanel()');assert.equal(writes,firstWrites);
-  h.click('groups');const oldExit=h.evaluate('panelMotionTimer');assert.equal(oldExit.ms,320);
+  h.click('groups');const oldExit=h.evaluate('panelMotionTimer');assert.equal(oldExit.ms,500);
   assert.equal(h.evaluate('mainGuidanceVisible()'),true);assert.equal(h.node('#overlay').hidden,true);
   h.click('groups');assert.equal(panel['data-reveal'],'true');oldReveal.fn();oldExit.fn();
   assert.equal(panel['data-reveal'],'true');assert.equal(panel['data-panel-phase'],'open');assert.equal(panel.hidden,false);
@@ -126,7 +126,7 @@ test('unstarted outline topics are disabled and guarded even when a click is dis
 test('the outline reveals in top-to-bottom order without restarting on unchanged renders',()=>{
   const h=harness(undefined,{reducedMotion:false});h.click('groups');const reveal=h.evaluate('groupRevealTimer');
   const delays=[...h.node('#group-panel').innerHTML.matchAll(/--nav-delay:(\d+)ms/g)].map(m=>Number(m[1]));
-  assert(delays.length>6);assert(delays.every((value,i)=>!i||value>=delays[i-1]));assert.equal(reveal.ms,1400);
+  assert(delays.length>6);assert(delays.every((value,i)=>!i||value>=delays[i-1]));assert.equal(reveal.ms,600);
   h.evaluate('renderPanel();render()');assert.equal(h.evaluate('groupRevealTimer'),reveal);
   h.click('close-panel');const reduced=harness();reduced.click('groups');assert.equal(reduced.evaluate('groupRevealTimer'),null);
 });

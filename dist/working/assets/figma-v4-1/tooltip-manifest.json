@@ -1,0 +1,26 @@
+{
+  "fileKey": "QmDlOvkNKFdZJHCY89h0vY",
+  "source": "3:223",
+  "font": "JRound ExtraBold",
+  "exportMethod": "Original SVG export, outlined text; no geometry edits",
+  "assets": [
+    {
+      "name": "review-hint-body",
+      "file": "review-hint-body.svg",
+      "nodeId": "3:225",
+      "width": "219",
+      "height": "43",
+      "viewBox": "0 0 219 43",
+      "sha256": "62bed62383e8f864ba9f1833060c529592a93c5c536d0ae8dc5087f20ea2fb34"
+    },
+    {
+      "name": "result-hint-tail",
+      "file": "result-hint-tail.svg",
+      "nodeId": "3:232",
+      "width": "20",
+      "height": "19",
+      "viewBox": "0 0 20 19",
+      "sha256": "8ba62f7ba9d604ccd30cb328f8757826a222017e58b6d630bf47c79a2f69328b"
+    }
+  ]
+}
