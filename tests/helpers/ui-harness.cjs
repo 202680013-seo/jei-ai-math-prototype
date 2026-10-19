@@ -10,7 +10,7 @@ const source=()=>fs.readFileSync(path.join(__dirname,'../../dist/working/app.js'
 const STATE_KEY='ai-math-prototype-diagnosis-v1';
 
 function harness(saved,{reducedMotion=true,appSource}={}){
-  const nodes=new Map(),events=new Map(),timers=[],intervals=[],storage=new Map(),media={matches:reducedMotion};
+  const nodes=new Map(),events=new Map(),windowEvents=new Map(),timers=[],intervals=[],storage=new Map(),media={matches:reducedMotion};
   if(saved)storage.set(STATE_KEY,JSON.stringify(saved));
   const subscribe=(map,type,fn)=>{if(!map.has(type))map.set(type,[]);map.get(type).push(fn);};
   function node(selector){
@@ -43,7 +43,7 @@ function harness(saved,{reducedMotion=true,appSource}={}){
     setTimeout(fn,ms){const timer={fn,ms,cancelled:false};timers.push(timer);return timer;},
     clearTimeout(timer){if(timer)timer.cancelled=true;},
     setInterval(fn,ms){const timer={fn,ms};intervals.push(timer);return timer;},clearInterval(){},
-    innerWidth:1200,innerHeight:800,scrollY:0,scrollTo(){},addEventListener(){},
+    innerWidth:1200,innerHeight:800,scrollY:0,scrollTo(){},addEventListener(type,fn){subscribe(windowEvents,type,fn);},
   });
   c.window=c;
   vm.runInContext(appSource??source(),c);
@@ -72,7 +72,8 @@ function harness(saved,{reducedMotion=true,appSource}={}){
   const tick=()=>{const minute=intervals.find(timer=>timer.ms===60000);assert.ok(minute,'learning-minute timer is registered');minute.fn();};
   const escape=()=>{let prevented=false;node('#learning').emit('cancel',{preventDefault(){prevented=true;}});if(!prevented)node('#learning').close();};
   const emitDocument=(type,event={})=>{for(const fn of events.get(type)||[])fn(event);};
-  return {node,evaluate,data,click,seed,answer,finishReview,tick,escape,document,emitDocument,context:c,timers,intervals,events,storage,media,saved:()=>JSON.parse(storage.get(STATE_KEY))};
+  const emitWindow=(type,event={})=>{for(const fn of windowEvents.get(type)||[])fn(event);};
+  return {node,evaluate,data,click,seed,answer,finishReview,tick,escape,document,emitDocument,emitWindow,context:c,timers,intervals,events,storage,media,saved:()=>JSON.parse(storage.get(STATE_KEY))};
 }
 
 module.exports={harness};

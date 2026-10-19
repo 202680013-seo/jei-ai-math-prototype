@@ -1,4 +1,4 @@
-/* V4.7 — QmDlOvkNKFdZJHCY89h0vY / main 3:11, main2 3:96.
+/* V4.8 — QmDlOvkNKFdZJHCY89h0vY / main 3:11, main2 3:96.
    Keep the existing learning flows; apply the supplied component geometry. */
 :root{--forest:var(--theme-title);--muted:var(--theme-muted);--line:var(--theme-line);--soft:var(--theme-soft);--paper:var(--theme-surface);--lime:var(--theme-accent);--learning-page:var(--theme-page);--top-action-height:48px;--group-drawer-width:min(320px,calc(100vw - 24px));--card-status-slot:44px;--card-status-symbol:44px;--status-pass-fill:#3b82f6;--status-pass-mark:#fff;--status-review-fill:#f2b642;--status-review-mark:#fff;--status-lock-surface:#edf0f3;--status-lock-fill:#b7bec3;--completed-card-fill:var(--theme-completed);--study-action-hover:var(--theme-primary-hover);--study-action-on-hover:#fff;--navigation-idle:#b7bec3}
 html,body{background:var(--theme-page);color:var(--theme-text)}
@@ -301,4 +301,39 @@ body.has-personalized-learning .heading>.learning-context{flex:0 0 auto;width:au
 @keyframes preparation-ready-copy{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){
   #learning.diagnosis-preparing #composition,#learning.diagnosis-preparing #composition>h2{animation:none!important}
+}
+
+/* V4.8 · A single full-screen result and fragments collected into the real shortcut. */
+#learning.diagnosis-summary-screen .diagnosis-preparation{padding:28px 32px}
+#learning.diagnosis-summary-screen .composition h2{margin:16px 0 8px}
+.diagnosis-inline-summary{width:min(560px,100%);margin:0 auto}
+.diagnosis-inline-summary[hidden]{display:none}
+.diagnosis-inline-summary .diagnosis-outcome-metrics{margin:22px 0 24px;gap:20px}
+.diagnosis-inline-summary .outcome-confirm{min-width:160px;min-height:48px;padding:12px 32px;border-radius:14px;background:var(--theme-primary);color:var(--theme-on-primary);font-size:18px;font-weight:800}
+#learning.diagnosis-collecting{overflow:hidden}
+.diagnosis-collection{position:fixed;inset:0;pointer-events:none}
+.diagnosis-collection::before{content:'';position:absolute;inset:0;background:#142c35c7;animation:collection-veil-out .5s ease both}
+.diagnosis-reward-flight{position:fixed;inset:0;pointer-events:none}
+.fragment-particle{position:fixed;left:var(--flight-from-x);top:var(--flight-from-y);width:128px;height:128px;margin:-64px 0 0 -64px;filter:drop-shadow(0 4px 12px #0c9f8b26);animation:fragment-collect-horizontal 1.05s cubic-bezier(.42,0,.48,1) both;animation-delay:var(--particle-delay,0ms);will-change:transform,opacity}
+.fragment-particle:not(:first-child){width:64px;height:64px;margin:-32px 0 0 -32px}
+.fragment-particle-rise{display:block;width:100%;height:100%;animation:fragment-collect-vertical 1.05s cubic-bezier(.2,.65,.3,1) both;animation-delay:var(--particle-delay,0ms)}
+.fragment-particle svg{display:block;width:100%;height:100%;animation:fragment-collect-shrink 1.05s ease-in-out both;animation-delay:var(--particle-delay,0ms)}
+.top-shortcuts .constellation-trigger.is-receiving-fragments{animation:constellation-reward-arrive .6s 1s ease both}
+.constellation-trigger[data-reward-paused=true]{animation-play-state:paused!important}
+@keyframes collection-veil-out{from{opacity:1}to{opacity:0}}
+@keyframes fragment-collect-horizontal{from{transform:translate3d(0,0,0)}to{transform:translate3d(var(--flight-dx),0,0)}}
+@keyframes fragment-collect-vertical{from{transform:translate3d(0,0,0)}to{transform:translate3d(0,var(--flight-dy),0)}}
+@keyframes fragment-collect-shrink{0%{opacity:1;transform:scale(1) rotate(0)}85%{opacity:1}100%{opacity:0;transform:scale(.04) rotate(45deg)}}
+@keyframes constellation-reward-arrive{
+  0%,100%{transform:scale(1);box-shadow:0 0 0 0 #0ec7ae00}
+  40%{transform:scale(1.08);box-shadow:0 0 0 7px color-mix(in srgb,var(--theme-accent) 12%,transparent)}
+}
+@media(max-width:600px){
+  #learning.diagnosis-summary-screen .diagnosis-preparation{padding:22px 18px}
+  .diagnosis-inline-summary .diagnosis-outcome-metrics{gap:8px;margin:20px 0}
+}
+@media(prefers-reduced-motion:reduce){
+  .diagnosis-collection::before,.fragment-particle,.top-shortcuts .constellation-trigger.is-receiving-fragments{animation:none!important}
+  .diagnosis-collection::before,.fragment-particle{display:none}
+  .top-shortcuts .constellation-trigger.is-receiving-fragments{box-shadow:0 0 0 4px var(--theme-soft-strong)}
 }

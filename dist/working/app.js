@@ -603,7 +603,7 @@ d.innerHTML=`<span class="result-icon" aria-hidden="true"><img src="assets/figma
 $('#diagnostic-result-slot').hidden=false;$('#diagnostic-result-slot').append(d);$('#diagnosis-section').hidden=true;
 if(reveal)revealPrescribedCards();reveal=false;
 }}
-const pieces=skyState().items.reduce((n,x)=>n+x.pieces,0);$('#star-balance').textContent=String(pieces);$('#star-balance').setAttribute('data-empty',pieces===0?'true':'false');$('.constellation-trigger').setAttribute('aria-label','나의 별자리 · 별 조각 '+pieces+'개');syncRecommendation(isCleanPass(s)&&!composing?cleanPassInfo().next:rec.kind==='today'?M.learningRecommend(state):rec);animateMessage();renderPanel();if(myOpen)renderMy();syncGuidanceReminders();const viewKey=state.grade+':'+state.index;if(overviewViewKey!==null&&overviewViewKey!==viewKey&&!myOpen){softReveal($('.heading'));if(!$('#programs').hidden)softReveal($('#programs'));}overviewViewKey=viewKey;}
+const pieces=skyState().items.reduce((n,x)=>n+x.pieces,0);$('.constellation-trigger').setAttribute('aria-label','나의 별자리 · 별 조각 '+pieces+'개');syncRecommendation(isCleanPass(s)&&!composing?cleanPassInfo().next:rec.kind==='today'?M.learningRecommend(state):rec);animateMessage();renderPanel();if(myOpen)renderMy();syncGuidanceReminders();const viewKey=state.grade+':'+state.index;if(overviewViewKey!==null&&overviewViewKey!==viewKey&&!myOpen){softReveal($('.heading'));if(!$('#programs').hidden)softReveal($('#programs'));}overviewViewKey=viewKey;}
 const COURSE_REVEAL={wait:440,stagger:105,card:680,limit:15,invite:760};
 let cardRevealRun=null;
 function clearPrescribedCardReveal(){
@@ -654,13 +654,13 @@ function renderComposition(c=composing){
   if(!c)return;const container=compositionElement;
   // Keep the graphic mounted while the copy types; replacing it would restart the scan every character.
   if(!c.mounted){
-    container.innerHTML=`<div class="prescription-graphics" aria-hidden="true"><div class="prescription-complete"><svg viewBox="0 0 220 132" fill="none"><circle class="complete-glow" cx="110" cy="65" r="51"/><g class="complete-sheet"><rect class="complete-paper" x="78" y="24" width="64" height="84" rx="14"/><path class="complete-lines" d="M93 43h22M93 51h34"/><path class="complete-check" pathLength="1" d="m92 75 12 12 25-28"/></g><path class="complete-spark spark-one" d="m53 42 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z"/><path class="complete-spark spark-two" d="m167 78 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"/></svg></div><div class="prescription-search"><svg viewBox="0 0 220 132" fill="none"><g class="search-guides" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 11"><path d="M22 32H198M22 66H198M22 100H198"/></g><g class="search-lens"><path class="lens-handle" d="m117 72 26 26"/><circle class="lens-glass" cx="96" cy="50" r="28"/><path class="lens-shine" d="M80 43a18 18 0 0 1 12-10"/></g></svg></div><div class="prescription-ready"><svg viewBox="0 0 220 132" fill="none"><circle class="ready-glow" cx="110" cy="65" r="51"/><g class="ready-stack"><rect class="ready-back" x="60" y="31" width="57" height="76" rx="12" transform="rotate(-8 88 69)"/><rect class="ready-back" x="119" y="30" width="48" height="73" rx="12" transform="rotate(10 143 66)"/><rect class="ready-front" x="82" y="23" width="65" height="87" rx="13"/><path class="ready-book" d="M114 43c-5-3-11-3-17-1v18c6-2 12-2 17 1 5-3 11-3 17-1V42c-6-2-12-2-17 1Zm0 0v18"/><path class="ready-lines" d="M98 76h29M98 84h20"/></g><g class="ready-play"><circle cx="150" cy="96" r="21"/><path d="m145 88 12 8-12 8Z"/></g></svg></div></div><p id="composition-topic-context" class="composition-topic-context"></p><h2 id="composition-title" tabindex="-1"></h2><p><span id="composition-copy"></span><span id="composition-caret" class="prescription-caret" hidden aria-hidden="true"></span></p>`;
+    container.innerHTML=`<div class="prescription-graphics" aria-hidden="true"><div class="prescription-complete"><svg viewBox="0 0 220 132" fill="none"><circle class="complete-glow" cx="110" cy="65" r="51"/><g class="complete-sheet"><rect class="complete-paper" x="78" y="24" width="64" height="84" rx="14"/><path class="complete-lines" d="M93 43h22M93 51h34"/><path class="complete-check" pathLength="1" d="m92 75 12 12 25-28"/></g><path class="complete-spark spark-one" d="m53 42 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z"/><path class="complete-spark spark-two" d="m167 78 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"/></svg></div><div class="prescription-search"><svg viewBox="0 0 220 132" fill="none"><g class="search-guides" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 11"><path d="M22 32H198M22 66H198M22 100H198"/></g><g class="search-lens"><path class="lens-handle" d="m117 72 26 26"/><circle class="lens-glass" cx="96" cy="50" r="28"/><path class="lens-shine" d="M80 43a18 18 0 0 1 12-10"/></g></svg></div><div class="prescription-ready"><svg viewBox="0 0 220 132" fill="none"><circle class="ready-glow" cx="110" cy="65" r="51"/><g class="ready-stack"><rect class="ready-back" x="60" y="31" width="57" height="76" rx="12" transform="rotate(-8 88 69)"/><rect class="ready-back" x="119" y="30" width="48" height="73" rx="12" transform="rotate(10 143 66)"/><rect class="ready-front" x="82" y="23" width="65" height="87" rx="13"/><path class="ready-book" d="M114 43c-5-3-11-3-17-1v18c6-2 12-2 17 1 5-3 11-3 17-1V42c-6-2-12-2-17 1Zm0 0v18"/><path class="ready-lines" d="M98 76h29M98 84h20"/></g><g class="ready-play"><circle cx="150" cy="96" r="21"/><path d="m145 88 12 8-12 8Z"/></g></svg></div></div><p id="composition-topic-context" class="composition-topic-context"></p><h2 id="composition-title" tabindex="-1"></h2><p><span id="composition-copy"></span><span id="composition-caret" class="prescription-caret" hidden aria-hidden="true"></span></p><div id="diagnosis-inline-summary" class="diagnosis-inline-summary" hidden></div>`;
     c.mounted=true;
   }
   container.setAttribute('data-compose-step',String(c.step));container.setAttribute('data-compose-paused',document.visibilityState==='hidden'?'true':'false');
   $('#composition-topic-context').textContent=c.topicName+' · '+(c.step===0?'실력 알기 완료':c.step===1?'실력알기 결과로 준비 중':'더 연습할 학습 '+c.count+'개');
   $('#composition-title').textContent=c.step===0?'수고했어요!':c.step===1?'맞춤 학습을 찾고 있어요':c.name+'님을 위한 학습이 준비됐어요';
-  $('#composition-copy').textContent=c.step===0?'실력알기를 마쳤어요.':c.step===1?'더 익힐 내용을 모으고 있어요.':c.text||'';
+  $('#composition-copy').textContent=c.step===0?(c.summaryMessage||'실력알기를 마쳤어요.'):c.step===1?'더 익힐 내용을 모으고 있어요.':c.text||'';
   $('#composition-caret').hidden=c.step!==2;
 }
 document.addEventListener('visibilitychange',()=>{$('#composition').setAttribute('data-compose-paused',document.visibilityState==='hidden'?'true':'false');});
@@ -688,9 +688,9 @@ function beginComposition(n,mode,surface){
 
 // Diagnosis completion is one resumable run. Its native dialog stays open until
 // the reward ends, including the transparent course-generation stage.
-const DIAGNOSIS_OUTCOME_TIMING={acknowledge:3000,searching:3000,ready:3000,reward:3600};
-const DIAGNOSIS_OUTCOME_STAGES=['summary','acknowledge','searching','ready','generating','reward'];
-function isDiagnosisPreparation(stage){return ['acknowledge','searching','ready'].includes(stage);}
+const DIAGNOSIS_OUTCOME_TIMING={searching:3000,ready:3000,reward:3600,collecting:1800};
+const DIAGNOSIS_OUTCOME_STAGES=['summary','searching','ready','generating','reward','collecting'];
+function isDiagnosisPreparation(stage){return ['summary','searching','ready'].includes(stage);}
 function diagnosisPreparationHTML(){
   return `<div class="diagnosis-screen-top"><span>실력알기 완료</span><strong class="diagnosis-context"><span class="diagnosis-grade">${grade(state.grade)}등급</span><span>${esc(current().groupName)}</span></strong><span>맞춤 학습 준비</span></div><div class="diagnosis-screen-body diagnosis-preparation" id="diagnosis-composition-slot"></div>`;
 }
@@ -700,10 +700,14 @@ function mountDiagnosisPreparation(){
   // Reuse the original graphic and its mounted SVGs. Only their step changes,
   // so the check → scanning lens → ready cards can crossfade in one full screen.
   const preparation=run.preparation??={topicName:run.target.groupName,count:run.target.diagnosisOutcome.count,name:state.profile?.name||'재능',text:'여기부터 시작해 볼까요?'};
-  preparation.step=stage==='acknowledge'?0:stage==='searching'?1:2;
+  preparation.step=stage==='summary'?0:stage==='searching'?1:2;
+  preparation.summaryMessage=diagnosisSummary(run.target.diagnosticResult).deficits?'실력알기를 마쳤어요.':'실력알기를 통과했어요!';
   const slot=$('#diagnosis-composition-slot');
   if(!slot.contains(compositionElement))slot.append(compositionElement);
   compositionElement.hidden=false;renderComposition(preparation);
+  const summary=$('#diagnosis-inline-summary');summary.hidden=stage!=='summary';
+  const html=diagnosisSummaryMetricsHTML(run.target.diagnosticResult)+'<button class="primary outcome-confirm" data-action="diagnosis-outcome-confirm">확인</button>';
+  if(summary.innerHTML!==html)summary.innerHTML=html;
 }
 function releaseDiagnosisPreparation(run){
   if(!run?.preparation)return;
@@ -719,17 +723,52 @@ function diagnosisMetric(label,value,total,detail){
   const ratio=total?Math.max(0,Math.min(1,value/total)):0;
   return `<div class="diagnosis-outcome-metric"><span>${label}</span><div class="outcome-ring" style="--result-ratio:${ratio}" role="img" aria-label="${esc(detail)}"><strong>${value}<small> / ${total}</small></strong></div><small>${detail}</small></div>`;
 }
+function diagnosisSummaryMetricsHTML(result){
+  const stats=diagnosisSummary(result);
+  return `<div class="diagnosis-outcome-metrics">${diagnosisMetric('맞힌 문제',stats.correct,stats.total,`정답 ${stats.correct}개 · 오답 ${stats.wrong}개`)}${diagnosisMetric('더 익힐 목표',stats.deficits,stats.goalCount,`전체 ${stats.goalCount}개 중 ${stats.deficits}개`)}<div class="diagnosis-outcome-metric outcome-time"><span>학습 시간</span><strong>${Math.floor(stats.seconds/60)}<small>분</small> ${String(stats.seconds%60).padStart(2,'0')}<small>초</small></strong></div></div>`;
+}
 function diagnosisFragmentHTML(){
   return '<svg viewBox="0 0 128 128" fill="none" aria-hidden="true"><path d="m64 9 15 35 35 20-35 20-15 35-15-35L14 64l35-20Z" class="fragment-base"/><path d="m64 9 0 55-50 0 35-20Z" class="fragment-light"/><path d="m64 64 50 0-35 20-15 35Z" class="fragment-shade"/><path d="m64 9 15 35 35 20-35 20-15 35-15-35L14 64l35-20Z" class="fragment-outline"/></svg>';
 }
 function diagnosisOutcomeHTML(){
   const run=diagnosisOutcomeRun,s=current(),flow=s.diagnosisOutcome,result=s.diagnosticResult,stats=diagnosisSummary(result),stage=flow.stage;
-  const background=stage==='summary'||stage==='acknowledge'||!stats.deficits?`<div class="diagnosis-outcome-background" inert aria-hidden="true">${run.background||`<div class="diagnosis-screen-top"><span>실력알기</span><strong>${esc(s.groupName)}</strong></div>`}</div>`:'';
-  if(stage==='summary')return `${background}<div class="diagnosis-outcome-scrim"><section class="diagnosis-outcome-summary outcome-arrival" aria-labelledby="diagnosis-outcome-title"><span class="outcome-eyebrow">${grade(state.grade)}등급 · ${esc(s.groupName)}</span><h1 id="diagnosis-outcome-title" tabindex="-1">수고했어요!</h1><p class="outcome-verdict">${stats.deficits?'더 연습할 내용을 찾았어요.':'실력알기를 통과했어요!'}</p><div class="diagnosis-outcome-metrics">${diagnosisMetric('맞힌 문제',stats.correct,stats.total,`정답 ${stats.correct}개 · 오답 ${stats.wrong}개`)}${diagnosisMetric('더 익힐 목표',stats.deficits,stats.goalCount,`전체 ${stats.goalCount}개 중 ${stats.deficits}개`)}<div class="diagnosis-outcome-metric outcome-time"><span>학습 시간</span><strong>${Math.floor(stats.seconds/60)}<small>분</small> ${String(stats.seconds%60).padStart(2,'0')}<small>초</small></strong></div></div><button class="primary outcome-confirm" data-action="diagnosis-outcome-confirm">확인</button></section></div>`;
+  const background=!stats.deficits&&stage==='reward'?`<div class="diagnosis-outcome-background" inert aria-hidden="true">${run.background||`<div class="diagnosis-screen-top"><span>실력알기</span><strong>${esc(s.groupName)}</strong></div>`}</div>`:'';
   if(isDiagnosisPreparation(stage))return diagnosisPreparationHTML();
   if(stage==='generating')return '<section class="outcome-generating-label" role="status" aria-live="polite"><span class="outcome-spinner" aria-hidden="true"></span>나에게 필요한 학습이 펼쳐지고 있어요</section>';
+  if(stage==='collecting')return diagnosisCollectionHTML(stats.correct);
   return `${background}<section class="diagnosis-outcome-scrim outcome-reward outcome-arrival" aria-labelledby="diagnosis-outcome-title"><p class="outcome-reward-mentor">${stats.correct?`${stats.correct}문제를 맞혔어요!`:'끝까지 도전해줘서 고마워요!'}</p><div class="outcome-fragment-stage ${stats.correct?'':'is-empty'}" aria-hidden="true"><div class="outcome-fragment-halo"></div><div class="outcome-fragment">${diagnosisFragmentHTML()}</div>${stats.correct?'<i class="reward-spark spark-a"></i><i class="reward-spark spark-b"></i><i class="reward-spark spark-c"></i>':''}</div><h1 id="diagnosis-outcome-title" tabindex="-1">${stats.correct?`별 조각 <strong>+${stats.correct}</strong>`:'다음에는 별 조각도 모아봐요'}</h1><p>${stats.correct?'맞힌 문제만큼 별 조각을 받았어요.':'맞힌 문제마다 별 조각을 받을 수 있어요.'}</p><small class="outcome-reward-rule">${flow.preview?'보상 미리보기 · 보유 조각에는 반영되지 않아요':'정답 1개당 별 조각 1개'}</small></section>`;
 }
+function diagnosisCollectionHTML(correct){
+  const count=Math.min(5,correct);
+  return `<section class="diagnosis-collection" aria-labelledby="diagnosis-outcome-title"><p class="sr-only" id="diagnosis-outcome-title" tabindex="-1" role="status">별 조각을 나의 별자리에 모았어요.</p><div id="diagnosis-reward-flight" class="diagnosis-reward-flight" aria-hidden="true">${Array.from({length:count},(_,i)=>`<span class="fragment-particle" style="--particle-delay:${i*64}ms"><span class="fragment-particle-rise">${diagnosisFragmentHTML()}</span></span>`).join('')}</div></section>`;
+}
+function rewardButtonCenter(ensureVisible=false){
+  const button=$('.constellation-trigger');let rect=button.getBoundingClientRect();
+  if(ensureVisible&&(rect.top<0||rect.bottom>window.innerHeight)){
+    button.scrollIntoView?.({block:'nearest',inline:'nearest',behavior:'auto'});rect=button.getBoundingClientRect();
+  }
+  return {x:rect.left+rect.width/2,y:rect.top+rect.height/2};
+}
+function captureDiagnosisFlight(run){
+  const rect=$('.outcome-fragment')?.getBoundingClientRect();
+  run.flight={from:rect&&rect.width>0?{x:rect.left+rect.width/2,y:rect.top+rect.height/2}:{x:window.innerWidth/2,y:window.innerHeight*.48},to:rewardButtonCenter(true)};
+}
+function mountDiagnosisFlight(){
+  const run=diagnosisOutcomeRun;if(!run||run.target.diagnosisOutcome?.stage!=='collecting')return;
+  // On reload the reward has already been credited; resume only the visual collection.
+  run.flight??={from:{x:window.innerWidth/2,y:window.innerHeight*.48},to:rewardButtonCenter(true)};
+  const {from}=run.flight,to=run.flight.to=rewardButtonCenter();
+  const host=$('#diagnosis-reward-flight');
+  for(const [name,value] of Object.entries({'--flight-from-x':from.x+'px','--flight-from-y':from.y+'px','--flight-dx':(to.x-from.x)+'px','--flight-dy':(to.y-from.y)+'px'})){
+    if(host.style.setProperty)host.style.setProperty(name,value);else host.style[name]=value;
+  }
+  const button=$('.constellation-trigger');button.classList.add('is-receiving-fragments');button.setAttribute('data-reward-paused',String(document.visibilityState==='hidden'));
+}
+function clearDiagnosisFlight(run){
+  $('.constellation-trigger').classList.remove('is-receiving-fragments');$('.constellation-trigger').removeAttribute('data-reward-paused');
+  if(run)run.flight=null;
+}
+window.addEventListener?.('resize',mountDiagnosisFlight);
 function diagnosisOutcomeValid(run){return diagnosisOutcomeRun===run&&current()===run.target&&run.target.diagnosisOutcome?.attemptId===run.attemptId;}
 function lockDiagnosisOverview(run){
   run.locks=['#learning-workspace','#group-panel','.groups-trigger','.settings-trigger'].map(selector=>{const element=$(selector),previous=!!element.inert;element.inert=true;return {element,previous};});
@@ -737,8 +776,8 @@ function lockDiagnosisOverview(run){
 function releaseDiagnosisOverview(run){for(const {element,previous} of run?.locks||[])element.inert=previous;}
 function cancelDiagnosisOutcome(discard=false){
   const run=diagnosisOutcomeRun;diagnosisOutcomeRun=null;clearTimeout(diagnosisOutcomeTimer);diagnosisOutcomeTimer=null;
-  if(run){run.epoch++;releaseDiagnosisPreparation(run);releaseDiagnosisOverview(run);if(discard)delete run.target.diagnosisOutcome;}
-  $('#learning').classList.remove('diagnosis-outcome-active','diagnosis-generating','diagnosis-preparing');$('#learning').removeAttribute('data-outcome-paused');$('#learning').removeAttribute('aria-labelledby');$('#learning').removeAttribute('aria-label');
+  if(run){run.epoch++;clearDiagnosisFlight(run);releaseDiagnosisPreparation(run);releaseDiagnosisOverview(run);if(discard)delete run.target.diagnosisOutcome;}
+  $('#learning').classList.remove('diagnosis-outcome-active','diagnosis-generating','diagnosis-preparing','diagnosis-summary-screen','diagnosis-collecting');$('#learning').removeAttribute('data-outcome-paused');$('#learning').removeAttribute('aria-labelledby');$('#learning').removeAttribute('aria-label');
 }
 function scheduleDiagnosisOutcome(run){
   clearTimeout(diagnosisOutcomeTimer);diagnosisOutcomeTimer=null;const epoch=++run.epoch;
@@ -774,10 +813,11 @@ function finishDiagnosisOutcome(run){
 function setDiagnosisOutcomeStage(stage){
   const run=diagnosisOutcomeRun;if(!run||!diagnosisOutcomeValid(run))return;
   const target=run.target,flow=target.diagnosisOutcome;
+  if(stage==='collecting'&&!run.flight&&flow.stage==='reward')captureDiagnosisFlight(run);
   flow.stage=stage;run.next=null;run.remaining=0;
   if(!isDiagnosisPreparation(stage))releaseDiagnosisPreparation(run);
-  if(isDiagnosisPreparation(stage)){
-    const next={acknowledge:'searching',searching:'ready',ready:'generating'};
+  if(stage==='searching'||stage==='ready'){
+    const next={searching:'ready',ready:'generating'};
     run.remaining=DIAGNOSIS_OUTCOME_TIMING[stage];run.next=()=>setDiagnosisOutcomeStage(next[stage]);
   }
   if(stage==='generating'){
@@ -788,14 +828,16 @@ function setDiagnosisOutcomeStage(stage){
     run.next=()=>{clearPrescribedCardReveal();setDiagnosisOutcomeStage('reward');};
   }
   if(stage==='reward'){
-    grantDiagnosisReward(run);run.remaining=DIAGNOSIS_OUTCOME_TIMING.reward;run.next=()=>finishDiagnosisOutcome(run);
+    grantDiagnosisReward(run);run.remaining=DIAGNOSIS_OUTCOME_TIMING.reward;run.next=()=>diagnosisSummary(target.diagnosticResult).correct>0?setDiagnosisOutcomeStage('collecting'):finishDiagnosisOutcome(run);
   }
+  if(stage==='collecting'){run.remaining=matchMedia('(prefers-reduced-motion: reduce)').matches?450:DIAGNOSIS_OUTCOME_TIMING.collecting;run.next=()=>finishDiagnosisOutcome(run);}
   editing={kind:'diagnosis',outcome:true};daily().timerRunning=false;save();render();refreshDialog();
   if(!$('#learning').open)$('#learning').showModal();
   $('#learning').scrollTop=0;$(isDiagnosisPreparation(stage)?'#composition-title':'#diagnosis-outcome-title')?.focus({preventScroll:true});scheduleDiagnosisOutcome(run);
 }
 function resumeDiagnosisOutcome(background=''){
   const target=current(),flow=target.diagnosisOutcome;
+  if(flow?.stage==='acknowledge')flow.stage='summary';
   if(!flow||!DIAGNOSIS_OUTCOME_STAGES.includes(flow.stage)||!target.diagnosticResult)return false;
   cancelDiagnosisOutcome();if(panel)closePanel();hideDiagnosisResultHint();clearPrescribedCardReveal();
   const run=diagnosisOutcomeRun={target,attemptId:flow.attemptId,background,epoch:0,remaining:0,next:null};
@@ -813,7 +855,7 @@ function beginDiagnosisOutcome(result,{count=M.sourceCount(state.grade,state.ind
 document.addEventListener('visibilitychange',()=>{
   const run=diagnosisOutcomeRun;if(!run)return;const paused=document.visibilityState==='hidden';
   if(paused&&diagnosisOutcomeTimer)run.remaining=Math.max(0,run.remaining-(Date.now()-run.started));
-  $('#learning').setAttribute('data-outcome-paused',String(paused));scheduleDiagnosisOutcome(run);
+  $('#learning').setAttribute('data-outcome-paused',String(paused));mountDiagnosisFlight();scheduleDiagnosisOutcome(run);
 });
 
 // Keep card widths stable and carry mounted cards quietly into their new grid slots.
@@ -1028,7 +1070,7 @@ function replayValidationCleanPass(){
   resetValidationSurfaces();resetValidationHints();
   beginDiagnosisOutcome(validationDiagnosisResult(true),{preview:true});
 }
-function renderTest(){const s=current(),scroll=$('#test-panel .panel-content')?.scrollTop||0;$('#test-panel').innerHTML=`<div class="panel-head"><h2>테스트 패널</h2><button data-action="close-panel">닫기 ×</button></div><div class="panel-content"><label class="preview-mode"><input id="test-controls" type="checkbox" ${testVisible()?'checked':''}> 학습 화면에 테스트 버튼 표시</label><div class="notice">기획·개발 검증 전용<br>시나리오를 선택하면 설정이 닫히고 해당 상태가 표시돼요. 첫 진입 안내와 카드 복습 안내도 다시 확인할 수 있어요. 필수 시나리오는 현재 주제를 바꿉니다.</div><div class="fields"><label>등급<select id="test-grade">${gradeOptions(state.grade)}</select></label><label>진단 그룹<select id="test-group">${groupOptions(state.grade,state.index)}</select></label></div><h3>필수 검증 시나리오</h3><div class="presets">${M.presetNames.map((n,i)=>`<button class="${i===presetIndex?'selected':''}" data-action="preset" data-id="${i}">${i+1}. ${n}</button>`).join('')}</div><p class="validation-note">통과·미통과 시나리오를 다시 선택하면 첫 카드의 복습 안내도 다시 표시돼요.</p><h3>진단 후 전환 다시 보기</h3><p class="validation-note">결과 확인 → 수고했어요 → 돋보기로 맞춤 학습 찾기 → 준비 완료 → 카드 생성 → 별 조각 보상 → 학습 열림 순서로 보여줘요. 보상은 미리보기로 제공돼요.</p><div class="actions"><button data-action="replay-first">첫 처방 · 결과부터 보기</button><button data-action="replay-repeat">반복 처방 · 결과부터 보기</button><button data-action="replay-clean-pass">처방 없이 통과 연출</button></div><h3>진단과 처방 직접 변경</h3><label>진단 상태<select id="diagnosis-state">${options([['idle','시작 전 · 처방 제거'],['active','진행 중 · 처방 제거'],['clean','처방 없이 통과'],['prescribed','진단 완료 · 처방 발생']],s.diagnosis==='done'?(s.programs.length?'prescribed':'clean'):s.diagnosis)}</select></label><div class="fields"><label>처방 프로그램 수 (1~52)<input id="prescription-count" type="number" min="1" max="52" value="${s.programs.length||M.sourceCount(state.grade,state.index)}"></label></div><button data-action="resize">개수 적용 · 진단 완료 처리</button><div class="actions"><button data-action="all-pass">모두 통과</button><button data-action="make-fail">미통과 1개 생성</button><button data-action="review-all">미통과 모두 복습 후 통과</button><button data-action="reset-current">현재 세트 초기화</button><button data-action="reset-all">전체 초기화</button></div><h3>개별 프로그램 (${s.programs.length})</h3>${s.programs.length?s.programs.map(p=>`<div class="program-edit"><strong>${p.id+1}. ${esc(p.name)} ${p.reviewed?'· 복습 완료':''}</strong><select data-program-state="${p.id}" aria-label="프로그램 ${p.id+1} 상태">${options(['locked','idle','active','passed','failed'].map(x=>[x,M.labels[x]]),p.status)}</select><label><small>진행률 ${p.progress}%</small><input type="range" min="0" max="100" value="${p.progress}" data-program-progress="${p.id}" aria-label="프로그램 ${p.id+1} 진행률" ${p.status!=='active'?'disabled':''}></label>${p.status==='failed'?`<button data-action="review-one" data-id="${p.id}">복습 후 통과</button>`:''}</div>`).join(''):'<p><small>현재 처방 프로그램이 없습니다.</small></p>'}<h3>데이터 기준</h3><div class="notice">시트 기준: ${M.Catalog.meta.groups}개 세트 / ${M.Catalog.meta.programs}개 프로그램<br>${M.Catalog.meta.frameAssociations}개 프로그램-프레임 연결 (완전 중복 ${M.Catalog.meta.exactDuplicateFramesRemoved}행 제외)<br>MF012736 → M1.H99.16 정정<br>그룹–프로그램 연결표 미제공: 같은 등급의 프로그램을 테스트용으로 선택${s.programs.some(p=>p.sample)?'<br>현재 처방에 테스트용 추가 항목 포함':''}<br>진단 채점·실제 처방 엔진은 미구현. 원본 ‘O’, ‘삭제’, ‘1’ 표시는 보존하며 자동 제외하지 않음.</div>${dailyControls()}<h3>기획 확인 정책</h3><details class="policy"><summary>판정 규칙·추천 우선순위 편집</summary><p>진단 미시작 → 시작 전<br>진단 진행 → 진행 중<br>진단 완료 + 처방 0 → 처방 없이 통과<br>전체 통과 → 통과<br>전체 풀이 완료 + 미통과 존재 → 미통과</p><label>처방 후 학습 미시작<select id="policy-prescribed">${options([['active','진행 중 (요청의 임시 가정)'],['idle','시작 전 (비교용)']],state.policy.prescribed)}</select></label><label>일부 프로그램 미완료<select id="policy-unfinished">${options([['active','진행 중'],['idle','시작 전 (비교용)']],state.policy.unfinished)}</select></label><label>추천 우선순위<select id="policy-recommendation">${options([['active','진행 중 → 다음 순서 → 복습'],['failed','진행 중 → 복습 → 다음 순서']],state.policy.recommendation)}</select></label><p>순차 학습: 이전 프로그램 진행률 100% → 다음 학습 열림. 통과·미통과와 별개. 테스트 패널은 순서 제한 없이 상태를 조작할 수 있음.<br>부족 목표 1개 = 프로그램 1개인 샘플 가정.<br>등급·그룹 진입은 자유. 프로그램 학습은 순차 진행.</p></details><h3>최근 상태 변경</h3><div class="notice">${esc(s.recent||'변경 이력 없음')}</div><div class="actions"><button data-action="export">현재 테스트 데이터 JSON 내려받기</button><a href="source.zip" download>소스 코드 ZIP</a><a href="README.md" download>요구사항·테스트 안내</a></div></div>`;$('#test-panel .panel-content').scrollTop=scroll;}
+function renderTest(){const s=current(),scroll=$('#test-panel .panel-content')?.scrollTop||0;$('#test-panel').innerHTML=`<div class="panel-head"><h2>테스트 패널</h2><button data-action="close-panel">닫기 ×</button></div><div class="panel-content"><label class="preview-mode"><input id="test-controls" type="checkbox" ${testVisible()?'checked':''}> 학습 화면에 테스트 버튼 표시</label><div class="notice">기획·개발 검증 전용<br>시나리오를 선택하면 설정이 닫히고 해당 상태가 표시돼요. 첫 진입 안내와 카드 복습 안내도 다시 확인할 수 있어요. 필수 시나리오는 현재 주제를 바꿉니다.</div><div class="fields"><label>등급<select id="test-grade">${gradeOptions(state.grade)}</select></label><label>진단 그룹<select id="test-group">${groupOptions(state.grade,state.index)}</select></label></div><h3>필수 검증 시나리오</h3><div class="presets">${M.presetNames.map((n,i)=>`<button class="${i===presetIndex?'selected':''}" data-action="preset" data-id="${i}">${i+1}. ${n}</button>`).join('')}</div><p class="validation-note">통과·미통과 시나리오를 다시 선택하면 첫 카드의 복습 안내도 다시 표시돼요.</p><h3>진단 후 전환 다시 보기</h3><p class="validation-note">전체 화면 결과 요약 → 돋보기로 맞춤 학습 찾기 → 준비 완료 → 카드 생성 → 별 조각 보상 → 별자리로 모으기 → 학습 열림 순서로 보여줘요. 보상은 미리보기로 제공돼요.</p><div class="actions"><button data-action="replay-first">첫 처방 · 결과부터 보기</button><button data-action="replay-repeat">반복 처방 · 결과부터 보기</button><button data-action="replay-clean-pass">처방 없이 통과 연출</button></div><h3>진단과 처방 직접 변경</h3><label>진단 상태<select id="diagnosis-state">${options([['idle','시작 전 · 처방 제거'],['active','진행 중 · 처방 제거'],['clean','처방 없이 통과'],['prescribed','진단 완료 · 처방 발생']],s.diagnosis==='done'?(s.programs.length?'prescribed':'clean'):s.diagnosis)}</select></label><div class="fields"><label>처방 프로그램 수 (1~52)<input id="prescription-count" type="number" min="1" max="52" value="${s.programs.length||M.sourceCount(state.grade,state.index)}"></label></div><button data-action="resize">개수 적용 · 진단 완료 처리</button><div class="actions"><button data-action="all-pass">모두 통과</button><button data-action="make-fail">미통과 1개 생성</button><button data-action="review-all">미통과 모두 복습 후 통과</button><button data-action="reset-current">현재 세트 초기화</button><button data-action="reset-all">전체 초기화</button></div><h3>개별 프로그램 (${s.programs.length})</h3>${s.programs.length?s.programs.map(p=>`<div class="program-edit"><strong>${p.id+1}. ${esc(p.name)} ${p.reviewed?'· 복습 완료':''}</strong><select data-program-state="${p.id}" aria-label="프로그램 ${p.id+1} 상태">${options(['locked','idle','active','passed','failed'].map(x=>[x,M.labels[x]]),p.status)}</select><label><small>진행률 ${p.progress}%</small><input type="range" min="0" max="100" value="${p.progress}" data-program-progress="${p.id}" aria-label="프로그램 ${p.id+1} 진행률" ${p.status!=='active'?'disabled':''}></label>${p.status==='failed'?`<button data-action="review-one" data-id="${p.id}">복습 후 통과</button>`:''}</div>`).join(''):'<p><small>현재 처방 프로그램이 없습니다.</small></p>'}<h3>데이터 기준</h3><div class="notice">시트 기준: ${M.Catalog.meta.groups}개 세트 / ${M.Catalog.meta.programs}개 프로그램<br>${M.Catalog.meta.frameAssociations}개 프로그램-프레임 연결 (완전 중복 ${M.Catalog.meta.exactDuplicateFramesRemoved}행 제외)<br>MF012736 → M1.H99.16 정정<br>그룹–프로그램 연결표 미제공: 같은 등급의 프로그램을 테스트용으로 선택${s.programs.some(p=>p.sample)?'<br>현재 처방에 테스트용 추가 항목 포함':''}<br>진단 채점·실제 처방 엔진은 미구현. 원본 ‘O’, ‘삭제’, ‘1’ 표시는 보존하며 자동 제외하지 않음.</div>${dailyControls()}<h3>기획 확인 정책</h3><details class="policy"><summary>판정 규칙·추천 우선순위 편집</summary><p>진단 미시작 → 시작 전<br>진단 진행 → 진행 중<br>진단 완료 + 처방 0 → 처방 없이 통과<br>전체 통과 → 통과<br>전체 풀이 완료 + 미통과 존재 → 미통과</p><label>처방 후 학습 미시작<select id="policy-prescribed">${options([['active','진행 중 (요청의 임시 가정)'],['idle','시작 전 (비교용)']],state.policy.prescribed)}</select></label><label>일부 프로그램 미완료<select id="policy-unfinished">${options([['active','진행 중'],['idle','시작 전 (비교용)']],state.policy.unfinished)}</select></label><label>추천 우선순위<select id="policy-recommendation">${options([['active','진행 중 → 다음 순서 → 복습'],['failed','진행 중 → 복습 → 다음 순서']],state.policy.recommendation)}</select></label><p>순차 학습: 이전 프로그램 진행률 100% → 다음 학습 열림. 통과·미통과와 별개. 테스트 패널은 순서 제한 없이 상태를 조작할 수 있음.<br>부족 목표 1개 = 프로그램 1개인 샘플 가정.<br>등급·그룹 진입은 자유. 프로그램 학습은 순차 진행.</p></details><h3>최근 상태 변경</h3><div class="notice">${esc(s.recent||'변경 이력 없음')}</div><div class="actions"><button data-action="export">현재 테스트 데이터 JSON 내려받기</button><a href="source.zip" download>소스 코드 ZIP</a><a href="README.md" download>요구사항·테스트 안내</a></div></div>`;$('#test-panel .panel-content').scrollTop=scroll;}
 function showHelp(){const rows=[['clean','실력 알기를 마쳤고, 추가 학습 없이 통과했어요.'],['passed','실력 알기 후 필요한 학습을 모두 마쳤어요.'],['active','실력 알기 또는 맞춤 학습을 진행하고 있어요.'],['failed','학습을 마쳤지만 다시 살펴볼 내용이 있어요.'],['idle','아직 실력 알기를 시작하지 않았어요.']];$('#help').innerHTML=`<div class="dialog-top"><h2>학습 상태 확인</h2><button data-action="close-help" aria-label="닫기">×</button></div>${rows.map(([st,t])=>`<div class="status-help-row">${st==='active'?`<span class="status-dot ${st}" aria-label="${M.labels[st]}"></span>`:`<span class="status-help-icon" aria-label="${M.labels[st]}">${statusSVG(st==='clean'?'passed':st==='idle'?'locked':st)}</span>`}<p>${t}</p></div>`).join('')}`;$('#help').showModal();}
 const DEMO=[
 {title:'모양 알기',area:'도형',text:'동그라미를 골라요.',choices:[{shape:'circle',label:'동그라미'},{shape:'square',label:'네모'},{shape:'triangle',label:'세모'},{shape:'rectangle',label:'직사각형'}],correct:0},
@@ -1082,7 +1124,7 @@ function programContentHTML(p){
   return `<div class="program-lesson-title"><h2>${esc(p.name)}</h2></div><div class="diagnosis-progress"><span>문항 ${frame+1} / ${total}</span><progress max="${total}" value="${frame}" aria-label="학습 문항 진행"></progress></div><div class="lesson-question"><h1 id="program-question" tabindex="-1">${q.text}</h1>${choiceBoard(q,chosen,'learner-answer')}${chosen!==undefined?`<p class="answer-feedback">${chosen===q.correct?'잘했어요!':'다음에는 정답을 골라볼까요?'}</p>`:''}<div class="actions"><button class="primary" data-action="learner-next" ${chosen===undefined?'disabled':''}>${frame+1>=total?'결과 보기':'다음 문항'}</button></div></div>${programTestTools(p)}`;
 }
 function startProgram(p,review=false){if(!M.canStart(current(),p))return false;current().presentationPending=false;markLearning();current().attempts=(current().attempts||0)+1;normalize(p,'active');M.setProgress(p,0);p.wrongFrames=[];delete p.demoChoice;editing.intro=false;editing.reviewing=review;editing.showResult=false;return true;}
-function learningAction(act,b){if(!editing)return false;if(diagnosisOutcomeRun){if(act==='diagnosis-outcome-confirm'&&current().diagnosisOutcome.stage==='summary')setDiagnosisOutcomeStage(diagnosisSummary(current().diagnosticResult).deficits?'acknowledge':'reward');return true;}const s=current(),id=Number(b.dataset.id);if(editing.preparing&&['close-learning','diagnosis-leave','diagnosis-begin','diagnosis-answer','diagnosis-next'].includes(act))return true;if(editing.intro&&['learner-answer','learner-next','learner-review'].includes(act))return true;
+function learningAction(act,b){if(!editing)return false;if(diagnosisOutcomeRun){if(act==='diagnosis-outcome-confirm'&&current().diagnosisOutcome.stage==='summary')setDiagnosisOutcomeStage(diagnosisSummary(current().diagnosticResult).deficits?'searching':'reward');return true;}const s=current(),id=Number(b.dataset.id);if(editing.preparing&&['close-learning','diagnosis-leave','diagnosis-begin','diagnosis-answer','diagnosis-next'].includes(act))return true;if(editing.intro&&['learner-answer','learner-next','learner-review'].includes(act))return true;
 if(act==='program-begin'){
   if(editing.kind!=='program'||!editing.intro)return true;const p=s.programs.find(x=>x.id===editing.id);if(!p||!M.canStart(s,p))return true;
   if(p.status==='idle'){if(!startProgram(p))return true;}else{editing.intro=false;p.wrongFrames??=[];markLearning();}
@@ -1111,12 +1153,12 @@ function openLearning(kind,id){
   save();render();refreshDialog();if(!$('#learning').open)$('#learning').showModal();
 }
 function refreshDialog(){
-  if(!editing)return;const d=$('#learning');d.classList.remove('diagnosis-screen','diagnosis-result-dialog','program-screen','diagnosis-outcome-active','diagnosis-generating','diagnosis-preparing');d.removeAttribute('aria-labelledby');
-  if(editing.outcome){const stage=current().diagnosisOutcome.stage;d.classList.add('diagnosis-outcome-active');if(stage==='generating'){d.classList.add('diagnosis-generating');d.setAttribute('aria-label','맞춤 학습 생성 중');}else{d.removeAttribute('aria-label');if(isDiagnosisPreparation(stage))d.classList.add('diagnosis-preparing');d.setAttribute('aria-labelledby',isDiagnosisPreparation(stage)?'composition-title':'diagnosis-outcome-title');}}
+  if(!editing)return;const d=$('#learning');d.classList.remove('diagnosis-screen','diagnosis-result-dialog','program-screen','diagnosis-outcome-active','diagnosis-generating','diagnosis-preparing','diagnosis-summary-screen','diagnosis-collecting');d.removeAttribute('aria-labelledby');
+  if(editing.outcome){const stage=current().diagnosisOutcome.stage;d.classList.add('diagnosis-outcome-active');if(stage==='generating'){d.classList.add('diagnosis-generating');d.setAttribute('aria-label','맞춤 학습 생성 중');}else{d.removeAttribute('aria-label');if(isDiagnosisPreparation(stage))d.classList.add('diagnosis-preparing');if(stage==='summary')d.classList.add('diagnosis-summary-screen');if(stage==='collecting')d.classList.add('diagnosis-collecting');d.setAttribute('aria-labelledby',isDiagnosisPreparation(stage)?'composition-title':'diagnosis-outcome-title');}}
   if(['diagnosis','program'].includes(editing.kind))d.classList.add('diagnosis-screen');if(editing.kind==='program')d.classList.add('program-screen');
   if(editing.kind==='diagnosis-result')d.classList.add('diagnosis-result-dialog');
   const viewKey=learningViewKey(),changed=dialogViews.get(d)?.key!==viewKey;
-  renderDialogView('#learning',learnerDialogHTML(),viewKey);if(editing.outcome)mountDiagnosisPreparation();if(changed&&editing.kind==='program'){d.scrollTop=0;if(editing.justCompleted||editing.justReviewed)$('#program-completion-title')?.focus({preventScroll:true});}if(editing.complete)$('#pass-title')?.focus();
+  renderDialogView('#learning',learnerDialogHTML(),viewKey);if(editing.outcome){mountDiagnosisPreparation();mountDiagnosisFlight();}if(changed&&editing.kind==='program'){d.scrollTop=0;if(editing.justCompleted||editing.justReviewed)$('#program-completion-title')?.focus({preventScroll:true});}if(editing.complete)$('#pass-title')?.focus();
 }
 function closeLearning(){if(diagnosisOutcomeRun)return;if(editing?.kind==='program'){const p=current().programs.find(x=>x.id===editing.id);markMentorInterrupted(p);}const programId=editing?.kind==='program'?editing.id:null,entryAction=editing?.entryAction||'program';recordProgram();daily().timerRunning=false;save();editing=null;closeSurface('#learning');render();if(programId===null)document.querySelector('[data-action="diagnosis"]')?.focus({preventScroll:true});else restoreProgramCardFocus(programId,entryAction);}
 function diagnosticScreenHTML(s){if(editing.outcome)return diagnosisOutcomeHTML();if(editing.preparing)return `<div class="diagnosis-screen-top"><span>실력알기 완료</span><strong class="diagnosis-context"><span class="diagnosis-grade">${grade(state.grade)}등급</span><span>${esc(s.groupName)}</span></strong><span>맞춤 학습 준비</span></div><div class="diagnosis-screen-body diagnosis-preparation" id="diagnosis-composition-slot"></div>`;const top=`<div class="diagnosis-screen-top"><button data-action="close-learning">← 학습 목록</button><strong class="diagnosis-context"><span class="diagnosis-grade">${grade(state.grade)}등급</span><span>${esc(s.groupName)}</span></strong><span>실력알기</span></div>`;if(editing.intro)return top+`<div class="diagnosis-screen-body diagnosis-intro intro-arrival"><span class="badge">3문항 · 예시 진단</span><h1>어디를 더 공부하면 좋을지 알아볼까요?</h1><p>혼자 힘으로 풀어 보세요.<br>중간에 나가도 이어서 할 수 있어요.</p><button class="primary" data-action="diagnosis-begin">실력알기 시작</button></div>`;if(editing.complete)return cleanPassHTML();if(editing.confirmExit)return top+`<div class="diagnosis-screen-body diagnosis-intro"><h1>잠시 쉬었다 할까요?</h1><p>지금까지 푼 내용은 저장돼요.<br>다시 누르면 이어서 할 수 있어요.</p><div class="actions pause-actions"><button class="text-button" data-action="diagnosis-leave">저장하고 나가기</button><button class="primary" data-action="diagnosis-stay">계속 풀기</button></div></div>`;const session=s.diagnosticSession,q=DEMO[session.index%3],chosen=session.answers[session.index];return top+`<div class="diagnosis-screen-body"><div class="diagnosis-progress"><span>문항 ${session.index+1} / 3</span><progress max="3" value="${session.index+1}" aria-label="진단 문항 진행"></progress></div><div class="lesson-question"><h1>${q.text}</h1>${choiceBoard(q,chosen,'diagnosis-answer')}<div class="actions"><button class="primary" data-action="diagnosis-next" ${chosen===undefined?'disabled':''}>${session.index===2?'진단 마치기':'다음 문항'}</button></div></div><div class="diagnosis-tools"><button data-action="diagnosis-tool" data-tool="notes" aria-expanded="${editing.tool==='notes'}">연습장</button><button data-action="diagnosis-tool" data-tool="help" aria-expanded="${editing.tool==='help'}">사용 방법</button></div>${editing.tool==='notes'?`<label class="diagnosis-notes">자유롭게 적어 보세요.<textarea id="diagnosis-notes" rows="5">${esc(session.notes||'')}</textarea></label>`:editing.tool==='help'?'<div class="learning-info">답을 하나 고른 뒤 다음 문항을 눌러요. 정답은 진단을 마친 후 결과에서 확인할 수 있어요.</div>':''}${diagnosticTestTools(s)}</div>`;}

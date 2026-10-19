@@ -65,7 +65,7 @@ for(const version of ['working','versions/v48','versions/v49']){
         assert.equal(h.evaluate('panel'),null);assert.equal(h.node('#learning').open,true);assert.equal(h.node('#prescription').open,false);
         assert.equal(h.evaluate('current().diagnosisOutcome.stage'),'summary');assert.equal(h.evaluate('current().diagnosisOutcome.preview'),true);
         h.click('diagnosis-outcome-confirm');
-        for(const stage of ['acknowledge','searching','ready','generating','reward']){assert.equal(h.evaluate('current().diagnosisOutcome.stage'),stage);h.evaluate('diagnosisOutcomeTimer').fn();}
+        for(const stage of ['searching','ready','generating','reward','collecting']){assert.equal(h.evaluate('current().diagnosisOutcome.stage'),stage);h.evaluate('diagnosisOutcomeTimer').fn();}
         assert.equal(h.node('#learning').open,false);assert.equal(h.evaluate('current().programs.length'),8);
         assert.equal(h.evaluate('M.canStart(current(),current().programs[0])'),true);assert.equal(h.evaluate('skyState().totalPieces'),before);
       }
@@ -97,7 +97,7 @@ for(const version of ['working','versions/v48','versions/v49']){
 
   test(version+' no-prescription replay uses the same completion flow and a fresh fixture cannot retain its result popup',()=>{
     const h=setup();h.click('test');h.click('replay-clean-pass');
-    if(version==='working'){assert.equal(h.evaluate('current().diagnosisOutcome.stage'),'summary');h.click('diagnosis-outcome-confirm');h.evaluate('diagnosisOutcomeTimer').fn();}
+    if(version==='working'){assert.equal(h.evaluate('current().diagnosisOutcome.stage'),'summary');h.click('diagnosis-outcome-confirm');h.evaluate('diagnosisOutcomeTimer').fn();h.evaluate('diagnosisOutcomeTimer').fn();}
     assert.equal(h.evaluate('panel'),null);assert.equal(h.node('#learning').open,true);assert.equal(h.evaluate('editing.complete'),true);
     assert.equal(h.node('#learning').classList.contains('diagnosis-post-flow'),popup);assert.match(h.node('#learning').innerHTML,/훌륭해요!/);
     assert.equal(h.evaluate('current().programs.length'),0);h.click('pass-next');assert.match(h.node('#learning').innerHTML,/다음 학습 준비/);
