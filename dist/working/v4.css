@@ -1,9 +1,13 @@
-/* V4.2 — QmDlOvkNKFdZJHCY89h0vY / main 3:11, main2 3:96.
+/* V4.3 — QmDlOvkNKFdZJHCY89h0vY / main 3:11, main2 3:96.
    Keep the existing learning flows; apply the supplied component geometry. */
 :root{--forest:var(--theme-title);--muted:var(--theme-muted);--line:var(--theme-line);--soft:var(--theme-soft);--paper:var(--theme-surface);--lime:var(--theme-accent);--learning-page:var(--theme-page);--top-action-height:48px;--group-drawer-width:min(320px,calc(100vw - 24px));--card-status-slot:44px;--card-status-symbol:44px;--status-pass-fill:#3b82f6;--status-pass-mark:#fff;--status-review-fill:#f2b642;--status-review-mark:#fff;--status-lock-surface:#edf0f3;--status-lock-fill:#b7bec3;--completed-card-fill:var(--theme-completed);--study-action-hover:var(--theme-primary-hover);--study-action-on-hover:#fff;--navigation-idle:#b7bec3}
 html,body{background:var(--theme-page);color:var(--theme-text)}
+:root{--rail-tab-width:72px;--rail-tab-gap:16px;--learning-content-max:1080px;--learning-start-gutter:calc(var(--rail-tab-width) + var(--rail-tab-gap) + env(safe-area-inset-left,0px));--learning-end-gutter:max(16px,env(safe-area-inset-right,0px))}
 .learning-workspace,body.learning-navigation-open .learning-workspace{width:100%;margin-left:0;transition:none}
-.learning-workspace main,body.learning-navigation-open .learning-workspace main{width:min(1080px,calc(100% - 80px));max-width:none;margin:0 auto;padding:0 0 100px;transition:none}
+/* Reserve the closed tab's full width before centering the content. On a wide
+   screen the existing 1080px canvas stays centered; tablet gutters never fall
+   below the tab width plus 16px. The end gutter uses only the space it needs. */
+.learning-workspace main,body.learning-navigation-open .learning-workspace main{width:min(var(--learning-content-max),calc(100% - var(--learning-start-gutter) - var(--learning-end-gutter)));max-width:none;margin:0 auto;margin-left:max(var(--learning-start-gutter),calc((100% - var(--learning-content-max))/2));padding:0 0 100px;transition:none}
 .ai{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 104px;column-gap:8px;row-gap:0;align-items:center;width:100%;max-width:none;margin:0;padding:40px 0 69px;border:0;background:var(--theme-page)}
 .ai::after{content:'';position:absolute;left:0;right:0;bottom:36px;height:1px;background:#eef2f4;pointer-events:none}
 body.has-long-learning-list .ai{top:0}
@@ -117,7 +121,7 @@ body.has-long-learning-list .ai::before{content:none;box-shadow:none}
 #group-panel .nav-grade-progress progress::-webkit-progress-bar{background:#edf0f3}
 #group-panel .nav-grade-progress progress::-webkit-progress-value{background:#0ec7ae}
 #group-panel .nav-grade-progress progress::-moz-progress-bar{background:#0ec7ae}
-.groups-trigger,.groups-trigger:hover:not(:disabled),.groups-trigger:active:not(:disabled){position:fixed;left:0;top:calc(50% - 72px);bottom:auto;display:block;width:72px;height:144px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+.groups-trigger,.groups-trigger:hover:not(:disabled),.groups-trigger:active:not(:disabled){position:fixed;left:env(safe-area-inset-left,0px);top:calc(50% - 72px);bottom:auto;display:block;width:var(--rail-tab-width);height:144px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
 .groups-trigger .side-tab-surface{position:absolute;left:0;top:0}
 .groups-trigger .side-tab-content{position:absolute;left:11px;top:54px;display:grid;place-items:center;width:36px;height:36px;padding:0}
 .groups-trigger:hover:not(:disabled){filter:brightness(.98)}
@@ -127,7 +131,6 @@ body.has-long-learning-list .ai::before{content:none;box-shadow:none}
 @media(max-width:980px){.grid,body.learning-navigation-open #programs.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.mentor-cluster{grid-template-columns:minmax(0,1fr) 320px}}
 @media(max-width:760px){.grid,body.learning-navigation-open #programs.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){
-  .learning-workspace main,body.learning-navigation-open .learning-workspace main{width:calc(100% - 40px)}
   .ai{grid-template-columns:minmax(0,1fr) 104px;row-gap:14px;padding:24px 0 49px}
   .ai::after{bottom:24px}
   .mentor-cluster{display:contents}

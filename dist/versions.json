@@ -4,13 +4,13 @@
   "working": {
     "id": "working",
     "label": "현재 작업본",
-    "title": "V4.2 기준 · 최신 작업본",
+    "title": "V4.3 기준 · 최신 작업본",
     "path": "working/",
-    "basedOn": "v52",
+    "basedOn": "v53",
     "date": "2026-10-19",
     "matchesBaseline": true,
     "changes": [
-      "V4.2 시안과 같은 화면이에요.",
+      "V4.3 시안과 같은 화면이에요.",
       "다음 수정은 현재 작업본에서 이어갑니다."
     ]
   },
@@ -916,6 +916,20 @@
       ],
       "family": "v50",
       "revision": 2
+    },
+    {
+      "id": "v53",
+      "label": "V4.3",
+      "title": "아이패드 탭 겹침 수정",
+      "path": "versions/v53/",
+      "date": "2026-10-19",
+      "createdAt": "2026-10-19T06:49:10.312Z",
+      "changes": [
+        "닫힌 탭 너비 72px와 간격 16px를 학습 영역 왼쪽에 확보",
+        "넓은 화면의 1080px 콘텐츠와 카드 배치를 유지하고 태블릿·세로 화면의 겹침 방지"
+      ],
+      "family": "v50",
+      "revision": 3
     }
   ]
 }
