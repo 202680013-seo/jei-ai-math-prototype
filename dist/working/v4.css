@@ -1,4 +1,4 @@
-/* V4.5 — QmDlOvkNKFdZJHCY89h0vY / main 3:11, main2 3:96.
+/* V4.6 — QmDlOvkNKFdZJHCY89h0vY / main 3:11, main2 3:96.
    Keep the existing learning flows; apply the supplied component geometry. */
 :root{--forest:var(--theme-title);--muted:var(--theme-muted);--line:var(--theme-line);--soft:var(--theme-soft);--paper:var(--theme-surface);--lime:var(--theme-accent);--learning-page:var(--theme-page);--top-action-height:48px;--group-drawer-width:min(320px,calc(100vw - 24px));--card-status-slot:44px;--card-status-symbol:44px;--status-pass-fill:#3b82f6;--status-pass-mark:#fff;--status-review-fill:#f2b642;--status-review-mark:#fff;--status-lock-surface:#edf0f3;--status-lock-fill:#b7bec3;--completed-card-fill:var(--theme-completed);--study-action-hover:var(--theme-primary-hover);--study-action-on-hover:#fff;--navigation-idle:#b7bec3}
 html,body{background:var(--theme-page);color:var(--theme-text)}
@@ -206,4 +206,86 @@ body.has-personalized-learning .heading>.learning-context{flex:0 0 auto;width:au
  #learning-context #diagnostic-result-slot>.diagnostic-summary-trigger{min-height:44px;padding:10px 9px}
  #learning-context .diagnostic-summary-trigger .result-copy strong{font-size:13px;line-height:18px}
  #learning-context .diagnostic-summary-trigger .result-icon{width:16px;height:18px}
+}
+
+/* V4.6 · Result confirmation → course creation → earned fragments → next step. */
+#learning.diagnosis-screen.diagnosis-outcome-active{background:transparent;overflow:auto}
+#learning.diagnosis-screen.diagnosis-outcome-active::backdrop{background:transparent}
+#learning.diagnosis-outcome-active>.dialog-view{position:relative;min-height:100dvh;background:transparent}
+.diagnosis-outcome-background{position:absolute;inset:0;overflow:hidden;pointer-events:none;background:var(--theme-page);filter:blur(2px)}
+.diagnosis-outcome-background .diagnosis-screen-top{position:relative}
+.diagnosis-outcome-scrim{position:relative;z-index:1;display:flex;min-height:100dvh;box-sizing:border-box;align-items:center;justify-content:center;padding:32px 24px;background:#243b4366;animation:outcome-scrim-in .5s ease both}
+.diagnosis-outcome-summary{width:min(640px,100%);padding:36px 40px 32px;border:1px solid var(--theme-line);border-radius:28px;background:var(--theme-surface);color:var(--theme-title);text-align:center;box-shadow:0 16px 70px #142c3524}
+.outcome-eyebrow{display:block;color:var(--theme-muted);font-size:15px;font-weight:700;line-height:1.5}
+.diagnosis-outcome-summary h1{margin:14px 0 8px;font-size:32px;font-weight:800;line-height:1.4}
+.outcome-verdict{margin:0;color:var(--theme-primary);font-size:17px;line-height:1.6;font-weight:700}
+.diagnosis-outcome-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:32px 0}
+.diagnosis-outcome-metric{display:flex;min-width:0;flex-direction:column;align-items:center;gap:14px}
+.diagnosis-outcome-metric>span{color:var(--theme-muted);font-size:14px;font-weight:700;line-height:1.4}
+.diagnosis-outcome-metric>small{color:var(--theme-text);font-size:13px;font-weight:700;line-height:1.5;white-space:nowrap}
+.outcome-ring{position:relative;display:grid;width:92px;height:92px;place-items:center;border-radius:50%;background:conic-gradient(var(--theme-primary) calc(var(--result-ratio)*1turn),var(--theme-soft) 0)}
+.outcome-ring::before{content:'';position:absolute;inset:7px;border-radius:50%;background:var(--theme-surface)}
+.outcome-ring strong{position:relative;font-size:27px;font-weight:800;line-height:1.2}
+.outcome-ring strong small{color:var(--theme-muted);font-size:15px;font-weight:700}
+.outcome-time>strong{display:flex;height:92px;align-items:center;justify-content:center;gap:3px;font-size:25px;white-space:nowrap;font-weight:800}
+.outcome-time strong small{margin-right:5px;font-size:14px;font-weight:700}
+.diagnosis-outcome-summary .outcome-confirm{min-width:160px;min-height:48px;padding:12px 32px;border-radius:14px;font-size:18px;font-weight:800;background:var(--theme-primary);color:var(--theme-on-primary)}
+.outcome-message,.outcome-reward{flex-direction:column;color:#fff;text-align:center;background:#1a333dcc;background:color-mix(in srgb,var(--theme-night) 78%,transparent)}
+.outcome-message h1,.outcome-reward h1{margin:22px 0 12px;font-size:32px;font-weight:800;line-height:1.45;color:#fff}
+.outcome-message p,.outcome-reward>p:not(.outcome-reward-mentor){margin:0;max-width:36ch;font-size:19px;line-height:1.7;color:#fff}
+.outcome-ack-art{position:relative;width:112px;height:112px;color:var(--theme-accent);animation:outcome-content-in .7s .1s both}
+.outcome-ack-art svg{width:100%;height:100%}
+.outcome-ack-art rect{fill:var(--theme-surface);stroke:var(--theme-accent);stroke-width:2}
+.outcome-ack-art path{stroke:currentColor;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.outcome-ack-art i{position:absolute;width:8px;height:8px;border-radius:3px;background:var(--theme-accent);top:16px;left:5px;transform:rotate(30deg)}
+.outcome-ack-art i:last-child{width:6px;height:6px;left:auto;right:0;top:83px}
+.outcome-message h1,.outcome-message p{animation:outcome-content-in .65s .16s both}
+.outcome-message p{animation-delay:.28s}
+#learning.diagnosis-generating>.dialog-view{min-height:100dvh}
+.outcome-generating-label{position:absolute;left:50%;bottom:max(36px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;align-items:center;gap:12px;max-width:calc(100% - 40px);padding:14px 22px;border:1px solid var(--theme-line);border-radius:18px;background:var(--theme-surface);color:var(--theme-title);font-size:16px;font-weight:700;line-height:1.5;box-shadow:0 6px 24px #142c3512;text-align:center}
+.outcome-spinner{flex:none;width:20px;height:20px;border:2px solid var(--theme-soft-strong);border-top-color:var(--theme-primary);border-radius:50%;animation:recommend-spinner-turn 1.2s linear infinite}
+.outcome-reward .outcome-reward-mentor{margin:0 0 24px;padding:11px 20px;border:1px solid #ffffff4d;border-radius:18px;background:#ffffff14;color:#fff;font-size:18px;line-height:1.5;font-weight:700}
+.outcome-fragment-stage{position:relative;display:grid;place-items:center;width:200px;height:200px}
+.outcome-fragment-halo{position:absolute;inset:15px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--theme-accent) 38%,transparent),transparent 70%);animation:outcome-halo 1.6s .4s ease both}
+.outcome-fragment{position:relative;width:132px;height:132px;filter:drop-shadow(0 8px 20px #0ec7ae33);animation:outcome-fragment-arrive 1.2s .28s cubic-bezier(.2,.7,.25,1) both}
+.outcome-fragment svg{width:100%;height:100%}
+.fragment-base{fill:var(--theme-accent)}
+.fragment-light{fill:var(--theme-surface);fill-opacity:.5}
+.fragment-shade{fill:var(--theme-primary);fill-opacity:.7}
+.fragment-outline{stroke:var(--theme-surface);stroke-opacity:.65;stroke-width:2;stroke-linejoin:round}
+.outcome-fragment-stage.is-empty .outcome-fragment{filter:none;opacity:.5;animation:outcome-content-in .7s both}
+.outcome-fragment-stage.is-empty .outcome-fragment-halo{display:none}
+.reward-spark{position:absolute;width:9px;height:9px;border-radius:3px;background:var(--theme-soft-strong);animation:outcome-content-in .8s 1s both}
+.reward-spark.spark-a{top:32px;left:20px;rotate:20deg}
+.reward-spark.spark-b{top:50px;right:17px;width:6px;height:6px;rotate:30deg}
+.reward-spark.spark-c{bottom:24px;right:42px;width:7px;height:7px;rotate:40deg}
+.outcome-reward h1{margin-top:14px;animation:outcome-content-in .65s .55s both}
+.outcome-reward h1 strong{color:var(--theme-soft-strong);font-weight:800}
+.outcome-reward>p:not(.outcome-reward-mentor),.outcome-reward-rule{animation:outcome-content-in .65s .7s both}
+.outcome-reward-rule{margin-top:12px;font-size:13px;line-height:1.5;color:#ffffffb3}
+.outcome-arrival.diagnosis-outcome-summary{animation:outcome-content-in .65s .08s both}
+#learning[data-outcome-paused=true] *,#learning[data-outcome-paused=true] *::before{animation-play-state:paused!important}
+@keyframes outcome-scrim-in{from{opacity:0}to{opacity:1}}
+@keyframes outcome-content-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes outcome-fragment-arrive{from{opacity:0;transform:translateY(130px) scale(.7) rotate(-8deg)}to{opacity:1;transform:translateY(0) scale(1) rotate(0)}}
+@keyframes outcome-halo{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@media(max-width:600px){
+  .diagnosis-outcome-scrim{padding:24px 16px}
+  .diagnosis-outcome-summary{padding:28px 20px 24px;border-radius:24px}
+  .diagnosis-outcome-summary h1,.outcome-message h1,.outcome-reward h1{font-size:27px}
+  .outcome-eyebrow{font-size:13px}
+  .diagnosis-outcome-metrics{gap:8px;margin:28px 0}
+  .diagnosis-outcome-metric{gap:12px}
+  .diagnosis-outcome-metric>span{font-size:12px}
+  .diagnosis-outcome-metric>small{font-size:11px}
+  .outcome-ring{width:72px;height:72px}
+  .outcome-ring strong{font-size:23px}
+  .outcome-ring strong small{font-size:12px}
+  .outcome-time>strong{height:72px;font-size:20px;gap:0}
+  .outcome-time strong small{font-size:11px;margin-right:2px}
+  .outcome-message p,.outcome-reward>p:not(.outcome-reward-mentor){font-size:17px}
+  .outcome-generating-label{font-size:14px;padding:12px 16px}
+}
+@media(prefers-reduced-motion:reduce){
+  .diagnosis-outcome-active *, .diagnosis-outcome-active *::before{animation:none!important;transition:none!important}
 }

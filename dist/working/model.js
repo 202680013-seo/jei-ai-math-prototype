@@ -27,7 +27,7 @@ function status(s,p=defaults){if(s.diagnosis==='idle')return 'idle';if(s.diagnos
 const presetNames=['첫 진입 · 처방 없음','진단 진행 중','진단 통과 · 처방 없음','처방 발생 · 학습 미시작','프로그램 학습 진행 중','처방 프로그램 전체 통과','모든 풀이 완료 · 미통과 존재','복습 후 모든 프로그램 통과','처방 프로그램 1개','처방 프로그램 52개','진단 그룹 78개 · J등급'];
 function preset(state,k){if(k===10){state.grade=9;state.index=0;}const s=blank(state.grade,state.index);if(k>1&&k<10)s.diagnosis='done';if(k===1)s.diagnosis='active';if(k>=3&&k<10)s.programs=programs(k===8?1:k===9?52:sourceCount(state.grade,state.index),state.grade,state.index);if(k===4){s.programs[0].status='active';setProgress(s.programs[0],45);}if([5,6,7].includes(k))s.programs.forEach(x=>{x.status='passed';setProgress(x,100);});if(k===6)s.programs[Math.min(2,s.programs.length-1)].status='failed';if(k===7){s.programs[Math.min(2,s.programs.length-1)].reviewed=true;s.reviewHistory=true;}s.recent='프리셋: '+presetNames[k];state.grades[state.grade][state.index]=s;return s;}
 // Sequence is gated by completion percentage, never by pass/fail outcome.
-function canStudy(s,p){if(!p||p.status==='locked')return false;const i=s.programs.indexOf(p);return i>=0&&(p.progress>=100||s.programs.slice(0,i).every(x=>x.progress>=100));}
+function canStudy(s,p){if(s.diagnosisOutcome||!p||p.status==='locked')return false;const i=s.programs.indexOf(p);return i>=0&&(p.progress>=100||s.programs.slice(0,i).every(x=>x.progress>=100));}
 function canReview(s,p){return !!p&&p.status!=='locked'&&(p.progress>=100||['passed','failed'].includes(p.status))&&canStudy(s,p);}
 function currentProgram(s){return s.programs.find(p=>p.status==='active'&&p.progress<100&&canStudy(s,p));}
 function canStart(s,p){const active=currentProgram(s);return canStudy(s,p)&&(!active||active.id===p.id);}
