@@ -43,11 +43,16 @@ test('passed diagnosis rewards correct answers once and then requires an explici
   assert.equal(restored.evaluate('skyState().totalPieces'),before+3);
 });
 
-test('failed diagnosis follows summary → auto acknowledgment → locked course → reward → first program open',()=>{
+test('failed diagnosis follows summary → original acknowledgment, lens and ready → locked course → reward → first program open',()=>{
   const h=harness(undefined,{reducedMotion:false});finish(h,[1]);h.click('diagnosis-outcome-confirm');
-  assert.equal(phase(h),'acknowledge');assert(h.node('#learning').innerHTML.includes('나에게 맞는 학습이 만들어졌어요.'));
-  assert(!h.node('#learning').innerHTML.slice(h.node('#learning').innerHTML.indexOf('outcome-message')).includes('data-action='));assert.equal(h.evaluate('diagnosisOutcomeTimer.ms'),3000);
+  assert.equal(phase(h),'acknowledge');assert.equal(h.node('#composition-title').textContent,'수고했어요!');
+  assert.equal(h.node('#composition-copy').textContent,'실력알기를 마쳤어요.');assert.equal(h.evaluate('diagnosisOutcomeTimer.ms'),3000);
   h.click('diagnosis-outcome-confirm');assert.equal(phase(h),'acknowledge');advance(h);
+  assert.equal(phase(h),'searching');assert.equal(h.node('#composition-title').textContent,'맞춤 학습을 찾고 있어요');
+  assert.equal(h.node('#composition').getAttribute('data-compose-step'),'1');assert.equal(h.evaluate('diagnosisOutcomeTimer.ms'),3000);
+  h.escape();assert.equal(phase(h),'searching');advance(h);
+  assert.equal(phase(h),'ready');assert(h.node('#composition-title').textContent.includes('학습이 준비됐어요'));
+  assert.equal(h.node('#composition').getAttribute('data-compose-step'),'2');assert.equal(h.evaluate('diagnosisOutcomeTimer.ms'),3000);advance(h);
   assert.equal(phase(h),'generating');assert.equal(h.node('#learning').open,true);assert.equal(h.evaluate('current().programs.length'),8);
   assert(h.node('#programs').classList.contains('reveal'));assert(h.node('#learning').classList.contains('diagnosis-generating'));
   assert.equal(h.evaluate('M.canStudy(current(),current().programs[0])'),false);
@@ -79,7 +84,7 @@ test('summary counts distinct deficit goals, actual question totals and a readab
 
 test('hidden tabs pause completion timing, stale callbacks cannot advance, and resume keeps the same phase',()=>{
   const h=harness(undefined,{reducedMotion:false});finish(h,[1]);h.click('diagnosis-outcome-confirm');
-  for(const expected of ['acknowledge','generating','reward']){
+  for(const expected of ['acknowledge','searching','ready','generating','reward']){
     assert.equal(phase(h),expected);const old=h.evaluate('diagnosisOutcomeTimer');
     h.document.visibilityState='hidden';h.emitDocument('visibilitychange');assert.equal(h.evaluate('diagnosisOutcomeTimer'),null);
     old.fn();assert.equal(phase(h),expected);assert.equal(h.node('#learning').getAttribute('data-outcome-paused'),'true');
@@ -91,7 +96,7 @@ test('hidden tabs pause completion timing, stale callbacks cannot advance, and r
 
 test('reload restores each pending stage and never recreates a generated course or rewards it twice',()=>{
   let h=harness();finish(h,[1]);
-  for(const expected of ['summary','acknowledge','generating','reward']){
+  for(const expected of ['summary','acknowledge','searching','ready','generating','reward']){
     assert.equal(phase(h),expected);const saved=h.saved();h=harness(saved);
     assert.equal(phase(h),expected);assert.equal(h.node('#learning').open,true);assert.equal(h.node('#learning-workspace').inert,true);
     if(expected==='generating')assert.deepEqual(h.data('current().programs'),saved.grades[3][0].programs);
@@ -112,8 +117,40 @@ test('explicit scenario changes cancel timers and release inert elements without
 });
 
 test('reduced motion preserves readable stage holds and model locks, then opens the course normally',()=>{
-  const h=harness(undefined,{reducedMotion:true});finish(h,[1]);h.click('diagnosis-outcome-confirm');advance(h);
+  const h=harness(undefined,{reducedMotion:true});finish(h,[1]);h.click('diagnosis-outcome-confirm');for(const expected of ['acknowledge','searching','ready']){assert.equal(phase(h),expected);assert.equal(h.node('#composition').hidden,false);advance(h);}
   assert.equal(phase(h),'generating');assert.equal(h.evaluate('cardRevealRun'),null);assert.equal(h.evaluate('diagnosisOutcomeTimer.ms'),2200);
   assert.equal(h.evaluate('M.canStart(current(),current().programs[0])'),false);advance(h);
   assert.equal(h.evaluate('diagnosisOutcomeTimer.ms'),3600);advance(h);assert.equal(h.evaluate('M.canStart(current(),current().programs[0])'),true);
+});
+
+
+test('restored preparation reuses the original SVGs and one mounted screen through all three steps',()=>{
+  const fs=require('node:fs'),original=harness(undefined,{appSource:fs.readFileSync('dist/versions/v55/app.js','utf8')});
+  original.evaluate("beginComposition(8,'first','learning')");const originalGraphics=original.node('#composition').innerHTML;
+  const h=harness(undefined,{reducedMotion:false});finish(h,[1]);h.click('diagnosis-outcome-confirm');
+  assert.equal(h.node('#composition').innerHTML,originalGraphics,'the original check, scanning lens and ready artwork are reused exactly');
+  const composition=h.node('#composition'),host=h.node('#learning');let writes=0,markup=host.innerHTML;
+  Object.defineProperty(host,'innerHTML',{get:()=>markup,set:value=>{markup=value;writes++;},configurable:true});
+  for(const expected of ['acknowledge','searching','ready']){
+    assert.equal(phase(h),expected);assert.equal(composition.parent,h.node('#diagnosis-composition-slot'));
+    assert.equal(composition.hidden,false);assert.equal(composition.innerHTML,originalGraphics);
+    assert.equal(host.getAttribute('aria-labelledby'),'composition-title');assert(host.classList.contains('diagnosis-preparing'));
+    h.evaluate('render();refreshDialog();refreshDialog()');assert.equal(writes,0,'routine renders and stage changes keep the mounted preparation screen');
+    if(expected!=='ready')advance(h);
+  }
+  assert.equal(h.evaluate('current().programs.length'),0);advance(h);
+  assert.equal(phase(h),'generating');assert.equal(composition.parent,h.node('#prescription'));assert.equal(composition.hidden,true);
+  assert.equal(host.classList.contains('diagnosis-preparing'),false);advance(h);advance(h);
+  assert.equal(h.evaluate('skyState().totalPieces'),2);
+});
+
+test('cancelling either restored step releases the reusable graphic and stale timers cannot reveal a new course',()=>{
+  for(const expected of ['searching','ready']){
+    const h=harness();h.click('replay-first');h.click('diagnosis-outcome-confirm');advance(h);if(expected==='ready')advance(h);
+    assert.equal(phase(h),expected);const stale=h.evaluate('diagnosisOutcomeTimer');h.click('preset',0);stale.fn();
+    assert.equal(h.node('#composition').parent,h.node('#prescription'));assert.equal(h.node('#composition').hidden,true);
+    assert.equal(h.evaluate('current().programs.length'),0);assert.equal(h.evaluate('skyState().totalPieces'),0);assert.equal(h.node('#learning').open,false);
+    h.click('replay-first');h.click('diagnosis-outcome-confirm');advance(h);
+    assert.equal(phase(h),'searching');assert.equal(h.node('#composition').parent,h.node('#diagnosis-composition-slot'));
+  }
 });

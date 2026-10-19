@@ -65,7 +65,7 @@ for(const version of ['working','versions/v48','versions/v49']){
         assert.equal(h.evaluate('panel'),null);assert.equal(h.node('#learning').open,true);assert.equal(h.node('#prescription').open,false);
         assert.equal(h.evaluate('current().diagnosisOutcome.stage'),'summary');assert.equal(h.evaluate('current().diagnosisOutcome.preview'),true);
         h.click('diagnosis-outcome-confirm');
-        for(const stage of ['acknowledge','generating','reward']){assert.equal(h.evaluate('current().diagnosisOutcome.stage'),stage);h.evaluate('diagnosisOutcomeTimer').fn();}
+        for(const stage of ['acknowledge','searching','ready','generating','reward']){assert.equal(h.evaluate('current().diagnosisOutcome.stage'),stage);h.evaluate('diagnosisOutcomeTimer').fn();}
         assert.equal(h.node('#learning').open,false);assert.equal(h.evaluate('current().programs.length'),8);
         assert.equal(h.evaluate('M.canStart(current(),current().programs[0])'),true);assert.equal(h.evaluate('skyState().totalPieces'),before);
       }

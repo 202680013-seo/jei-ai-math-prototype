@@ -1,4 +1,4 @@
-/* V4.6 — QmDlOvkNKFdZJHCY89h0vY / main 3:11, main2 3:96.
+/* V4.7 — QmDlOvkNKFdZJHCY89h0vY / main 3:11, main2 3:96.
    Keep the existing learning flows; apply the supplied component geometry. */
 :root{--forest:var(--theme-title);--muted:var(--theme-muted);--line:var(--theme-line);--soft:var(--theme-soft);--paper:var(--theme-surface);--lime:var(--theme-accent);--learning-page:var(--theme-page);--top-action-height:48px;--group-drawer-width:min(320px,calc(100vw - 24px));--card-status-slot:44px;--card-status-symbol:44px;--status-pass-fill:#3b82f6;--status-pass-mark:#fff;--status-review-fill:#f2b642;--status-review-mark:#fff;--status-lock-surface:#edf0f3;--status-lock-fill:#b7bec3;--completed-card-fill:var(--theme-completed);--study-action-hover:var(--theme-primary-hover);--study-action-on-hover:#fff;--navigation-idle:#b7bec3}
 html,body{background:var(--theme-page);color:var(--theme-text)}
@@ -288,4 +288,17 @@ body.has-personalized-learning .heading>.learning-context{flex:0 0 auto;width:au
 }
 @media(prefers-reduced-motion:reduce){
   .diagnosis-outcome-active *, .diagnosis-outcome-active *::before{animation:none!important;transition:none!important}
+}
+
+/* V4.7 · Preserve the original full-screen prescription choreography. */
+#learning.diagnosis-screen.diagnosis-outcome-active.diagnosis-preparing{background:var(--theme-page)}
+#learning.diagnosis-preparing>.dialog-view{background:var(--theme-page)}
+#learning.diagnosis-preparing .diagnosis-screen-top{background:var(--theme-surface)}
+#learning.diagnosis-preparing #composition{animation:outcome-content-in .6s ease both}
+#learning.diagnosis-preparing #composition[data-compose-step="1"]>h2{animation:preparation-search-copy .55s ease both}
+#learning.diagnosis-preparing #composition[data-compose-step="2"]>h2{animation:preparation-ready-copy .55s ease both}
+@keyframes preparation-search-copy{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes preparation-ready-copy{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){
+  #learning.diagnosis-preparing #composition,#learning.diagnosis-preparing #composition>h2{animation:none!important}
 }
