@@ -46,6 +46,19 @@ test('the non-modal outline leaves main guidance, keyboard navigation and progra
   assert(aside.includes('role="navigation"'));assert(!aside.includes('aria-modal'));
 });
 
+test('blank workspace and body clicks leave the rail open until its explicit close or Escape',()=>{
+  const h=harness(undefined,{reducedMotion:false});h.evaluate('M.preset(state,4);render()');
+  const before=h.data('current().programs');h.click('groups');
+  const blank={closest(selector){return selector==='#learning-workspace'?h.node('#learning-workspace'):null;}};
+  h.emitDocument('click',{target:blank});
+  const body=h.node('body');body.closest=()=>null;h.emitDocument('click',{target:body});
+  h.node('#overlay').emit('click');
+  assert.equal(h.evaluate('panel'),'groups');assert.equal(h.node('#group-panel')['data-panel-phase'],'open');
+  assert.deepEqual(h.data('current().programs'),before);
+  h.click('close-panel');assert.equal(h.evaluate('panel'),null);h.evaluate('panelMotionTimer').fn();
+  h.click('groups');h.emitDocument('keydown',{key:'Escape'});assert.equal(h.evaluate('panel'),null);
+});
+
 test('stable panel renders retain the mounted content and stale reveal or exit timers cannot affect a reopened outline',()=>{
   const h=harness(undefined,{reducedMotion:false}),panel=h.node('#group-panel');let markup='',writes=0;
   Object.defineProperty(panel,'innerHTML',{get:()=>markup,set:value=>{markup=value;writes++;},configurable:true});

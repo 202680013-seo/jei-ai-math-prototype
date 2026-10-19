@@ -1,4 +1,4 @@
-/* V4.4 — QmDlOvkNKFdZJHCY89h0vY / main 3:11, main2 3:96.
+/* V4.5 — QmDlOvkNKFdZJHCY89h0vY / main 3:11, main2 3:96.
    Keep the existing learning flows; apply the supplied component geometry. */
 :root{--forest:var(--theme-title);--muted:var(--theme-muted);--line:var(--theme-line);--soft:var(--theme-soft);--paper:var(--theme-surface);--lime:var(--theme-accent);--learning-page:var(--theme-page);--top-action-height:48px;--group-drawer-width:min(320px,calc(100vw - 24px));--card-status-slot:44px;--card-status-symbol:44px;--status-pass-fill:#3b82f6;--status-pass-mark:#fff;--status-review-fill:#f2b642;--status-review-mark:#fff;--status-lock-surface:#edf0f3;--status-lock-fill:#b7bec3;--completed-card-fill:var(--theme-completed);--study-action-hover:var(--theme-primary-hover);--study-action-on-hover:#fff;--navigation-idle:#b7bec3}
 html,body{background:var(--theme-page);color:var(--theme-text)}
@@ -81,17 +81,17 @@ body.has-long-learning-list .ai::before{content:none;box-shadow:none}
 .grid>.program-card.is-locked>.program-title{color:var(--theme-disabled)}
 .grid>.program-card .card-state-icon,.completed-card-cue,.grid>.program-card .card-footer .card-lock{display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;background:transparent}
 .figma-status-icon{display:block;flex:none}
-.completed-first-tooltip,.diagnosis-result-hint{padding:4px 12px 3px;border:0;border-radius:10px;background:#414f62;color:#fff;font-size:18px;font-weight:800;line-height:36px;box-shadow:none;max-width:none}
+.completed-first-tooltip,.diagnosis-result-hint{padding:8px 12px 7px;border:0;border-radius:10px;background:#414f62;color:#fff;font-size:14px;font-weight:700;line-height:1.4;box-shadow:none;max-width:none}
 .completed-first-tooltip{right:50%;bottom:calc(100% + 14px);translate:50% 0}
 .completed-first-tooltip::after,.diagnosis-result-hint::after{content:'';width:16px;height:16px;background:url('assets/figma-v4-1/tooltip-tail.svg') center no-repeat;-webkit-mask:none;mask:none}
-.completed-first-tooltip::after{top:calc(100% - 5px);right:calc(50% - 8px);transform:none}
+.completed-first-tooltip::after{top:calc(100% - 8px);right:calc(50% - 8px);transform:none}
 .diagnosis-result-hint{right:calc(100% + 20px)}
 .diagnosis-result-hint::after{right:-10px;top:calc(50% - 8px);transform:rotate(-90deg)}
 .primary{background:var(--theme-primary);border-color:var(--theme-primary);color:var(--theme-on-primary)}
 .primary:hover:not(:disabled){background:var(--theme-primary-hover);border-color:var(--theme-primary-hover);color:var(--theme-on-primary)}
 /* Dock the rail; FLIP motion carries the existing cards into their next slots. */
 #group-panel{width:var(--group-drawer-width);max-width:none;background:var(--theme-surface);border-radius:0 28px 28px 0;border-right:1px solid #eef2f4;box-shadow:none;transition:transform .48s var(--navigation-ease)}
-#group-panel .panel-head{position:absolute;z-index:1;top:12px;right:31px;min-height:0;height:36px;padding:0;border:0}
+#group-panel .panel-head{position:absolute;z-index:1;top:10px;right:10px;min-height:0;height:36px;padding:0;border:0}
 #group-panel .nav-close{display:grid;place-items:center;width:36px;height:36px;padding:0;background:transparent;border:0}
 #group-panel .panel-content{display:flex;flex-direction:column;min-height:0;padding:60px 20px 40px;overflow:hidden}
 #group-panel .panel-content>.group-nav{display:flex;align-items:center;justify-content:center;flex:none;min-height:36px;height:36px;margin:0 12px 36px;padding:0;gap:28px}
@@ -122,7 +122,7 @@ body.has-long-learning-list .ai::before{content:none;box-shadow:none}
 #group-panel .nav-grade-progress progress::-webkit-progress-value{background:#0ec7ae}
 #group-panel .nav-grade-progress progress::-moz-progress-bar{background:#0ec7ae}
 .groups-trigger,.groups-trigger:hover:not(:disabled),.groups-trigger:active:not(:disabled){position:fixed;left:env(safe-area-inset-left,0px);top:calc(50% - 60px);bottom:auto;display:block;width:var(--rail-tab-width);height:120px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
-.groups-trigger .side-tab-surface{position:absolute;left:0;top:0;transform:scale(.8333333333);transform-origin:top left}
+.groups-trigger .side-tab-surface{position:absolute;inset:auto;left:0;top:0;width:72px;height:144px;max-width:none;max-height:none;transform:scale(.8333333333);transform-origin:top left;filter:none}
 .groups-trigger .side-tab-content{position:absolute;left:6px;top:42px;display:grid;place-items:center;width:36px;height:36px;padding:0}
 .groups-trigger:hover:not(:disabled){filter:brightness(.98)}
 .groups-trigger:focus-visible{outline:2px solid #84b5ff;outline-offset:2px;border-radius:0 72px 72px 0}
@@ -162,10 +162,10 @@ body.has-long-learning-list .ai::before{content:none;box-shadow:none}
 @media(prefers-reduced-motion:reduce){.mentor-cluster .recommend-loader .recommend-spinner{animation:none}.mentor-cluster .recommend-arrow{transition:none}}
 
 /* Updated Figma tooltip: original JRound outlines, with accessible live text. */
-.completed-first-tooltip{width:219px;height:43px;padding:0;border:0;border-radius:0;background:transparent!important;font-size:0;line-height:0;max-width:none}
-.completed-first-tooltip .hint-art{display:block}
+.completed-first-tooltip{width:176px;height:35px;padding:0;border:0;border-radius:0;background:transparent!important;font-size:0;line-height:0;max-width:none}
+.completed-first-tooltip .hint-art{display:block;width:176px;height:35px;max-width:none;max-height:none;object-fit:contain}
 .diagnosis-result-hint{font-family:JRound,NanumSquareRound,sans-serif}
-.diagnosis-result-hint::after{width:20px;height:19px;right:-10px;top:calc(50% - 9.5px);transform:none;background:url('assets/figma-v4-1/result-hint-tail.svg') center no-repeat}
+.diagnosis-result-hint::after{width:19px;height:19px;right:-8px;top:calc(50% - 9.5px);transform:none;background:url('assets/figma-v4-1/result-hint-tail-v45.svg') center no-repeat}
 #group-panel[data-panel-phase=open][data-reveal=true] .nav-stagger{animation:learning-nav-arrive .28s cubic-bezier(.22,.61,.36,1) both;animation-delay:var(--nav-delay,0ms)}
 @keyframes learning-nav-arrive{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 body.learning-navigation-open #programs.grid{grid-template-columns:repeat(var(--navigation-columns,3),minmax(0,1fr))}
@@ -184,6 +184,26 @@ body.learning-navigation-open #programs.grid{grid-template-columns:repeat(var(--
 @media(max-width:650px){
  body.learning-navigation-open .learning-workspace{width:100%;margin-left:0}
  body.learning-navigation-open .learning-workspace main{width:min(1080px,calc(100% - var(--learning-gutter)*2));margin:0 auto}
- .completed-first-tooltip{width:219px;height:43px;max-width:none}
+ .completed-first-tooltip{width:176px;height:35px;max-width:none}
 }
 @media(prefers-reduced-motion:reduce){#group-panel[data-panel-phase=open][data-reveal=true] .nav-stagger{animation:none}}
+
+/* V4.5: current Figma tooltip sizes and a single persistent topic/result row. */
+.completed-first-tooltip::after{background-image:url('assets/figma-v4-1/tooltip-tail-v45.svg')}
+#diagnosis-result-hint.diagnosis-result-hint{padding:8px 12px 7px;border:0;border-radius:10px;background:#414f62;color:#fff;font-size:14px;font-weight:700;line-height:1.4;max-width:none;white-space:nowrap}
+body.has-personalized-learning .heading{flex-wrap:nowrap;align-items:center;column-gap:12px}
+body.has-personalized-learning .heading>.heading-copy{flex:1 1 0%;min-width:0}
+body.has-personalized-learning .heading>.learning-context{flex:0 0 auto;width:auto;padding:0;align-self:center}
+.heading-title-row{flex-wrap:nowrap;align-items:center}
+#grade-badge.grade-label{flex:none;white-space:nowrap}
+.heading-title-row #group-title{min-width:0;font-size:clamp(18px,3.15cqw,26px);line-height:1.4;word-break:keep-all;overflow-wrap:anywhere}
+@container learning-content (max-width:620px){
+ body.has-personalized-learning .heading{column-gap:8px}
+ .heading-title-row{gap:8px}
+ #grade-badge.grade-label{padding:6px 8px}
+ #grade-badge.grade-label,#grade-badge.grade-label>strong,#grade-badge.grade-label>span{font-size:14px;line-height:1.3}
+ #grade-badge>.grade-topic-number{margin-left:6px;padding-left:6px}
+ #learning-context #diagnostic-result-slot>.diagnostic-summary-trigger{min-height:44px;padding:10px 9px}
+ #learning-context .diagnostic-summary-trigger .result-copy strong{font-size:13px;line-height:18px}
+ #learning-context .diagnostic-summary-trigger .result-icon{width:16px;height:18px}
+}
