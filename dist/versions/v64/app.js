@@ -568,45 +568,53 @@ if(window.history&&'scrollRestoration' in window.history)window.history.scrollRe
 function mainResumeOverviewVisible(){
   return document.visibilityState!=='hidden'&&!$('main').hidden&&!myOpen&&!editing&&!diagnosisOutcomeRun&&!composing&&!skyBusy&&!activityKind&&panel!=='test'&&!$('#learning').open&&!$('#help').open&&!$('#activity').open&&!$('#prescription').open;
 }
+function clearMainResumeMotion(run){
+  clearTimeout(run.timer);clearTimeout(run.finishTimer);
+  run.reducedMotion?.removeEventListener?.('change',run.motionChange);
+  document.documentElement?.removeAttribute('data-resume-scrolling');
+}
 function cancelMainResumeScroll(){
   const run=mainResumeScrollRun;if(!run)return;mainResumeScrollRun=null;
-  clearTimeout(run.timer);clearTimeout(run.finishTimer);
-  if(run.frame!==null)window.cancelAnimationFrame?.(run.frame);
-  document.documentElement?.removeAttribute('data-resume-scrolling');
-  if(run.phase==='moving'&&run.driver==='native')window.scrollTo({top:window.scrollY||0,behavior:'instant'});
+  clearMainResumeMotion(run);
+  if(run.phase==='moving')window.scrollTo({top:window.scrollY||0,behavior:'instant'});
 }
 function finishMainResumeScroll(run){
-  if(mainResumeScrollRun!==run)return;
-  clearTimeout(run.finishTimer);mainResumeScrollRun=null;
-  document.documentElement?.removeAttribute('data-resume-scrolling');
+  if(mainResumeScrollRun!==run)return;mainResumeScrollRun=null;clearMainResumeMotion(run);
 }
 function animateMainResumeScroll(run,target){
-  const start=window.scrollY||0,distance=target-start;
-  if(Math.abs(distance)<1){finishMainResumeScroll(run);return;}
-  run.phase='moving';
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches){window.scrollTo({top:target,left:0,behavior:'instant'});finishMainResumeScroll(run);return;}
-  // A bounded time-based curve replaces browser-dependent smooth-scroll timing.
-  // Read card/header geometry once before departure; only write scroll position per frame.
-  if(typeof window.requestAnimationFrame!=='function'){
-    run.driver='native';window.scrollTo({top:target,left:0,behavior:'smooth'});
-    run.finishTimer=setTimeout(()=>finishMainResumeScroll(run),1600);return;
-  }
-  run.driver='frames';run.duration=Math.max(650,Math.min(950,500+Math.sqrt(Math.abs(distance))*10));
-  run.startedAt=null;run.reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
+  // Clamp once to the real scroll range. An unreachable destination would hit
+  // the page boundary before the browser has finished slowing down.
+  const scroller=document.scrollingElement||document.documentElement;
+  const max=scroller?.scrollHeight-(scroller?.clientHeight||window.innerHeight);
+  if(Number.isFinite(max))target=Math.min(target,Math.max(0,max));
+  if(Math.abs(target-(window.scrollY||0))<1){finishMainResumeScroll(run);return;}
+  run.phase='moving';run.target=target;
+  run.reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
+  if(run.reducedMotion.matches){window.scrollTo({top:target,left:0,behavior:'instant'});finishMainResumeScroll(run);return;}
+  run.driver='native';
   document.documentElement?.setAttribute('data-resume-scrolling','true');
-  const frame=timestamp=>{
-    if(mainResumeScrollRun!==run)return;
-    run.frame=null;
-    if(run.reducedMotion.matches){window.scrollTo({top:target,left:0,behavior:'instant'});finishMainResumeScroll(run);return;}
-    run.startedAt??=timestamp;
-    const t=Math.max(0,Math.min(1,(timestamp-run.startedAt)/run.duration));
-    // Smootherstep: zero velocity and zero acceleration at both ends.
-    const eased=t*t*t*(t*(t*6-15)+10);
-    window.scrollTo({top:start+distance*eased,left:0,behavior:'instant'});
-    if(t===1){finishMainResumeScroll(run);return;}
-    run.frame=window.requestAnimationFrame(frame);
+  run.motionChange=()=>{
+    if(mainResumeScrollRun!==run||!run.reducedMotion.matches)return;
+    window.scrollTo({top:run.target,left:0,behavior:'instant'});finishMainResumeScroll(run);
   };
-  run.frame=window.requestAnimationFrame(frame);
+  run.reducedMotion.addEventListener?.('change',run.motionChange);
+  // One request lets the browser schedule the entire motion. No per-frame
+  // instant writes, forced layout reads or artificial duration cutoff.
+  window.scrollTo({top:target,left:0,behavior:'smooth'});
+  run.finishTimer=setTimeout(()=>finishMainResumeScroll(run),5000);
+}
+function settleMainResumeScroll(){
+  const run=mainResumeScrollRun;if(run?.phase!=='moving')return;
+  clearTimeout(run.finishTimer);
+  // Scroll-event fallback for browsers without scrollend. This only releases
+  // bookkeeping after motion has settled; it never snaps to the destination.
+  run.finishTimer=setTimeout(()=>finishMainResumeScroll(run),180);
+}
+function resizeMainResumeScroll(){
+  const run=mainResumeScrollRun;if(!run)return;
+  // Mobile address bars can change viewport height during scrolling. Only a
+  // layout-width/orientation change invalidates this fixed destination.
+  if(Math.abs(window.innerWidth-run.viewportWidth)>1)cancelMainResumeScroll();
 }
 function mainResumeGeometry(program){
   const card=$('#programs [data-action="program"][data-id="'+program.id+'"]');
@@ -632,7 +640,7 @@ function syncMainResumeScroll(){
   cancelMainResumeScroll();const geometry=mainResumeGeometry(program);
   if(!geometry||geometry.documentCenter<=geometry.center+32)return;
   setMainResumeSpace(geometry);window.scrollTo({top:0,left:0,behavior:'instant'});
-  const run=mainResumeScrollRun={topic,programId:program.id,phase:'waiting',timer:null,finishTimer:null,frame:null,driver:null};
+  const run=mainResumeScrollRun={topic,programId:program.id,phase:'waiting',timer:null,finishTimer:null,driver:null,viewportWidth:window.innerWidth};
   run.timer=setTimeout(()=>{
     if(mainResumeScrollRun!==run)return;
     if(!mainResumeOverviewVisible()||!mainGuidanceVisible()||current()!==run.topic||M.currentProgram(current())?.id!==run.programId){cancelMainResumeScroll();return;}
@@ -646,8 +654,10 @@ for(const type of ['wheel','touchstart','pointerdown'])document.addEventListener
 document.addEventListener('keydown',event=>{if(!['Shift','Control','Alt','Meta'].includes(event.key))cancelMainResumeScroll();});
 window.addEventListener?.('pagehide',()=>{cancelMainResumeScroll();mainResumeVisible=false;});
 window.addEventListener?.('pageshow',event=>{if(event.persisted){mainResumeVisible=false;syncMainResumeScroll();}});
-window.addEventListener?.('resize',cancelMainResumeScroll);
-window.addEventListener?.('scrollend',()=>{const run=mainResumeScrollRun;if(run?.phase==='moving'&&run.driver==='native')finishMainResumeScroll(run);});
+window.addEventListener?.('resize',resizeMainResumeScroll);
+window.addEventListener?.('orientationchange',cancelMainResumeScroll);
+window.addEventListener?.('scroll',settleMainResumeScroll,{passive:true});
+window.addEventListener?.('scrollend',()=>{const run=mainResumeScrollRun;if(run?.phase==='moving'&&Math.abs((window.scrollY||0)-run.target)<2)finishMainResumeScroll(run);});
 let programCardsMarkup=null,programCardsView=null;
 function renderProgramCards(topic){
   const markup=topic.programs.map(p=>programCard(topic,p)).join(''),view=state.grade+':'+state.index;

@@ -14,51 +14,66 @@ function setup(version,options={}){
 }
 function runScroll(h){const run=h.evaluate('mainResumeScrollRun');assert(run);assert.equal(run.timer.ms,600);run.timer.fn();return run;}
 function releaseDim(h){const timer=h.evaluate('guidanceClosingTimer');if(timer&&!timer.cancelled)timer.fn();}
-function enableFrames(h){
+function nativeMotion(h){
   h.document.documentElement=h.node('html');
-  h.context.requestAnimationFrame=fn=>({fn,cancelled:false});
-  h.context.cancelAnimationFrame=frame=>{frame.cancelled=true;};
-  return timestamp=>{const run=h.evaluate('mainResumeScrollRun');assert(run?.frame);run.frame.fn(timestamp);};
+  const write=h.context.scrollTo;
+  h.context.scrollTo=options=>{if(options.behavior==='smooth')h.scrollCalls.push({...options});else write(options);};
+  h.context.requestAnimationFrame=()=>{throw new Error('native scrolling must not schedule frame writes');};
+  return top=>{h.context.scrollY=top;h.emitWindow('scroll');};
 }
 
-test('frame-driven return eases in and out, reaches the same actual card center and performs no per-frame layout reads',()=>{
+test('one native motion request reaches the actual center without frame writes, stale scrollend or a final snap',()=>{
   for(const version of ['working','versions/v59',...Array.from({length:7},(_,i)=>'versions/v'+(61+i))]){
-    const h=setup(version),tick=enableFrames(h),before=h.data('current().programs'),run=runScroll(h);
-    assert.equal(run.driver,'frames');assert(run.duration>=650&&run.duration<=950);
+    const h=setup(version),move=nativeMotion(h),before=h.data('current().programs'),run=runScroll(h);
+    assert.equal(run.driver,'native');assert.equal(run.target,766);
+    assert.deepEqual(h.scrollCalls,[{top:0,left:0,behavior:'instant'},{top:766,left:0,behavior:'smooth'}]);
+    assert.equal(h.node('html').getAttribute('data-resume-scrolling'),'true');
     let reads=0;for(const sel of ['.ai',selector]){const node=h.node(sel),get=node.getBoundingClientRect.bind(node);node.getBoundingClientRect=()=>{reads++;return get();};}
-    tick(1000);assert.equal(h.context.scrollY,0);assert.equal(h.node('html').getAttribute('data-resume-scrolling'),'true');
-    h.emitWindow('scrollend');assert.equal(h.evaluate('mainResumeScrollRun'),run);
-    const positions=[0];for(let t=1000+100;t<1000+run.duration;t+=100){tick(t);positions.push(h.context.scrollY);}
-    tick(1000+run.duration);positions.push(h.context.scrollY);
-    assert(positions.every((value,i)=>!i||value>=positions[i-1]));assert.equal(h.context.scrollY,766);
-    assert(positions[1]<positions[Math.floor(positions.length/2)]*.1,'departure is gentle');
-    assert.equal(reads,0);assert.equal(h.evaluate('mainResumeScrollRun'),null);
+    h.emitWindow('scrollend');assert.equal(h.evaluate('mainResumeScrollRun'),run,'ignore the initial top-reset scrollend');
+    for(const top of [90,260,470,690]){move(top);h.emitWindow('scrollend');assert.equal(h.evaluate('mainResumeScrollRun'),run);}
+    assert.equal(reads,0);assert.equal(h.scrollCalls.length,2,'no script-driven scroll writes during motion');
+    move(766);h.emitWindow('scrollend');assert.equal(h.evaluate('mainResumeScrollRun'),null);
+    assert.equal(h.scrollCalls.length,2,'completion releases bookkeeping without snapping');
     assert.equal(h.node('html').getAttribute('data-resume-scrolling'),null);assert.deepEqual(h.data('current().programs'),before);
   }
 });
 
-test('input, resize and hidden pages cancel a moving frame clock without trailing scroll writes',()=>{
-  for(const type of ['wheel','touchstart','pointerdown','keydown','resize','hidden']){
-    const h=setup('working'),tick=enableFrames(h),run=runScroll(h);tick(0);tick(run.duration*.4);
-    const stale=run.frame;
-    if(type==='resize')h.emitWindow('resize');
+test('height-only mobile resize preserves the motion while width, orientation, input and hidden-page changes cancel it',()=>{
+  const h=setup('working'),move=nativeMotion(h),run=runScroll(h);move(250);
+  h.context.innerHeight=750;h.emitWindow('resize');assert.equal(h.evaluate('mainResumeScrollRun'),run);assert.equal(h.scrollCalls.length,2);
+  h.context.innerHeight=820;h.emitWindow('resize');assert.equal(h.evaluate('mainResumeScrollRun'),run);
+  for(const type of ['wheel','touchstart','pointerdown','keydown','resize','orientationchange','hidden']){
+    const h=setup('working'),move=nativeMotion(h),run=runScroll(h);move(340);const stale=run.finishTimer;
+    if(type==='resize'){h.context.innerWidth=800;h.emitWindow('resize');}
     else if(type==='hidden'){h.document.visibilityState='hidden';h.emitDocument('visibilitychange');}
+    else if(type==='orientationchange')h.emitWindow(type);
     else h.emitDocument(type,{key:'ArrowDown'});
-    const calls=h.scrollCalls.length;assert.equal(h.evaluate('mainResumeScrollRun'),null);assert.equal(stale.cancelled,true);
-    assert.equal(h.node('html').getAttribute('data-resume-scrolling'),null);stale.fn(run.duration);assert.equal(h.scrollCalls.length,calls);
+    assert.equal(h.evaluate('mainResumeScrollRun'),null);assert.equal(stale.cancelled,true);
+    assert.equal(h.scrollCalls.at(-1).top,340);assert.equal(h.scrollCalls.at(-1).behavior,'instant');
+    assert.equal(h.node('html').getAttribute('data-resume-scrolling'),null);
+    const count=h.scrollCalls.length;stale.fn();assert.equal(h.scrollCalls.length,count);
   }
 });
 
-test('animation follows elapsed time at different frame rates and reacts immediately to reduced motion',()=>{
-  for(const step of [1000/30,1000/60,1000/120]){
-    const h=setup('working'),tick=enableFrames(h),run=runScroll(h);tick(0);
-    for(let t=step;t<run.duration/2;t+=step)tick(t);
-    tick(run.duration/2);assert(Math.abs(h.context.scrollY-383)<.00001);
-    h.evaluate('render();render();syncGuidanceReminders()');assert.equal(h.evaluate('mainResumeScrollRun'),run);
-    tick(run.duration);assert.equal(h.context.scrollY,766);assert.equal(h.evaluate('mainResumeScrollRun'),null);
+test('scroll-event fallback and reduced-motion changes clean up without interrupting native travel',()=>{
+  const h=setup('working'),move=nativeMotion(h),run=runScroll(h);move(400);const middle=run.finishTimer;
+  move(766);assert.equal(middle.cancelled,true);const settled=run.finishTimer;assert.equal(settled.ms,180);settled.fn();
+  assert.equal(h.evaluate('mainResumeScrollRun'),null);assert.equal(h.scrollCalls.length,2);
+  const changed=setup('working');nativeMotion(changed);let listener,removed=false;
+  changed.media.addEventListener=(type,fn)=>{assert.equal(type,'change');listener=fn;};
+  changed.media.removeEventListener=(type,fn)=>{removed=fn===listener;};
+  const moving=runScroll(changed);changed.context.scrollY=300;changed.evaluate('render();render();syncGuidanceReminders()');
+  assert.equal(changed.evaluate('mainResumeScrollRun'),moving);
+  changed.media.matches=true;listener();assert.equal(changed.context.scrollY,766);assert.equal(changed.evaluate('mainResumeScrollRun'),null);assert(removed);
+});
+
+test('clamp unreachable targets to the actual scroll range before departure',()=>{
+  for(const max of [0,300]){
+    const h=setup('working');nativeMotion(h);h.document.scrollingElement={scrollHeight:800+max,clientHeight:800};
+    const before=h.scrollCalls.length;runScroll(h);
+    if(max===0){assert.equal(h.evaluate('mainResumeScrollRun'),null);assert.equal(h.scrollCalls.length,before);}
+    else{assert.equal(h.scrollCalls.at(-1).top,300);assert.equal(h.scrollCalls.at(-1).behavior,'smooth');}
   }
-  const h=setup('working'),tick=enableFrames(h),run=runScroll(h);tick(0);h.media.matches=true;tick(16);
-  assert.equal(h.context.scrollY,766);assert.equal(h.evaluate('mainResumeScrollRun'),null);
 });
 
 for(const version of ['working','versions/v59','versions/v61']){
