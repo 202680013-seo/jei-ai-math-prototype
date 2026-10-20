@@ -1,80 +1,47 @@
-/* V5 · A welcoming starting point, shown only before diagnosis. */
+/* V5.1 · One short invitation and one clear action before diagnosis. */
 .diagnosis-welcome[hidden]{display:none}
-.diagnosis-welcome{--welcome-tint:color-mix(in srgb,var(--theme-accent) 8%,var(--theme-page));--welcome-line:color-mix(in srgb,var(--theme-accent) 15%,var(--theme-page));position:relative;isolation:isolate;overflow:hidden;border:1px solid var(--welcome-line);border-radius:32px;background:var(--welcome-tint);color:var(--theme-title);animation:welcome-arrive .65s cubic-bezier(.22,.61,.36,1) both}
-.welcome-main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);align-items:center;gap:20px;min-height:372px;padding:42px 48px 40px}
+.diagnosis-welcome{--welcome-tint:color-mix(in srgb,var(--theme-accent) 7%,var(--theme-page));--welcome-line:color-mix(in srgb,var(--theme-accent) 13%,var(--theme-page));position:relative;isolation:isolate;overflow:hidden;border:1px solid var(--welcome-line);border-radius:28px;background:var(--welcome-tint);color:var(--theme-title);animation:welcome-arrive .65s cubic-bezier(.22,.61,.36,1) both}
+.welcome-main{display:grid;grid-template-columns:minmax(0,1fr) 280px;align-items:center;gap:48px;min-height:304px;padding:38px 48px}
 .welcome-copy{position:relative;z-index:1;min-width:0}
-.welcome-eyebrow{display:inline-flex;align-items:center;gap:8px;margin-bottom:18px;color:var(--theme-primary);font-size:14px;font-weight:800;line-height:20px}
-.welcome-eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--theme-accent)}
-#diagnosis-welcome-title{margin:0;font-size:clamp(26px,3.25cqw,36px);font-weight:800;letter-spacing:-.6px;line-height:1.45;word-break:keep-all;overflow-wrap:anywhere}
-#diagnosis-welcome-description{margin:15px 0 27px;color:var(--theme-muted);font-size:15px;font-weight:700;line-height:1.7;word-break:keep-all}
-#diagnosis-welcome-action>.diagnostic-start-button{display:inline-flex;align-items:center;justify-content:center;gap:20px;width:auto;max-width:100%;min-width:232px;min-height:56px;margin:0;padding:16px 22px;border:0;border-radius:14px;background:var(--theme-primary);box-shadow:0 6px 14px color-mix(in srgb,var(--theme-primary) 12%,transparent);color:var(--theme-on-primary);font-size:18px;font-weight:800;line-height:24px;text-align:center;transition:background .2s ease,box-shadow .2s ease,transform .2s ease}
+#diagnosis-welcome-title{margin:0;font-size:clamp(26px,3cqw,32px);font-weight:800;letter-spacing:-.5px;line-height:1.45;word-break:keep-all;overflow-wrap:anywhere}
+#diagnosis-welcome-description{margin:12px 0 25px;color:var(--theme-muted);font-size:15px;font-weight:700;line-height:1.7;word-break:keep-all}
+#diagnosis-welcome-action>.diagnostic-start-button{display:inline-flex;align-items:center;justify-content:center;gap:20px;width:auto;max-width:100%;min-width:232px;min-height:56px;margin:0;padding:16px 22px;border:0;border-radius:14px;background:var(--theme-primary);color:var(--theme-on-primary);font-size:18px;font-weight:800;line-height:24px;text-align:center;transition:background .2s ease,transform .2s ease}
 #diagnosis-welcome-action>.diagnostic-start-button::before{display:none}
-#diagnosis-welcome-action>.diagnostic-start-button:hover:not(:disabled){background:var(--theme-primary-hover);transform:translateY(-2px);box-shadow:0 9px 18px color-mix(in srgb,var(--theme-primary) 17%,transparent)}
-#diagnosis-welcome-action>.diagnostic-start-button:active:not(:disabled){transform:translateY(0);box-shadow:none}
+#diagnosis-welcome-action>.diagnostic-start-button:hover:not(:disabled){background:var(--theme-primary-hover);transform:translateY(-2px)}
+#diagnosis-welcome-action>.diagnostic-start-button:active:not(:disabled){transform:translateY(0)}
 #diagnosis-welcome-action>.diagnostic-start-button:focus-visible{outline:3px solid var(--theme-accent);outline-offset:5px}
-#diagnosis-welcome-note{margin:13px 0 0;color:var(--theme-muted);font-size:13px;font-weight:700;line-height:20px}
+#diagnosis-welcome-note{margin:12px 0 0;color:var(--theme-muted);font-size:13px;font-weight:700;line-height:20px}
 .welcome-resume{display:inline-block;margin:10px 0 0;padding:5px 10px;border-radius:8px;background:var(--theme-surface);color:var(--theme-primary);font-size:13px;font-weight:800;line-height:20px}
 .welcome-resume[hidden]{display:none}
-.welcome-art{position:relative;width:100%;max-width:390px;height:286px;justify-self:end;pointer-events:none;user-select:none}
-.welcome-orbit{position:absolute;width:274px;height:274px;border-radius:50%;background:color-mix(in srgb,var(--theme-accent) 8%,var(--theme-page));left:calc(50% - 137px);top:8px}
-.welcome-orbit::after{content:'';position:absolute;inset:-18px;border:1px dashed color-mix(in srgb,var(--theme-accent) 20%,transparent);border-radius:50%}
-.course-paper{position:absolute;top:45px;left:calc(50% - 125px);width:250px;height:208px;border-radius:22px;transform-origin:50% 90%}
-.paper-back{background:color-mix(in srgb,var(--theme-accent) 30%,var(--theme-page));transform:rotate(-14deg) translate(-8px,-4px)}
-.paper-middle{background:color-mix(in srgb,var(--theme-accent) 15%,var(--theme-page));transform:rotate(9deg) translate(8px,-5px)}
-.paper-front{padding:24px;background:var(--theme-surface);border:1px solid color-mix(in srgb,var(--theme-accent) 12%,var(--theme-page));box-shadow:0 16px 30px color-mix(in srgb,var(--theme-primary) 8%,transparent);transform:rotate(-3deg)}
-.paper-heading{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800;line-height:22px;white-space:nowrap}
-.paper-icon{display:grid;place-items:center;flex:none;width:40px;height:42px;background:var(--welcome-tint);border-radius:12px}
+.welcome-art{position:relative;width:100%;height:224px;justify-self:center;pointer-events:none;user-select:none}
+.welcome-orbit{position:absolute;width:214px;height:214px;border-radius:50%;background:color-mix(in srgb,var(--theme-accent) 8%,var(--theme-page));left:calc(50% - 107px);top:5px}
+.course-paper{position:absolute;top:20px;left:calc(50% - 80px);width:160px;height:184px;padding:24px;border:1px solid var(--welcome-line);border-radius:20px;background:var(--theme-surface);box-shadow:0 10px 24px color-mix(in srgb,var(--theme-primary) 5%,transparent);transform:rotate(-5deg)}
+.paper-icon{display:grid;place-items:center;width:44px;height:46px;margin-bottom:17px;border-radius:12px;background:var(--welcome-tint)}
 .paper-icon>img{display:block}
-.paper-line{height:6px;background:var(--theme-soft);border-radius:3px;margin-top:13px}
-.line-long{width:74%}.line-short{width:47%;margin-top:8px}
-.paper-route{display:flex;align-items:center;margin-top:18px}
-.route-node{display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:10px;background:var(--theme-soft);color:var(--theme-muted);font-size:13px;font-weight:800}
-.node-current{background:var(--theme-accent);color:var(--theme-on-active)}
-.route-link{flex:1;height:2px;margin:0 7px;background:var(--theme-soft)}
-.node-star{width:36px;background:transparent}.node-star>img{display:block}
-.paper-caption{display:block;margin-top:13px;color:var(--theme-muted);font-size:11px;font-weight:700;line-height:16px;text-align:center}
-.welcome-math{position:absolute;z-index:1;display:grid;place-items:center;font-weight:800;line-height:1}
-.math-plus{left:13%;top:10px;width:42px;height:42px;border-radius:14px;background:var(--theme-accent);color:var(--theme-on-active);font-size:32px;transform:rotate(-12deg)}
-.math-divide{right:2%;top:75px;color:color-mix(in srgb,var(--theme-primary) 45%,var(--theme-page));font-size:40px;transform:rotate(12deg)}
-.math-times{left:6%;bottom:10px;color:color-mix(in srgb,var(--theme-primary) 40%,var(--theme-page));font-size:32px;transform:rotate(-12deg)}
-.welcome-stamp{position:absolute;right:0;bottom:7px;display:flex;align-items:center;gap:7px;min-height:38px;padding:9px 13px;border:1px solid var(--welcome-line);border-radius:12px;background:var(--theme-surface);box-shadow:0 4px 12px color-mix(in srgb,var(--theme-primary) 5%,transparent);color:var(--theme-primary);font-size:12px;font-weight:800;line-height:18px;transform:rotate(3deg)}
-.stamp-spark{font-size:19px;color:var(--theme-accent)}
-.welcome-journey{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;list-style:none;margin:0;padding:26px 48px 28px;border-top:1px solid var(--welcome-line);background:color-mix(in srgb,var(--theme-surface) 70%,transparent)}
-.welcome-journey>li{position:relative;display:flex;align-items:center;gap:12px;min-width:0}
-.journey-number{display:grid;place-items:center;flex:none;width:38px;height:38px;border-radius:13px;background:var(--theme-soft);color:var(--theme-muted);font-size:13px;font-weight:800}
-.journey-current .journey-number{background:color-mix(in srgb,var(--theme-accent) 15%,var(--theme-page));color:var(--theme-primary)}
-.welcome-journey strong{display:block;margin:0 0 4px;color:var(--theme-title);font-size:15px;font-weight:800;line-height:20px}
-.welcome-journey li>div>span{display:block;color:var(--theme-muted);font-size:12px;font-weight:700;line-height:18px;word-break:keep-all}
+.paper-line{height:6px;background:var(--theme-soft);border-radius:3px}
+.line-long{width:100%}.line-short{width:65%;margin-top:9px}
+.paper-mark{display:flex;align-items:center;gap:8px;margin-top:17px}
+.paper-mark i{display:block;width:14px;height:14px;border-radius:5px;background:color-mix(in srgb,var(--theme-accent) 60%,var(--theme-page))}
+.paper-mark span{display:block;width:42px;height:5px;border-radius:3px;background:var(--theme-soft)}
 @keyframes welcome-arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @container learning-content (max-width:900px){
- .welcome-main{padding:34px 32px;gap:12px;min-height:354px}
- .welcome-art{height:268px;scale:.9;transform-origin:right center}
- .welcome-journey{padding:24px 32px;gap:16px}
- .welcome-journey>li{gap:9px}
- .journey-number{width:32px;height:34px;border-radius:11px}
+ .welcome-main{grid-template-columns:minmax(0,1fr) 210px;padding:30px 32px;gap:24px;min-height:282px}
+ .welcome-art{height:214px}.welcome-orbit{width:200px;height:200px;left:calc(50% - 100px)}
+ #diagnosis-welcome-description{font-size:14px}
 }
 @container learning-content (max-width:700px){
- .welcome-main{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:0;padding:30px 26px}
+ .welcome-main{grid-template-columns:minmax(0,1fr) 164px;gap:16px;padding:28px 26px;min-height:264px}
  #diagnosis-welcome-title{font-size:26px}
- #diagnosis-welcome-description{font-size:14px;max-width:270px;margin-bottom:22px}
- .welcome-art{width:285px;max-width:none;scale:.72;transform-origin:right center}
  #diagnosis-welcome-action>.diagnostic-start-button{min-width:210px;gap:12px;font-size:17px}
- .welcome-journey{padding:22px 26px;gap:14px}
- .welcome-journey>li{align-items:flex-start;gap:8px}
- .journey-number{width:auto;height:20px;background:transparent!important;color:var(--theme-muted);font-size:11px}
- .journey-current .journey-number{color:var(--theme-primary)}
- .welcome-journey strong{font-size:14px}.welcome-journey li>div>span{font-size:11px}
+ .welcome-art{height:192px}.welcome-orbit{width:164px;height:164px;left:0;top:14px}
+ .course-paper{width:144px;height:174px;left:10px;top:9px;padding:21px}
 }
 @container learning-content (max-width:520px){
  .diagnosis-welcome{border-radius:24px}
- .welcome-main{grid-template-columns:1fr;padding:28px 24px 20px;min-height:0}
- .welcome-copy{text-align:center}.welcome-eyebrow{margin-bottom:14px}
- #diagnosis-welcome-title{font-size:27px}#diagnosis-welcome-description{max-width:none;margin:14px auto 22px}
+ .welcome-main{grid-template-columns:1fr;min-height:0;padding:30px 24px}
+ .welcome-copy{text-align:center}.welcome-art{display:none}
+ #diagnosis-welcome-title{font-size:26px}
+ #diagnosis-welcome-description{margin:12px auto 24px}
  #diagnosis-welcome-action>.diagnostic-start-button{width:100%;min-width:0;gap:14px}
- .welcome-art{justify-self:center;max-width:100%;height:218px;margin-top:8px;scale:.8;transform-origin:center center}
- .welcome-orbit{top:-18px}.course-paper{top:10px}.math-plus{top:-16px}.math-times{bottom:4px}.welcome-stamp{bottom:-4px}
- .welcome-journey{padding:22px 16px;gap:8px}
- .welcome-journey>li{flex-direction:column;gap:5px;text-align:left}.welcome-journey strong{font-size:13px;line-height:19px}
- .welcome-journey li>div>span{font-size:11px;line-height:17px}
 }
 @media(prefers-reduced-motion:reduce){.diagnosis-welcome{animation:none}#diagnosis-welcome-action>.diagnostic-start-button{transition:none;transform:none!important}}

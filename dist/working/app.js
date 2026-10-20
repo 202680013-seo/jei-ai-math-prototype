@@ -603,8 +603,8 @@ function syncDiagnosisWelcome(topic){
   if(!visible){if(button.getAttribute('aria-describedby')==='diagnosis-welcome-note')button.removeAttribute('aria-describedby');return;}
   const active=topic.diagnosis==='active',label=active?'실력알기 이어하기':'실력알기 시작하기';
   host.setAttribute('data-diagnosis-state',topic.diagnosis);
-  $('#diagnosis-welcome-title').innerHTML=active?'풀던 문제부터<br>차근차근 이어가요':'지금의 실력을 알아보고,<br>나만의 코스를 만나요';
-  $('#diagnosis-welcome-description').textContent=active?'지금까지 푼 내용은 저장되어 있어요.':'이미 아는 내용은 가볍게, 필요한 학습은 꼼꼼하게.';
+  $('#diagnosis-welcome-title').textContent=active?'풀던 문제부터 이어가요':'나의 실력을 알아볼까요?';
+  $('#diagnosis-welcome-description').textContent=active?'지금까지 푼 내용은 저장되어 있어요.':'실력알기를 마치면 나에게 맞는 학습을 준비해요.';
   const progress=$('#diagnosis-welcome-progress');progress.hidden=!active;
   progress.textContent=active?`${(topic.diagnosticSession?.answers||[]).filter(answer=>Number.isInteger(answer)&&answer>=0).length} / ${DEMO.length}문항 풀었어요`:'';
   button.classList.add('diagnostic-start-button');button.setAttribute('aria-label',label);button.setAttribute('aria-describedby','diagnosis-welcome-note');
