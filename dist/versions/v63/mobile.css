@@ -1,0 +1,102 @@
+/* Common mobile correction for V4.9, V5 and V6. Desktop/tablet compositions stay intact. */
+#group-panel .group-list{padding-bottom:calc(14px + var(--rail-tail-space,0px))}
+.mobile-sheet-handle{display:none}
+@media(max-width:650px){
+  :root{--learning-gutter:max(16px,env(safe-area-inset-left,0px),env(safe-area-inset-right,0px))}
+  html,body{min-width:0}
+  body .learning-workspace,body.learning-navigation-open .learning-workspace{width:100%;margin-left:0}
+  body .learning-workspace main,body.learning-navigation-open .learning-workspace main{width:calc(100% - var(--learning-gutter)*2);max-width:none;margin:0 auto;padding:0 0 calc(100px + env(safe-area-inset-bottom,0px))}
+  body .ai{display:grid;grid-template-columns:minmax(0,1fr) 104px;column-gap:8px;row-gap:14px;padding:24px 0 44px}
+  body .ai::after{bottom:20px}
+  body.has-long-learning-list .ai{top:0}
+  body .mentor-cluster{display:contents}
+  body .mentor-cluster>.ai-top{grid-column:1/-1;grid-row:1;min-width:0;padding:0;gap:12px}
+  body .mentor-cluster>.recommend{grid-column:1;grid-row:2;min-width:0;width:auto;height:auto;min-height:48px;padding:8px}
+  body .mentor-cluster .recommend button{display:flex;align-items:center;flex-direction:row;min-width:0;gap:6px;min-height:28px}
+  body .mentor-cluster .recommend-label{flex:none;white-space:nowrap;padding:5px 6px;font-size:11px}
+  body .mentor-cluster .recommend-content{display:block;flex:1 1 0%;width:auto;min-width:0;height:auto;min-height:20px}
+  body .mentor-cluster #recommend-copy{display:block;min-width:0;width:100%;height:auto;min-height:20px;font-size:12px;line-height:20px;white-space:normal;word-break:keep-all;overflow-wrap:normal;text-overflow:clip;overflow:visible}
+  body .mentor-cluster .recommend-loader{gap:4px}
+  body .mentor-cluster .recommend-loader small{font-size:12px;line-height:20px;white-space:nowrap}
+  body .mentor-cluster .recommend-arrow{flex:none;width:14px;height:14px}
+  body .mentor-cluster .recommend[data-recommend-state=loading] .recommend-arrow{width:0;margin-left:-6px}
+  body .top-shortcuts{grid-column:2;grid-row:2;gap:8px;margin:0;align-self:center}
+  body .heading,body.has-personalized-learning .heading{flex-wrap:wrap;gap:12px;margin:0 0 22px}
+  body .heading>.heading-copy,body.has-personalized-learning .heading>.heading-copy{flex:1 1 100%;min-width:0}
+  body .heading-title-row{gap:9px;align-items:center}
+  body .heading-title-row #group-title{min-width:0;font-size:20px;line-height:1.4;word-break:keep-all;overflow-wrap:break-word}
+  body .heading>.learning-context,body.has-personalized-learning .heading>.learning-context{flex:0 1 auto;max-width:100%;align-self:flex-start}
+  #learning-context .diagnostic-summary-trigger .result-copy strong{white-space:nowrap}
+  #diagnosis-result-hint.diagnosis-result-hint{left:0;right:auto;top:calc(100% + 12px);max-width:calc(100vw - 32px);white-space:normal}
+  #diagnosis-result-hint.diagnosis-result-hint::after{top:-9px;right:24px;transform:rotate(-90deg)}
+  #diagnosis-welcome .welcome-main{display:grid;grid-template-columns:minmax(0,1fr);width:100%;max-width:none;min-height:0;padding:28px 20px 26px;gap:20px}
+  #diagnosis-welcome:has(.welcome-utility) .welcome-main{padding-top:64px}
+  #diagnosis-welcome .welcome-copy{grid-column:1;grid-row:2;min-width:0;text-align:center}
+  #diagnosis-welcome .welcome-art{display:block;grid-column:1;grid-row:1;justify-self:center;max-width:100%;margin:0}
+  #diagnosis-welcome-title{font-size:clamp(22px,5.7vw,28px);line-height:1.4;word-break:keep-all;overflow-wrap:break-word}
+  #diagnosis-welcome-description,#diagnosis-welcome-note{word-break:keep-all;overflow-wrap:break-word}
+  #diagnosis-welcome .welcome-guide-frame{height:68px}
+  #diagnosis-welcome .welcome-guide-slide{gap:8px}
+  #diagnosis-welcome .welcome-tip-copy{font-size:15px;line-height:24px;word-break:keep-all}
+  #diagnosis-welcome .welcome-tips{grid-template-columns:minmax(0,1fr);gap:10px}
+  #diagnosis-welcome .welcome-tips>li{flex-direction:row;align-items:center;gap:12px}
+  #diagnosis-welcome .welcome-journey{grid-template-columns:minmax(0,1fr);gap:14px;padding:20px}
+  #diagnosis-welcome-action>.diagnostic-start-button{display:flex;align-items:center;justify-content:center;flex-direction:row;width:100%;min-width:0;max-width:100%;gap:12px;min-height:54px;padding:14px 16px;font-size:17px;line-height:24px;white-space:nowrap}
+  #diagnosis-welcome-action>.diagnostic-start-button>span{flex:0 1 auto;min-width:max-content;white-space:nowrap}
+  #diagnosis-welcome-action>.diagnostic-start-button>svg{flex:none;width:20px;height:20px}
+  body #programs.grid,body.learning-navigation-open #programs.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  body #programs>.program-card,body #programs>.program-card:is(.is-ready,.is-current,.is-complete,.is-introduced,.is-locked){min-width:0;height:clamp(200px,44vw,260px);min-height:200px;padding:16px;border-radius:22px}
+  body #programs>.program-card>.program-title,body #programs>.program-card .completed-card-heading>.program-title{font-size:16px;line-height:24px;word-break:keep-all;overflow-wrap:break-word}
+  body #programs .card-start-box{padding:10px 8px;font-size:16px;line-height:22px;white-space:nowrap}
+  body #programs .card-progress{gap:8px}
+  body #programs .card-progress progress{flex:1 1 0%;min-width:0;width:0}
+  body #programs .card-percent{flex:none;font-size:12px}
+  body .groups-trigger,body .groups-trigger:hover:not(:disabled),body .groups-trigger:active:not(:disabled){position:fixed;left:calc(16px + env(safe-area-inset-left,0px));top:auto;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:18;display:grid;place-items:center;width:52px;height:52px;padding:0;border:0;border-radius:50%;background:var(--theme-accent)!important;color:var(--theme-on-active);box-shadow:0 5px 18px color-mix(in srgb,var(--theme-primary) 23%,transparent)!important;transform:none;opacity:1;transition:opacity .22s ease,transform .32s ease}
+  body .groups-trigger .side-tab-surface{display:none}
+  body .groups-trigger .side-tab-content{position:static;display:grid;place-items:center;width:100%;height:100%;padding:0}
+  body .groups-trigger .side-tab-content>img{width:22px;height:26px;filter:brightness(0) invert(1)}
+  body .groups-trigger[aria-expanded=true],body .groups-trigger[aria-expanded=true]:hover:not(:disabled){opacity:0;visibility:hidden;pointer-events:none;transform:scale(.92)}
+  body .groups-trigger:focus-visible{outline:3px solid var(--theme-primary);outline-offset:4px;border-radius:50%}
+  #group-panel,#group-panel[data-panel-phase=open],#group-panel[data-panel-phase=closing]{position:fixed;inset:auto 0 0;z-index:30;width:100%;max-width:none;height:50vh;height:50dvh;max-height:50dvh;min-height:0;margin:0;border:0;border-radius:24px 24px 0 0;background:var(--theme-surface);overflow:hidden;box-shadow:0 -10px 32px color-mix(in srgb,var(--theme-title) 10%,transparent);transition:transform .42s cubic-bezier(.22,.61,.36,1);transform:translate3d(0,calc(100% + 36px),0)}
+  #group-panel[data-panel-phase=open]{transform:translate3d(0,0,0)}
+  #group-panel .mobile-sheet-handle{position:absolute;z-index:2;top:0;left:calc(50% - 32px);display:grid;place-items:center;width:64px;height:28px;padding:0;border:0;background:transparent}
+  #group-panel .mobile-sheet-handle::after{content:'';width:36px;height:4px;border-radius:99px;background:var(--theme-soft)}
+  #group-panel .panel-head{position:absolute;top:8px;right:8px;width:40px;height:40px;min-height:0;padding:0}
+  #group-panel .nav-close{width:40px;height:40px;padding:10px;border-radius:12px}
+  #group-panel .panel-content{display:flex;flex-direction:column;flex:1;min-height:0;padding:32px 16px 0;overflow:hidden}
+  #group-panel .panel-content>.group-nav{flex:none;min-height:40px;height:40px;margin:0 40px 14px;gap:18px}
+  #group-panel .group-nav>h2{flex:0 0 auto;min-width:72px;font-size:18px;line-height:26px;white-space:nowrap}
+  #group-panel .nav-grade-arrow{width:38px;height:38px;padding:0;border-radius:50%;background:color-mix(in srgb,var(--theme-accent) 10%,var(--theme-surface))}
+  #group-panel .nav-list-heading{flex:none;height:24px;min-height:24px;margin:0 4px 8px}
+  #group-panel .nav-list-heading h3,#group-panel .nav-list-heading h3>span{font-size:12px}
+  #group-panel .nav-list-scroll{flex:1;min-height:0;overflow:hidden}
+  #group-panel .group-list{flex:1;min-height:0;gap:8px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;padding:0 2px calc(14px + var(--rail-tail-space,0px));-webkit-overflow-scrolling:touch}
+  #group-panel .group-list::-webkit-scrollbar{display:none}
+  #group-panel .group-item{flex:none;min-height:56px;padding:14px 12px;gap:10px}
+  #group-panel .nav-topic-number{flex:none;min-width:20px;font-size:12px}
+  #group-panel .nav-topic-copy strong,#group-panel .group-item[data-state=idle] .nav-topic-copy strong{font-size:14px;line-height:22px;white-space:normal;word-break:keep-all;overflow-wrap:break-word}
+  #group-panel .group-item.selected{background:var(--theme-completed);box-shadow:inset 0 0 0 1px var(--theme-soft-strong)}
+  #group-panel .nav-grade-progress{flex:none;margin:0;padding:12px 16px calc(20px + env(safe-area-inset-bottom,0px));background:var(--theme-surface-alt)}
+  #group-panel .nav-progress-heading{gap:8px}
+  #group-panel .nav-progress-heading>span:first-child{font-size:12px}
+  #group-panel .nav-progress-count{font-size:11px}
+  #group-panel .nav-grade-progress progress{margin-top:9px;height:6px}
+  #group-panel[data-panel-phase=open][data-reveal=true] .group-item.nav-stagger{animation:mobile-topic-arrive .32s ease both;animation-delay:var(--nav-delay,0ms);transform:none}
+  @keyframes mobile-topic-arrive{from{opacity:0}to{opacity:1}}
+}
+@media(max-width:374px){
+  body .mentor-cluster>.ai-top{grid-column:1;grid-row:1}
+  body .top-shortcuts{grid-column:2;grid-row:1}
+  body .mentor-cluster>.recommend{grid-column:1/-1;grid-row:2}
+}
+@media(max-width:650px) and (max-height:600px){
+  #group-panel .panel-content{padding-top:24px}
+  #group-panel .panel-content>.group-nav{min-height:34px;height:34px;margin-bottom:6px}
+  #group-panel .nav-grade-arrow{width:32px;height:32px}
+  #group-panel .nav-list-heading{height:20px;min-height:20px;margin-bottom:4px}
+  #group-panel .nav-grade-progress{padding-top:8px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+}
+@media(prefers-reduced-motion:reduce){
+  #group-panel,body .groups-trigger{transition:none!important}
+  #group-panel[data-panel-phase=open][data-reveal=true] .group-item.nav-stagger{animation:none!important}
+}
