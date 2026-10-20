@@ -662,6 +662,67 @@ function diagnosisWelcomeTipsHTML(expanded=false){
 // V6.2 keeps its content together and softly repeats guidance without carousel UI.
 const WELCOME_GUIDE_HOLD=4800,WELCOME_GUIDE_FADE=240;
 let diagnosisWelcomeFirstTopic=null,diagnosisSheetSignature=null,welcomeGuideRun=null;
+// A visual study of diagnosis, independent of the learner's score and saved progress.
+const DIAGNOSIS_ART_KIND='brain';
+const DIAGNOSIS_ART_CONFIG={lens:{parts:1,height:134},puzzle:{parts:4,height:112},brain:{parts:1,height:154}};
+let diagnosisArtPreview=null;
+function cancelDiagnosisArtPreview(){
+  if(!diagnosisArtPreview)return;
+  diagnosisArtPreview.generation++;clearTimeout(diagnosisArtPreview.timer);diagnosisArtPreview=null;diagnosisSheetSignature=null;
+}
+function syncDiagnosisArtClock(){
+  const run=diagnosisArtPreview;if(!run)return;
+  if(run.topic!==current()||!isDiagnosisWelcomeTopic(current())||editing||myOpen||activityKind||diagnosisOutcomeRun||composing||skyBusy){cancelDiagnosisArtPreview();return;}
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches&&run.step<3){
+    run.generation++;clearTimeout(run.timer);run.timer=null;run.step=3;
+    syncDiagnosisArtProgress(diagnosisWelcomeProgress(current()));
+  }
+  if(!mainResumeOverviewVisible()||!mainGuidanceVisible()||welcomeGuideSuspended){
+    run.generation++;clearTimeout(run.timer);run.timer=null;return;
+  }
+  if(run.timer)return;
+  const generation=run.generation;
+  run.timer=setTimeout(()=>{
+    if(diagnosisArtPreview!==run||run.generation!==generation)return;
+    run.timer=null;
+    if(run.step===3)cancelDiagnosisArtPreview();else run.step++;
+    syncDiagnosisWelcome(current());syncDiagnosisArtClock();
+  },run.step===3?3600:2400);
+}
+function syncDiagnosisArtReferences(){
+  // Asset <base> must never redirect SVG fragment references to a different document.
+  const href=window.location?.href;if(!href)return;const page=href.split('#')[0];
+  const config=DIAGNOSIS_ART_CONFIG[DIAGNOSIS_ART_KIND];
+  for(let i=0;i<config.parts;i++){
+    $('#diagnosis-art-clip-'+i).setAttribute('clip-path',`url("${page}#diagnosis-art-shape-${i}")`);
+    $('#diagnosis-art-fill-'+i).setAttribute('fill',`url("${page}#diagnosis-art-color")`);
+  }
+  if(DIAGNOSIS_ART_KIND==='lens')$('#diagnosis-art-lens-effects').setAttribute('clip-path',`url("${page}#diagnosis-art-shape-0")`);
+}
+function syncDiagnosisArtProgress(progress){
+  const config=DIAGNOSIS_ART_CONFIG[DIAGNOSIS_ART_KIND],art=$('#diagnosis-welcome-progress');
+  const preview=diagnosisArtPreview?.topic===current()?diagnosisArtPreview:null;
+  const ratio=preview?preview.step/3:progress.solved/progress.total;
+  const signature=state.grade+':'+state.index+':'+JSON.stringify([ratio,progress,!!preview]);
+  if(signature===diagnosisSheetSignature)return;
+  diagnosisSheetSignature=signature;syncDiagnosisArtReferences();
+  art.setAttribute('data-art-kind',DIAGNOSIS_ART_KIND);
+  art.setAttribute('data-progress-stage',ratio===0?'empty':ratio===1?'complete':'partial');
+  art.setAttribute('data-art-preview',String(!!preview));
+  art.setAttribute('aria-label',preview?'실력알기 그래픽 모션 미리보기':'실력알기 진행률');
+  art.setAttribute('aria-valuenow',Math.round(ratio*100));
+  art.setAttribute('aria-valuetext',preview?`모션 미리보기 ${Math.round(ratio*100)}% · 실제 풀이 진도와 관계없어요`:`${progress.total}문항 중 ${progress.solved}문항 풀이 완료 · ${progress.percent}%`);
+  for(let i=0;i<config.parts;i++){
+    const part=Math.min(1,Math.max(0,ratio*config.parts-i));
+    $('#diagnosis-art-level-'+i).style.transform=`translateY(${config.height*(1-part)}px)`;
+    $('#diagnosis-art-piece-'+i).setAttribute('data-piece-state',part===0?'empty':part===1?'complete':'partial');
+    $('#diagnosis-art-symbol-'+i).style.opacity=String(.24+part*.62);
+  }
+  const counter=$('#diagnosis-art-count');
+  counter.textContent=preview?'':progress.solved?`${progress.solved} / ${progress.total}`:'';
+  counter.setAttribute('visibility',!preview&&progress.solved?'visible':'hidden');
+  $('#diagnosis-art-preview-label').hidden=!preview;
+}
 let welcomeGuideHover=false,welcomeGuideFocus=false,welcomeGuideSuspended=false;
 function rotatingWelcomeGuideHTML(){
   const copy=['차분히, 스스로 풀어봐요.','잠깐 쉬어도 이어서 풀 수 있어요.','마치면 나에게 맞는 학습을 만나요.'];
@@ -711,17 +772,12 @@ function observeDiagnosisWelcomeVisit(){
   if(diagnosisWelcomeFirstTopic&&(leftOverview||current()!==diagnosisWelcomeFirstTopic))diagnosisWelcomeFirstTopic=null;
   $('#diagnosis-welcome').setAttribute('data-welcome-motion',visible?'running':'paused');
   syncWelcomeGuideClock();
+  syncDiagnosisArtClock();
 }
 function diagnosisWelcomeProgress(topic){
   const answers=topic.diagnosticSession?.answers||[],total=DEMO.length;
   const solved=topic.diagnosis==='active'?DEMO.reduce((n,question,i)=>n+(Number.isInteger(answers[i])&&answers[i]>=0&&answers[i]<question.choices.length?1:0),0):0;
   return {total,solved,percent:Math.round(solved/total*100)};
-}
-function syncDiagnosisSheetReferences(){
-  // Native entrypoints have a base URL for assets. SVG fragments belong to this document.
-  const href=window.location?.href;if(!href)return;const page=href.split('#')[0];
-  $('#diagnosis-sheet-clip').setAttribute('clip-path',`url("${page}#diagnosis-ink-clip")`);
-  for(const id of ['diagnosis-sheet-fill','diagnosis-sheet-waterline'])$('#'+id).setAttribute('fill',`url("${page}#diagnosis-ink-color")`);
 }
 function syncDiagnosisWelcome(topic){
   observeDiagnosisWelcomeVisit();
@@ -737,20 +793,7 @@ function syncDiagnosisWelcome(topic){
   const guide=$('#diagnosis-welcome-guide');guide.hidden=!first;if(first&&!guide.innerHTML)guide.innerHTML=rotatingWelcomeGuideHTML();
   $('#diagnosis-welcome-title').textContent=first?'실력알기로 시작해볼까요?':active?'풀던 문제부터 이어가요':'나의 실력을 알아볼까요?';
   const progress=diagnosisWelcomeProgress(topic),sheet=$('#diagnosis-welcome-progress');sheet.hidden=false;
-  sheet.setAttribute('aria-valuenow',progress.percent);sheet.setAttribute('aria-valuetext',`${progress.total}문항 중 ${progress.solved}문항 풀이 완료 · ${progress.percent}%`);
-  const signature=state.grade+':'+state.index+':'+JSON.stringify([progress,topic.diagnosticSession?.answers]);
-  if(signature!==diagnosisSheetSignature){
-    diagnosisSheetSignature=signature;
-    syncDiagnosisSheetReferences();
-    const height=200*progress.solved/progress.total,y=218-height,fill=$('#diagnosis-sheet-fill');
-    fill.setAttribute('y',y);fill.setAttribute('height',height);
-    sheet.setAttribute('data-has-progress',String(progress.solved>0));
-    // Geometry uses the actual ratio, not the rounded accessible percentage.
-    const wave=Array.from({length:3},(_,i)=>{const x=-140+i*160;return `C${x+40} ${y-6} ${x+120} ${y+6} ${x+160} ${y}`;}).join(' ');
-    $('#diagnosis-sheet-waterline').setAttribute('d',progress.solved>0&&progress.solved<progress.total?`M-140 ${y} ${wave} L340 218 H-140 Z`:'');
-    const counter=$('#diagnosis-sheet-count');counter.textContent=progress.solved>0?`${progress.solved} / ${progress.total}`:'';
-    counter.setAttribute('visibility',progress.solved>0?'visible':'hidden');
-  }
+  syncDiagnosisArtProgress(progress);
   button.classList.add('diagnostic-start-button');button.setAttribute('aria-label',label);
   if(first)button.setAttribute('aria-describedby','diagnosis-welcome-guide');else button.removeAttribute('aria-describedby');
   const markup=`<span>${label}</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>`;
@@ -759,6 +802,12 @@ function syncDiagnosisWelcome(topic){
   syncWelcomeGuideClock();
 }
 function diagnosisWelcomeAction(action){
+  if(action==='welcome-preview-motion'){
+    if(!isDiagnosisWelcomeTopic(current()))return true;
+    cancelDiagnosisArtPreview();
+    diagnosisArtPreview={topic:current(),step:matchMedia('(prefers-reduced-motion: reduce)').matches?3:0,generation:0,timer:null};
+    if(panel)closePanel();syncDiagnosisWelcome(current());syncDiagnosisArtClock();return true;
+  }
   if(action==='welcome-preview-first'||action==='welcome-preview-compact'||action==='welcome-preview-progress'){
     loadValidationScenario(action==='welcome-preview-progress'?1:0);
     if(action!=='welcome-preview-first'){diagnosisWelcomeFirstTopic=null;state.ui.diagnosisWelcomeSeen=true;save();syncDiagnosisWelcome(current());}
@@ -1259,6 +1308,7 @@ function resetValidationSurfaces(){
   daily().timerRunning=false;
 }
 function resetValidationHints(first=false){
+  cancelDiagnosisArtPreview();
   stopWelcomeGuide();welcomeGuideHover=false;welcomeGuideFocus=false;
   diagnosisWelcomeFirstTopic=null;state.ui??={testControls:false};state.ui.diagnosisWelcomeSeen=!first;
   Object.assign(state.ui,{diagnosisIntroSeen:!first,passedCardHintSeen:false,failedCardHintSeen:false,diagnosisResultHintSeen:false});
@@ -1317,7 +1367,7 @@ function replayValidationProgram(passed=true){
   const p=topic.programs[0];p.status=passed?'passed':'failed';M.setProgress(p,100);p.wrongFrames=passed?[]:[0];delete p.initialResult;delete p.reviewSession;
   p.studyTiming={normal:{elapsedMs:65000,runningSince:null}};if(panel)closePanel();beginProgramOutcome(p,false,true);
 }
-function renderTest(){const s=current(),scroll=$('#test-panel .panel-content')?.scrollTop||0;$('#test-panel').innerHTML=`<div class="panel-head"><h2>테스트 패널</h2><button data-action="close-panel">닫기 ×</button></div><div class="panel-content"><label class="preview-mode"><input id="test-controls" type="checkbox" ${testVisible()?'checked':''}> 학습 화면에 테스트 버튼 표시</label><div class="notice">기획·개발 검증 전용<br>시나리오를 선택하면 설정이 닫히고 해당 상태가 표시돼요. 첫 진입 안내와 카드 복습 안내도 다시 확인할 수 있어요. 필수 시나리오는 현재 주제를 바꿉니다.</div><div class="fields"><label>등급<select id="test-grade">${gradeOptions(state.grade)}</select></label><label>진단 그룹<select id="test-group">${groupOptions(state.grade,state.index)}</select></label></div><h3>V6.2 시작 화면</h3><div class="actions"><button data-action="welcome-preview-first">첫 안내 다시 보기</button><button data-action="welcome-preview-compact">간단한 시작 화면</button><button data-action="welcome-preview-progress">진단 진행률 보기</button></div><h3>필수 검증 시나리오</h3><div class="presets">${M.presetNames.map((n,i)=>`<button class="${i===presetIndex?'selected':''}" data-action="preset" data-id="${i}">${i+1}. ${n}</button>`).join('')}</div><p class="validation-note">통과·미통과 시나리오를 다시 선택하면 첫 카드의 복습 안내도 다시 표시돼요.</p><h3>진행 중 카드로 돌아오기</h3><button data-action="replay-resume-scroll">아래쪽 진행 중 카드로 자동 이동</button><p class="validation-note">확인용 카드 20개 중 13번째를 진행 중으로 표시해요. 메인 맨 위에서 0.6초 후 해당 카드로 이동해요.</p><h3>진단 후 전환 다시 보기</h3><p class="validation-note">전체 화면 결과 요약 → 돋보기로 맞춤 학습 찾기 → 준비 완료 → 카드 생성 → 별 조각 보상 → 별자리로 모으기 → 학습 열림 순서로 보여줘요. 보상은 미리보기로 제공돼요.</p><div class="actions"><button data-action="replay-first">첫 처방 · 결과부터 보기</button><button data-action="replay-repeat">반복 처방 · 결과부터 보기</button><button data-action="replay-clean-pass">처방 없이 통과 연출</button></div><h3>개별 학습 완료 다시 보기</h3><div class="actions"><button data-action="replay-program-pass">프로그램 통과 · 결과부터 보기</button><button data-action="replay-program-fail">프로그램 미통과 · 결과부터 보기</button></div><h3>진단과 처방 직접 변경</h3><label>진단 상태<select id="diagnosis-state">${options([['idle','시작 전 · 처방 제거'],['active','진행 중 · 처방 제거'],['clean','처방 없이 통과'],['prescribed','진단 완료 · 처방 발생']],s.diagnosis==='done'?(s.programs.length?'prescribed':'clean'):s.diagnosis)}</select></label><div class="fields"><label>처방 프로그램 수 (1~52)<input id="prescription-count" type="number" min="1" max="52" value="${s.programs.length||M.sourceCount(state.grade,state.index)}"></label></div><button data-action="resize">개수 적용 · 진단 완료 처리</button><div class="actions"><button data-action="all-pass">모두 통과</button><button data-action="make-fail">미통과 1개 생성</button><button data-action="review-all">미통과 모두 복습 후 통과</button><button data-action="reset-current">현재 세트 초기화</button><button data-action="reset-all">전체 초기화</button></div><h3>개별 프로그램 (${s.programs.length})</h3>${s.programs.length?s.programs.map(p=>`<div class="program-edit"><strong>${p.id+1}. ${esc(p.name)} ${p.reviewed?'· 복습 완료':''}</strong><select data-program-state="${p.id}" aria-label="프로그램 ${p.id+1} 상태">${options(['locked','idle','active','passed','failed'].map(x=>[x,M.labels[x]]),p.status)}</select><label><small>진행률 ${p.progress}%</small><input type="range" min="0" max="100" value="${p.progress}" data-program-progress="${p.id}" aria-label="프로그램 ${p.id+1} 진행률" ${p.status!=='active'?'disabled':''}></label>${p.status==='failed'?`<button data-action="review-one" data-id="${p.id}">복습 후 통과</button>`:''}</div>`).join(''):'<p><small>현재 처방 프로그램이 없습니다.</small></p>'}<h3>데이터 기준</h3><div class="notice">시트 기준: ${M.Catalog.meta.groups}개 세트 / ${M.Catalog.meta.programs}개 프로그램<br>${M.Catalog.meta.frameAssociations}개 프로그램-프레임 연결 (완전 중복 ${M.Catalog.meta.exactDuplicateFramesRemoved}행 제외)<br>MF012736 → M1.H99.16 정정<br>그룹–프로그램 연결표 미제공: 같은 등급의 프로그램을 테스트용으로 선택${s.programs.some(p=>p.sample)?'<br>현재 처방에 테스트용 추가 항목 포함':''}<br>진단 채점·실제 처방 엔진은 미구현. 원본 ‘O’, ‘삭제’, ‘1’ 표시는 보존하며 자동 제외하지 않음.</div>${dailyControls()}<h3>기획 확인 정책</h3><details class="policy"><summary>판정 규칙·추천 우선순위 편집</summary><p>진단 미시작 → 시작 전<br>진단 진행 → 진행 중<br>진단 완료 + 처방 0 → 처방 없이 통과<br>전체 통과 → 통과<br>전체 풀이 완료 + 미통과 존재 → 미통과</p><label>처방 후 학습 미시작<select id="policy-prescribed">${options([['active','진행 중 (요청의 임시 가정)'],['idle','시작 전 (비교용)']],state.policy.prescribed)}</select></label><label>일부 프로그램 미완료<select id="policy-unfinished">${options([['active','진행 중'],['idle','시작 전 (비교용)']],state.policy.unfinished)}</select></label><label>추천 우선순위<select id="policy-recommendation">${options([['active','진행 중 → 다음 순서 → 복습'],['failed','진행 중 → 복습 → 다음 순서']],state.policy.recommendation)}</select></label><p>순차 학습: 이전 프로그램 진행률 100% → 다음 학습 열림. 통과·미통과와 별개. 테스트 패널은 순서 제한 없이 상태를 조작할 수 있음.<br>부족 목표 1개 = 프로그램 1개인 샘플 가정.<br>등급·그룹 진입은 자유. 프로그램 학습은 순차 진행.</p></details><h3>최근 상태 변경</h3><div class="notice">${esc(s.recent||'변경 이력 없음')}</div><div class="actions"><button data-action="export">현재 테스트 데이터 JSON 내려받기</button><a href="source.zip" download>소스 코드 ZIP</a><a href="README.md" download>요구사항·테스트 안내</a></div></div>`;$('#test-panel .panel-content').scrollTop=scroll;}
+function renderTest(){const s=current(),scroll=$('#test-panel .panel-content')?.scrollTop||0;$('#test-panel').innerHTML=`<div class="panel-head"><h2>테스트 패널</h2><button data-action="close-panel">닫기 ×</button></div><div class="panel-content"><label class="preview-mode"><input id="test-controls" type="checkbox" ${testVisible()?'checked':''}> 학습 화면에 테스트 버튼 표시</label><div class="notice">기획·개발 검증 전용<br>시나리오를 선택하면 설정이 닫히고 해당 상태가 표시돼요. 첫 진입 안내와 카드 복습 안내도 다시 확인할 수 있어요. 필수 시나리오는 현재 주제를 바꿉니다.</div><div class="fields"><label>등급<select id="test-grade">${gradeOptions(state.grade)}</select></label><label>진단 그룹<select id="test-group">${groupOptions(state.grade,state.index)}</select></label></div><h3>실력알기 시작 화면 · 그래픽 비교</h3><div class="actions"><button data-action="welcome-preview-first">첫 안내 다시 보기</button><button data-action="welcome-preview-compact">간단한 시작 화면</button><button data-action="welcome-preview-progress">진단 진행률 보기</button>${isDiagnosisWelcomeTopic(s)?'<button data-action="welcome-preview-motion">채워지는 모션 보기</button>':''}</div><p class="validation-note">모션 보기는 그래픽만 시연하며 저장된 답안과 진도를 바꾸지 않아요.</p><h3>필수 검증 시나리오</h3><div class="presets">${M.presetNames.map((n,i)=>`<button class="${i===presetIndex?'selected':''}" data-action="preset" data-id="${i}">${i+1}. ${n}</button>`).join('')}</div><p class="validation-note">통과·미통과 시나리오를 다시 선택하면 첫 카드의 복습 안내도 다시 표시돼요.</p><h3>진행 중 카드로 돌아오기</h3><button data-action="replay-resume-scroll">아래쪽 진행 중 카드로 자동 이동</button><p class="validation-note">확인용 카드 20개 중 13번째를 진행 중으로 표시해요. 메인 맨 위에서 0.6초 후 해당 카드로 이동해요.</p><h3>진단 후 전환 다시 보기</h3><p class="validation-note">전체 화면 결과 요약 → 돋보기로 맞춤 학습 찾기 → 준비 완료 → 카드 생성 → 별 조각 보상 → 별자리로 모으기 → 학습 열림 순서로 보여줘요. 보상은 미리보기로 제공돼요.</p><div class="actions"><button data-action="replay-first">첫 처방 · 결과부터 보기</button><button data-action="replay-repeat">반복 처방 · 결과부터 보기</button><button data-action="replay-clean-pass">처방 없이 통과 연출</button></div><h3>개별 학습 완료 다시 보기</h3><div class="actions"><button data-action="replay-program-pass">프로그램 통과 · 결과부터 보기</button><button data-action="replay-program-fail">프로그램 미통과 · 결과부터 보기</button></div><h3>진단과 처방 직접 변경</h3><label>진단 상태<select id="diagnosis-state">${options([['idle','시작 전 · 처방 제거'],['active','진행 중 · 처방 제거'],['clean','처방 없이 통과'],['prescribed','진단 완료 · 처방 발생']],s.diagnosis==='done'?(s.programs.length?'prescribed':'clean'):s.diagnosis)}</select></label><div class="fields"><label>처방 프로그램 수 (1~52)<input id="prescription-count" type="number" min="1" max="52" value="${s.programs.length||M.sourceCount(state.grade,state.index)}"></label></div><button data-action="resize">개수 적용 · 진단 완료 처리</button><div class="actions"><button data-action="all-pass">모두 통과</button><button data-action="make-fail">미통과 1개 생성</button><button data-action="review-all">미통과 모두 복습 후 통과</button><button data-action="reset-current">현재 세트 초기화</button><button data-action="reset-all">전체 초기화</button></div><h3>개별 프로그램 (${s.programs.length})</h3>${s.programs.length?s.programs.map(p=>`<div class="program-edit"><strong>${p.id+1}. ${esc(p.name)} ${p.reviewed?'· 복습 완료':''}</strong><select data-program-state="${p.id}" aria-label="프로그램 ${p.id+1} 상태">${options(['locked','idle','active','passed','failed'].map(x=>[x,M.labels[x]]),p.status)}</select><label><small>진행률 ${p.progress}%</small><input type="range" min="0" max="100" value="${p.progress}" data-program-progress="${p.id}" aria-label="프로그램 ${p.id+1} 진행률" ${p.status!=='active'?'disabled':''}></label>${p.status==='failed'?`<button data-action="review-one" data-id="${p.id}">복습 후 통과</button>`:''}</div>`).join(''):'<p><small>현재 처방 프로그램이 없습니다.</small></p>'}<h3>데이터 기준</h3><div class="notice">시트 기준: ${M.Catalog.meta.groups}개 세트 / ${M.Catalog.meta.programs}개 프로그램<br>${M.Catalog.meta.frameAssociations}개 프로그램-프레임 연결 (완전 중복 ${M.Catalog.meta.exactDuplicateFramesRemoved}행 제외)<br>MF012736 → M1.H99.16 정정<br>그룹–프로그램 연결표 미제공: 같은 등급의 프로그램을 테스트용으로 선택${s.programs.some(p=>p.sample)?'<br>현재 처방에 테스트용 추가 항목 포함':''}<br>진단 채점·실제 처방 엔진은 미구현. 원본 ‘O’, ‘삭제’, ‘1’ 표시는 보존하며 자동 제외하지 않음.</div>${dailyControls()}<h3>기획 확인 정책</h3><details class="policy"><summary>판정 규칙·추천 우선순위 편집</summary><p>진단 미시작 → 시작 전<br>진단 진행 → 진행 중<br>진단 완료 + 처방 0 → 처방 없이 통과<br>전체 통과 → 통과<br>전체 풀이 완료 + 미통과 존재 → 미통과</p><label>처방 후 학습 미시작<select id="policy-prescribed">${options([['active','진행 중 (요청의 임시 가정)'],['idle','시작 전 (비교용)']],state.policy.prescribed)}</select></label><label>일부 프로그램 미완료<select id="policy-unfinished">${options([['active','진행 중'],['idle','시작 전 (비교용)']],state.policy.unfinished)}</select></label><label>추천 우선순위<select id="policy-recommendation">${options([['active','진행 중 → 다음 순서 → 복습'],['failed','진행 중 → 복습 → 다음 순서']],state.policy.recommendation)}</select></label><p>순차 학습: 이전 프로그램 진행률 100% → 다음 학습 열림. 통과·미통과와 별개. 테스트 패널은 순서 제한 없이 상태를 조작할 수 있음.<br>부족 목표 1개 = 프로그램 1개인 샘플 가정.<br>등급·그룹 진입은 자유. 프로그램 학습은 순차 진행.</p></details><h3>최근 상태 변경</h3><div class="notice">${esc(s.recent||'변경 이력 없음')}</div><div class="actions"><button data-action="export">현재 테스트 데이터 JSON 내려받기</button><a href="source.zip" download>소스 코드 ZIP</a><a href="README.md" download>요구사항·테스트 안내</a></div></div>`;$('#test-panel .panel-content').scrollTop=scroll;}
 function showHelp(){const rows=[['clean','실력 알기를 마쳤고, 추가 학습 없이 통과했어요.'],['passed','실력 알기 후 필요한 학습을 모두 마쳤어요.'],['active','실력 알기 또는 맞춤 학습을 진행하고 있어요.'],['failed','학습을 마쳤지만 다시 살펴볼 내용이 있어요.'],['idle','아직 실력 알기를 시작하지 않았어요.']];$('#help').innerHTML=`<div class="dialog-top"><h2>학습 상태 확인</h2><button data-action="close-help" aria-label="닫기">×</button></div>${rows.map(([st,t])=>`<div class="status-help-row">${st==='active'?`<span class="status-dot ${st}" aria-label="${M.labels[st]}"></span>`:`<span class="status-help-icon" aria-label="${M.labels[st]}">${statusSVG(st==='clean'?'passed':st==='idle'?'locked':st)}</span>`}<p>${t}</p></div>`).join('')}`;$('#help').showModal();}
 const DEMO=[
 {title:'모양 알기',area:'도형',text:'동그라미를 골라요.',choices:[{shape:'circle',label:'동그라미'},{shape:'square',label:'네모'},{shape:'triangle',label:'세모'},{shape:'rectangle',label:'직사각형'}],correct:0},
@@ -1445,7 +1495,7 @@ welcomeGuideElement.addEventListener('pointerenter',event=>{if(event.pointerType
 welcomeGuideElement.addEventListener('pointerleave',()=>{welcomeGuideHover=false;syncWelcomeGuideClock();});
 $('#diagnosis-welcome').addEventListener('focusin',()=>{welcomeGuideFocus=true;syncWelcomeGuideClock();});
 $('#diagnosis-welcome').addEventListener('focusout',event=>{if(event.relatedTarget&&$('#diagnosis-welcome').contains(event.relatedTarget))return;welcomeGuideFocus=false;syncWelcomeGuideClock();});
-matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change',()=>{syncWelcomeGuideClock();if(welcomeGuideRun)renderWelcomeGuideSlide(welcomeGuideRun);});
+matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change',()=>{observeDiagnosisWelcomeVisit();if(welcomeGuideRun)renderWelcomeGuideSlide(welcomeGuideRun);});
 window.addEventListener?.('pagehide',()=>{welcomeGuideSuspended=true;observeDiagnosisWelcomeVisit();});
 window.addEventListener?.('pageshow',()=>{welcomeGuideSuspended=false;observeDiagnosisWelcomeVisit();});
 $('#activity').addEventListener('close',()=>{

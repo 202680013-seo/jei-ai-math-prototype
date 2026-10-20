@@ -34,14 +34,20 @@ export function buildReviewViews(root=defaultRoot){
     html=html.replace(/<\/body>/i,`<script src="/preview-controls.js?r=${controlsHash}"></script><script src="/history-ui.js?r=${historyUiHash}"></script></body>`);writeFileSync(join(out,version.id+'.html'),applyTypography(html));
   }
   // A stable native document for iPad/Safari: no workspace, iframe or redirect.
+  const nativeEntries=[];
   for(const family of ['V4','V5','V6']){
     const version=registry.versions.filter(version=>new RegExp('^'+family+'(?:\\.|$)').test(version.label)).at(-1);
-    if(!version)continue;
+    if(version)nativeEntries.push({family,version,file:family.toLowerCase()+'.html'});
+  }
+  // Named, native learner-only links keep the three V6.2 concepts independently reviewable on iPad.
+  for(const version of registry.versions.filter(version=>/^V6\.2\.[123]$/.test(version.label)))
+    nativeEntries.push({family:'V6',version,file:version.label.toLowerCase().replaceAll('.','-')+'.html'});
+  for(const {family,version,file} of nativeEntries){
     let html=readFileSync(join(out,version.id+'.html'),'utf8');
     html=html.replace(/<html([^>]*)>/i,`<html$1 data-${family.toLowerCase()}-standalone="true">`);
     html=html.replace(/<base\b[^>]*>/i,`<base href="/versions/${version.id}/">`);
     html=html.replace(/<\/head>/i,`<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="AI 수학 ${family}"><meta name="theme-color" content="#ffffff"></head>`);
-    writeFileSync(join(dist,family.toLowerCase()+'.html'),html);
+    writeFileSync(join(dist,file),html);
   }
   for(const name of ['index.html','preview.html']){const file=join(dist,name);let html=applyTypography(readFileSync(file,'utf8'));for(const asset of ['workspace.css','workspace.js','theme-model.js','review-model.js','preview.js'])html=html.replace(new RegExp(`(src|href)=(["'])${asset.replaceAll('.','\\.')}[?]?[^"']*\\2`,'g'),`$1="${asset}?r=${hash(readFileSync(join(dist,asset)))}"`);writeFileSync(file,html);}
   return {views:Review.entries(registry).length};

@@ -1,5 +1,6 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
-const {harness}=require('./helpers/ui-harness.cjs');
+const {harness:baseHarness}=require('./helpers/ui-harness.cjs');
+const harness=(saved,options={})=>baseHarness(saved,{...options,appSource:fs.readFileSync('dist/versions/v64/app.js','utf8')});
 const {MathModel:M}=require('../dist/working/model.js');
 const run=h=>h.evaluate('welcomeGuideRun');
 const index=h=>Number(h.node('#diagnosis-welcome-guide').getAttribute('data-guide-index'));
@@ -52,7 +53,7 @@ test('V6.2 fills the actual paper area using saved valid answers, including answ
     assert.equal(h.node('#diagnosis-sheet-count').getAttribute('visibility'),expected?'visible':'hidden');
     assert.equal(h.node('#diagnosis-sheet-waterline').getAttribute('d')==='',expected===0||expected===3);
   }
-  const html=fs.readFileSync('dist/working/index.html','utf8');assert(!html.includes('diagnosis-sheet-percent'));assert(!html.includes('diagnosis-sheet-items'));assert(!html.includes('welcome-dismiss'));
+  const html=fs.readFileSync('dist/versions/v64/index.html','utf8');assert(!html.includes('diagnosis-sheet-percent'));assert(!html.includes('diagnosis-sheet-items'));assert(!html.includes('welcome-dismiss'));
   assert.match(html,/id="diagnosis-sheet-fill"/);assert.match(html,/clip-path="url\(#diagnosis-ink-clip\)"/);
   assert(!html.includes('한 문제씩 채워가요'));assert.match(html,/<text id="diagnosis-sheet-count"/);
 });
