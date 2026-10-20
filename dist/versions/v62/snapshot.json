@@ -2,7 +2,7 @@
   "id": "v62",
   "date": "2026-10-20",
   "files": {
-    "app.js": "ab1c2b2fbb40392ee01a8cd1ad5505c8258854a0efcb029fdcce747883f73e65",
+    "app.js": "ae99115599ec3279d62716a481f5e979978f7eef7e55006e0f15d5c383e6e929",
     "assets/active-card-art.svg": "db896082a62eeeff84e4fc46ad01dc1443872423cb15172700722ecd4b63d88d",
     "assets/figma-v4-1/active-card-art.svg": "8571151b8c4436cea38a513d5bbe7ea0eb82850551f7fc647e38b7595bc414c9",
     "assets/figma-v4-1/close.svg": "0d458db2351ecd3772ee6dff1a9f8b3b6e5137d5e9857f0ec745fa03cd453458",
@@ -33,7 +33,7 @@
     "catalog.js": "742f16551eb158b5651a65391ec595cbffa1e1fb3912266c3588f52a1d26c517",
     "fonts/OFL.txt": "82e9c8a4b203261f10ddba1296422d64914ff3d4b7bd8a12896d03f0f088d70a",
     "fonts/PretendardVariable.woff2": "9599f12fd42fc0bce1cd50b47a0c022e108d7aa64dd0d1bb0ed44f3282d900b4",
-    "index.html": "bc2b9dfec64dc41b28a40ebf1814205244dd83a6bbc7ccc02decefeaa7662c91",
+    "index.html": "eca10eba41dfcde4e0f4785a7e0e09e842cd971df369ad862d3c9f9b5159eb3d",
     "mentor-copy.js": "b87e40882ae9a1407d910a91815f9cb233b83d0e361ce53d4984ac0ad76f58e2",
     "mentor-policy.js": "905517e380a4c4377ae5d141b4e1b4b2ba8fd4c87fc33f339bb841f0e4efd845",
     "model.js": "050bb99a3a8ec37432e3344ad1dc6aae878bcda0c016ba8d5dff05b35983767a",
@@ -44,6 +44,6 @@
     "v4-theme.js": "2554d14d5fdd1a8845c43e08bb9c7051f81d01ca211d2cdf9904397594357440",
     "v4.css": "dc0f1182e1bd7801f600f52385bb271f3f0e030be905450ba9ca1647b6b20440",
     "v5.css": "5d21738b13631ba6f2cc1d20c82399abc2c23169775da2a6eb960d88eed4ccf1",
-    "v6.css": "bcf2973468a2b07252e1bbce20205ed34ea1046529cd6e341ca54edc6e4a137f"
+    "v6.css": "7ad66df70b884b2dabc097073207fb14afcb594cb639fdf2b72ce48c5409e5d6"
   }
 }

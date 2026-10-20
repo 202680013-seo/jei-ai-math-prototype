@@ -11,8 +11,11 @@
 .welcome-main{display:grid;grid-template-columns:minmax(0,1fr) 260px;align-items:center;gap:56px;min-height:330px;padding:65px 48px 34px}
 .welcome-copy{position:relative;min-width:0}
 #diagnosis-welcome-title{margin:0;font-size:clamp(26px,3cqw,32px);font-weight:800;letter-spacing:-.5px;line-height:1.45;word-break:keep-all;overflow-wrap:anywhere}
-.welcome-guide{margin:14px 0 0;color:var(--theme-muted);font-size:15px;font-weight:700;line-height:24px}
-.welcome-guide p{margin:0;word-break:keep-all}.welcome-guide p+p{margin-top:4px}
+.welcome-guide{margin:18px 0 0}
+.welcome-tips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:680px;margin:0 auto;padding:0;list-style:none;text-align:left}
+.welcome-tips>li{display:flex;align-items:center;gap:10px;min-width:0;padding:12px;border-radius:16px;background:color-mix(in srgb,var(--theme-surface) 75%,transparent)}
+.welcome-tip-icon{display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:12px;background:var(--welcome-tint);color:var(--theme-primary)}
+.welcome-tip-copy{display:block;min-width:0;color:var(--theme-title);font-size:14px;font-weight:700;line-height:21px;word-break:keep-all}
 #diagnosis-welcome-action{margin-top:28px}
 #diagnosis-welcome-action>.diagnostic-start-button{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:22px;width:auto;max-width:100%;min-width:240px;min-height:56px;margin:0;padding:16px 24px;border:0;border-radius:15px;background:var(--theme-primary);color:var(--theme-on-primary);font-size:18px;font-weight:800;line-height:24px;text-align:center;transition:background .2s ease,transform .2s ease;animation:welcome-invite 5.6s ease-in-out infinite}
 #diagnosis-welcome-action>.diagnostic-start-button::before{display:none}
@@ -40,17 +43,21 @@
 .sheet-count{display:block;margin-top:17px;color:var(--theme-muted);font-size:12px;font-weight:800;line-height:18px;text-align:right;letter-spacing:.2px}
 /* First exposure uses the vertical canvas; future visits keep only action and progress. */
 .diagnosis-welcome[data-welcome-first=true] .welcome-main{display:flex;flex-direction:column;gap:18px;min-height:500px;padding:62px 32px 34px}
-.diagnosis-welcome[data-welcome-first=true] .welcome-art{order:0;height:190px}
-.diagnosis-welcome[data-welcome-first=true] .welcome-orbit{width:194px;height:194px;left:33px;top:-2px}
-.diagnosis-welcome[data-welcome-first=true] .diagnosis-sheet{top:0;min-height:188px;padding:17px 20px}
+.diagnosis-welcome[data-welcome-first=true] .welcome-art{order:0;height:170px}
+.diagnosis-welcome[data-welcome-first=true] .welcome-orbit{width:180px;height:180px;left:40px;top:-2px}
+.diagnosis-welcome[data-welcome-first=true] .diagnosis-sheet{top:0;min-height:188px;padding:17px 20px;scale:.9;transform-origin:top center}
 .diagnosis-welcome[data-welcome-first=true] .sheet-heading{margin-bottom:13px}
 .diagnosis-welcome[data-welcome-first=true] .sheet-items{gap:9px}
 .diagnosis-welcome[data-welcome-first=true] .sheet-count{margin-top:12px}
-.diagnosis-welcome[data-welcome-first=true] .welcome-copy{order:1;text-align:center}
+.diagnosis-welcome[data-welcome-first=true] .welcome-copy{order:1;width:min(100%,720px);text-align:center}
 .diagnosis-welcome[data-welcome-first=true] #diagnosis-welcome-action{margin-top:23px}
 .diagnosis-welcome[data-welcome-motion=paused] :is(.diagnosis-sheet,.sheet-answer,.diagnostic-start-button,.diagnostic-start-button>svg){animation-play-state:paused}
-.welcome-help-copy p{margin:0;color:var(--theme-muted);font-size:16px;line-height:1.8;word-break:keep-all}
-.welcome-help-copy p+p{margin-top:12px}.welcome-help-copy .actions{margin:28px 0 0}
+.welcome-tips.is-expanded{grid-template-columns:1fr;gap:12px;max-width:none}
+.welcome-tips.is-expanded>li{align-items:flex-start;gap:14px;padding:14px 12px;background:var(--theme-surface-alt)}
+.welcome-tips.is-expanded .welcome-tip-icon{width:40px;height:40px}
+.welcome-tips.is-expanded .welcome-tip-copy>strong{display:block;font-size:15px;font-weight:800;line-height:22px}
+.welcome-tips.is-expanded .welcome-tip-copy>span{display:block;margin-top:5px;color:var(--theme-muted);font-size:14px;line-height:22px}
+.welcome-help-copy .actions{margin:24px 0 0}
 .welcome-help-copy .actions>.primary{width:100%;min-height:52px;border-radius:14px;font-size:17px;font-weight:800}
 @keyframes welcome-arrive{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 @keyframes welcome-paper{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-5px) rotate(-2deg)}}
@@ -60,7 +67,7 @@
 @container learning-content (max-width:850px){
  .welcome-main{grid-template-columns:minmax(0,1fr) 220px;padding:62px 32px 30px;gap:24px;min-height:310px}
  .welcome-art{width:220px}.welcome-orbit{left:0}.diagnosis-sheet{left:24px}
- .diagnosis-welcome[data-welcome-first=true] .welcome-orbit{left:13px}
+ .diagnosis-welcome[data-welcome-first=true] .welcome-orbit{left:20px}
 }
 @container learning-content (max-width:700px){
  .welcome-main{grid-template-columns:minmax(0,1fr) 190px;padding:60px 26px 28px;gap:16px}
@@ -69,10 +76,12 @@
  .welcome-art{width:190px;height:216px}.welcome-orbit{width:190px;height:190px;top:12px}
  .diagnosis-sheet{left:9px;top:8px}
  .diagnosis-welcome[data-welcome-first=true] .welcome-main{min-height:444px;padding:58px 24px 28px;gap:12px}
- .diagnosis-welcome[data-welcome-first=true] .welcome-art{height:168px}
- .diagnosis-welcome[data-welcome-first=true] .welcome-orbit{left:0;top:-6px;width:190px;height:176px}
- .diagnosis-welcome[data-welcome-first=true] .diagnosis-sheet{scale:.88;transform-origin:top center}
- .welcome-guide{font-size:14px;line-height:23px}
+ .diagnosis-welcome[data-welcome-first=true] .welcome-art{height:156px}
+ .diagnosis-welcome[data-welcome-first=true] .welcome-orbit{left:8px;top:-6px;width:174px;height:164px}
+ .diagnosis-welcome[data-welcome-first=true] .diagnosis-sheet{scale:.82;transform-origin:top center}
+ .welcome-tips{gap:8px}.welcome-tips>li{gap:8px;padding:11px 9px}
+ .welcome-tip-copy{font-size:13px;line-height:20px}.welcome-tip-icon{width:28px;height:32px;border-radius:10px}
+ .welcome-tips.is-expanded>li{align-items:flex-start}
 }
 @container learning-content (max-width:520px){
  .diagnosis-welcome{border-radius:24px}.welcome-utility{left:22px;right:18px;top:15px}
@@ -83,5 +92,7 @@
  #diagnosis-welcome-action{margin-top:22px}
  #diagnosis-welcome-action>.diagnostic-start-button{width:100%;min-width:0;gap:14px}
  .diagnosis-welcome[data-welcome-first=true] .welcome-main{min-height:0;padding-bottom:30px}
+ .welcome-tips:not(.is-expanded)>li{flex-direction:column;align-items:center;gap:7px;padding:12px 6px;text-align:center}
 }
+@container learning-content (max-width:400px){.welcome-tips:not(.is-expanded){grid-template-columns:1fr;gap:8px}.welcome-tips:not(.is-expanded)>li{flex-direction:row;justify-content:center;gap:14px;padding:10px 12px;text-align:left}.welcome-tips:not(.is-expanded) .welcome-tip-copy{min-width:140px}}
 @media(prefers-reduced-motion:reduce){.diagnosis-welcome,.diagnosis-welcome :is(.diagnosis-sheet,.sheet-answer,.diagnostic-start-button,.diagnostic-start-button>svg){animation:none!important;transition:none!important}.diagnosis-welcome .diagnostic-start-button{transform:none!important}}

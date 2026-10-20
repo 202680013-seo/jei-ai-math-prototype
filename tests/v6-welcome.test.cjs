@@ -11,6 +11,10 @@ function activeState(answers=[0],index=1){
 
 test('V6 shows the full guide once, keeps it steady during that visit, and reloads to a compact start',()=>{
   const h=harness();assert.equal(first(h),'true');assert.equal(guide(h).hidden,false);
+  const tips=guide(h).innerHTML;
+  assert.equal((tips.match(/data-welcome-tip=/g)||[]).length,3);
+  for(const content of ['집중해서','스스로 풀어요','잠깐 나가도','이어서 풀어요','맞춤 학습을 만나요'])assert(tips.includes(content));
+  assert(!tips.includes('<p>'));assert(!tips.includes('data-action='));
   assert.equal(h.saved().ui.diagnosisWelcomeSeen,true);assert.equal(h.evaluate('current().diagnosis'),'idle');
   assert.equal(h.evaluate('current().diagnosticSession'),undefined);assert.equal(h.evaluate('daily().timerRunning'),false);
   h.evaluate('render();render();syncGuidanceReminders()');assert.equal(first(h),'true');assert.equal(guide(h).hidden,false);
@@ -70,6 +74,8 @@ test('V6 help is available after the initial guide, closes natively, and starts 
   h.click('welcome-help');assert.equal(h.evaluate('activityKind'),'diagnosis-guide');assert.equal(h.node('#activity').open,true);
   assert.match(h.node('#activity').innerHTML,/실력알기를 마치면 나에게 맞는 학습을 준비해요/);
   assert.match(h.node('#activity').innerHTML,/중간에 나가도 이어서 할 수 있어요/);
+  assert.match(h.node('#activity').innerHTML,/차분히 집중해서 스스로 문제를 풀어요/);
+  assert.equal((h.node('#activity').innerHTML.match(/data-welcome-tip=/g)||[]).length,3);
   assert.deepEqual(h.data('current()'),before);h.node('#activity').close();
   assert.equal(h.evaluate('activityKind'),null);assert.equal(first(h),'false');assert.equal(guide(h).hidden,true);
   h.click('welcome-help');h.click('welcome-help-start');assert.equal(h.node('#activity').open,false);

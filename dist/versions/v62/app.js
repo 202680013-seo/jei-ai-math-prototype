@@ -127,7 +127,7 @@ if(activityKind==='completed-study'){
   const review=p.reviewSession&&!p.reviewSession.complete?'복습 이어하기':'복습하기';
   renderDialogView('#activity',`<div class="study-choice-top"><span>학습 다시 살펴보기</span><button data-action="close-activity" aria-label="학습 선택 닫기"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg></button></div><div class="study-choice-body"><span class="study-choice-symbol" aria-hidden="true">${statusSVG(p.status==='failed'?'failed':'passed')}</span><h2 id="study-choice-title">${esc(p.name)}</h2><p>${p.status==='failed'?'헷갈렸던 내용을 한 번 더 익혀볼까요?':'완료한 학습을 한 번 더 연습해볼까요?'}</p><div class="study-choice-actions completion-actions"><button class="primary" data-action="study-choice-review" ${M.canReview(s,p)?'':'disabled'}>${review}</button><button data-action="study-choice-result">결과 보기</button></div></div>`,'completed-study:'+state.grade+':'+state.index+':'+p.id);return;
 }
-if(activityKind==='diagnosis-guide'){title='실력알기 안내';content=`<div class="welcome-help-copy"><p>실력알기를 마치면 나에게 맞는 학습을 준비해요.</p><p>중간에 나가도 이어서 할 수 있어요.</p><div class="actions"><button class="primary" data-action="welcome-help-start">${s.diagnosis==='active'?'실력알기 이어하기':'실력알기 시작하기'}</button></div></div>`;}
+if(activityKind==='diagnosis-guide'){title='실력알기 안내';content=`<div class="welcome-help-copy">${diagnosisWelcomeTipsHTML(true)}<div class="actions"><button class="primary" data-action="welcome-help-start">${s.diagnosis==='active'?'실력알기 이어하기':'실력알기 시작하기'}</button></div></div>`;}
 if(activityKind==='settings'){title='학습 설정';content=`<label>학습자 이름<input id="user-name" value="${esc(state.profile.name)}"></label><div class="actions"><button data-action="save-user">저장</button><button data-action="goal">목표 시간 변경</button></div>`;}
 if(activityKind==='goal'){title='오늘의 목표 학습 시간';content=`<p>오늘은 얼마나 공부해 볼까요?</p><div class="actions">${[10,15,20,30,45].map(n=>`<button data-action="goal-option" data-id="${n}">${n}분</button>`).join('')}</div><label>목표 시간(분)<input id="goal-minutes" type="number" min="5" max="120" value="${d.target||20}"></label><div class="actions"><button class="primary" data-action="save-goal">목표 정하기</button></div>`;}
 if(activityKind==='answers'&&!d.unreadAnswers){title='도와줘요';content='<p>선생님께 최근 요청한 도움이 없어요.</p>';}else if(activityKind==='answers'){title='도와줘요 답변';content=`<p>분모가 다른 분수는 어떻게 더하나요?</p><div class="learning-info">분모를 같게 바꾼 다음 분자끼리 더해 보세요. 예를 들어 1/2 + 1/4은 2/4 + 1/4이므로 3/4입니다.</div><button data-action="answer-read">답변 확인했어요</button>`;}
@@ -650,6 +650,15 @@ function syncLearningContext(topic){
   $('#learning-context').hidden=!ready;
   if(ready)document.body.classList.add('has-personalized-learning');else document.body.classList.remove('has-personalized-learning');
 }
+// Short guidance combines the original carousel rules with the two learning benefits.
+const DIAGNOSIS_WELCOME_TIPS=[
+  {key:'focus',label:'집중해서<br>스스로 풀어요',title:'혼자 힘으로 집중하기',detail:'차분히 집중해서 스스로 문제를 풀어요.',icon:'<path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m8 0h3a2 2 0 0 0 2-2v-3"/><circle cx="12" cy="12" r="4"/>'},
+  {key:'resume',label:'잠깐 나가도<br>이어서 풀어요',title:'쉬었다 이어서 풀기',detail:'중간에 나가도 이어서 할 수 있어요.',icon:'<path d="M20 7V3m0 4h-4M20 7a9 9 0 1 0 1 8"/><path d="M10 9v6m4-6v6"/>'},
+  {key:'personal',label:'마치면<br>맞춤 학습을 만나요',title:'나에게 맞는 학습 만나기',detail:'실력알기를 마치면 나에게 맞는 학습을 준비해요.',icon:'<rect x="4" y="6" width="13" height="15" rx="3"/><path d="M8 11h5m-5 4h3m6-12 1.2 2.8L21 7l-2.8 1.2L17 11l-1.2-2.8L13 7l2.8-1.2L17 3Z"/>'}
+];
+function diagnosisWelcomeTipsHTML(expanded=false){
+  return `<ul class="welcome-tips${expanded?' is-expanded':''}" aria-label="실력알기 이용 안내">${DIAGNOSIS_WELCOME_TIPS.map(tip=>`<li data-welcome-tip="${tip.key}"><span class="welcome-tip-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${tip.icon}</svg></span><span class="welcome-tip-copy">${expanded?`<strong>${tip.title}</strong><span>${tip.detail}</span>`:tip.label}</span></li>`).join('')}</ul>`;
+}
 // V6 stores one onboarding exposure per local learner state, across all topics.
 let diagnosisWelcomeFirstTopic=null,diagnosisSheetSignature=null;
 function isDiagnosisWelcomeTopic(topic){return !composing&&!topic.diagnosisOutcome&&topic.programs.length===0&&['idle','active'].includes(topic.diagnosis);}
@@ -674,7 +683,7 @@ function syncDiagnosisWelcome(topic){
   }
   const first=!active&&diagnosisWelcomeFirstTopic===topic;
   host.setAttribute('data-welcome-first',String(first));host.setAttribute('data-diagnosis-state',topic.diagnosis);
-  $('#diagnosis-welcome-guide').hidden=!first;$('#welcome-dismiss').hidden=!first;
+  const guide=$('#diagnosis-welcome-guide');guide.hidden=!first;if(first&&!guide.innerHTML)guide.innerHTML=diagnosisWelcomeTipsHTML();$('#welcome-dismiss').hidden=!first;
   $('#diagnosis-welcome-title').textContent=first?'실력알기로 시작해볼까요?':active?'풀던 문제부터 이어가요':'나의 실력을 알아볼까요?';
   const progress=diagnosisWelcomeProgress(topic),sheet=$('#diagnosis-welcome-progress');sheet.hidden=false;
   sheet.setAttribute('aria-valuenow',progress.percent);sheet.setAttribute('aria-valuetext',`${progress.total}문항 중 ${progress.solved}문항 풀이 완료 · ${progress.percent}%`);
