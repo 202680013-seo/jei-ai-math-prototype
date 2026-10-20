@@ -590,7 +590,7 @@ function animateMainResumeScroll(run,target){
     run.driver='native';window.scrollTo({top:target,left:0,behavior:'smooth'});
     run.finishTimer=setTimeout(()=>finishMainResumeScroll(run),1600);return;
   }
-  run.driver='frames';run.duration=Math.max(1100,Math.min(1800,900+Math.sqrt(Math.abs(distance))*16));
+  run.driver='frames';run.duration=Math.max(650,Math.min(950,500+Math.sqrt(Math.abs(distance))*10));
   run.startedAt=null;run.reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
   document.documentElement?.setAttribute('data-resume-scrolling','true');
   const frame=timestamp=>{

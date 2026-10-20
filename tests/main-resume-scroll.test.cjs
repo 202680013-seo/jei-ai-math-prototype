@@ -24,7 +24,7 @@ function enableFrames(h){
 test('frame-driven return eases in and out, reaches the same actual card center and performs no per-frame layout reads',()=>{
   for(const version of ['working','versions/v59',...Array.from({length:7},(_,i)=>'versions/v'+(61+i))]){
     const h=setup(version),tick=enableFrames(h),before=h.data('current().programs'),run=runScroll(h);
-    assert.equal(run.driver,'frames');assert(run.duration>=1100&&run.duration<=1800);
+    assert.equal(run.driver,'frames');assert(run.duration>=650&&run.duration<=950);
     let reads=0;for(const sel of ['.ai',selector]){const node=h.node(sel),get=node.getBoundingClientRect.bind(node);node.getBoundingClientRect=()=>{reads++;return get();};}
     tick(1000);assert.equal(h.context.scrollY,0);assert.equal(h.node('html').getAttribute('data-resume-scrolling'),'true');
     h.emitWindow('scrollend');assert.equal(h.evaluate('mainResumeScrollRun'),run);
