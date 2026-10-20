@@ -602,16 +602,15 @@ function animateMainResumeScroll(run,target){
     run.driver='native';window.scrollTo({top:target,left:0,behavior:'smooth'});
     run.finishTimer=setTimeout(()=>finishMainResumeScroll(run),5000);return;
   }
-  // Native smooth-scroll duration cannot be tuned. Keep one explicit clock,
-  // with a lower peak speed and a long, gentle arrival instead of a fast rush.
-  run.driver='timed';run.duration=Math.max(950,Math.min(1200,650+Math.sqrt(Math.abs(distance))*13));
-  run.elapsed=0;run.lastFrame=null;
+  // Keep one short, continuous ease-in/out. Measure real elapsed time so a
+  // slower device does not stretch the same journey into a long crawl.
+  run.driver='timed';run.duration=Math.max(740,Math.min(880,520+Math.sqrt(Math.abs(distance))*9));
+  run.elapsed=0;run.startedAt=null;
   const frame=timestamp=>{
     if(mainResumeScrollRun!==run)return;run.frame=null;
-    // A busy frame must not skip a large stretch of the journey. Do not read
-    // card/header geometry, repaint markup or start another smooth scroll here.
-    if(run.lastFrame!==null)run.elapsed+=Math.max(0,Math.min(48,timestamp-run.lastFrame));
-    run.lastFrame=timestamp;
+    // Use the animation timestamp, without accumulating capped frame deltas.
+    // Geometry and markup stay untouched throughout the motion.
+    run.startedAt??=timestamp;run.elapsed=Math.max(0,timestamp-run.startedAt);
     const t=Math.min(1,run.elapsed/run.duration),eased=(1-Math.cos(Math.PI*t))/2;
     window.scrollTo({top:start+distance*eased,left:0,behavior:'instant'});
     if(t===1){finishMainResumeScroll(run);return;}

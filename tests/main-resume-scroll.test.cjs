@@ -30,10 +30,10 @@ function timedMotion(h){
   return {tick,advance(time,step=16){while(now<time)tick(Math.min(time,now+step));}};
 }
 
-test('controlled return stays near one second with gentle departure and arrival, no layout reads or scrollend interruption',()=>{
+test('controlled return keeps a short continuous ease with gentle departure and arrival, no layout reads or scrollend interruption',()=>{
   for(const version of ['working','versions/v59',...Array.from({length:7},(_,i)=>'versions/v'+(61+i))]){
     const h=setup(version),clock=timedMotion(h),before=h.data('current().programs'),run=runScroll(h);
-    assert.equal(run.driver,'timed');assert(run.duration>=950&&run.duration<=1200);assert.equal(run.target,766);
+    assert.equal(run.driver,'timed');assert(run.duration>=740&&run.duration<=880);assert.equal(run.target,766);
     let reads=0;for(const sel of ['.ai',selector]){const node=h.node(sel),get=node.getBoundingClientRect.bind(node);node.getBoundingClientRect=()=>{reads++;return get();};}
     clock.tick(0);clock.advance(run.duration*.1);const departure=h.context.scrollY;
     assert(departure>0&&departure<766*.03,'soft departure instead of an immediate rush');
@@ -49,13 +49,15 @@ test('controlled return stays near one second with gentle departure and arrival,
   }
 });
 
-test('delayed frames do not jump across the journey, while normal refresh rates keep the same timing',()=>{
-  const h=setup('working'),clock=timedMotion(h),run=runScroll(h);clock.tick(0);clock.tick(600);
-  assert.equal(run.elapsed,48);assert(h.context.scrollY<30,'a delayed callback advances only a small part of the path');
-  for(const step of [1000/30,1000/60,1000/120]){
+test('slow or delayed frames never stretch the real elapsed duration',()=>{
+  for(const step of [1000/10,1000/15,1000/30,1000/60,1000/120]){
     const h=setup('working'),clock=timedMotion(h),run=runScroll(h);clock.tick(0);clock.advance(run.duration/2,step);
-    assert(Math.abs(h.context.scrollY-383)<.001);clock.advance(run.duration,step);assert.equal(h.context.scrollY,766);
+    assert(Math.abs(h.context.scrollY-383)<.001);clock.advance(run.duration,step);
+    assert.equal(h.context.scrollY,766);assert.equal(h.evaluate('mainResumeScrollRun'),null);
   }
+  const h=setup('working'),clock=timedMotion(h),run=runScroll(h);clock.tick(0);clock.tick(600);
+  assert.equal(run.elapsed,600);clock.tick(run.duration);
+  assert.equal(h.context.scrollY,766);assert.equal(h.evaluate('mainResumeScrollRun'),null,'a busy device still arrives on time');
 });
 
 test('timed motion survives address-bar resize and stops queued frames on input or reduced motion',()=>{
