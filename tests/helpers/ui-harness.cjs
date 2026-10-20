@@ -9,8 +9,8 @@ const {SkyModel}=require('../../dist/working/sky.js');
 const source=()=>fs.readFileSync(path.join(__dirname,'../../dist/working/app.js'),'utf8');
 const STATE_KEY='ai-math-prototype-diagnosis-v1';
 
-function harness(saved,{reducedMotion=true,appSource}={}){
-  const nodes=new Map(),events=new Map(),windowEvents=new Map(),timers=[],intervals=[],storage=new Map(),media={matches:reducedMotion};
+function harness(saved,{reducedMotion=true,appSource,rects={},viewportHeight=800,initialScroll=0}={}){
+  const nodes=new Map(),events=new Map(),windowEvents=new Map(),timers=[],intervals=[],storage=new Map(),media={matches:reducedMotion},scrollCalls=[];
   if(saved)storage.set(STATE_KEY,JSON.stringify(saved));
   const subscribe=(map,type,fn)=>{if(!map.has(type))map.set(type,[]);map.get(type).push(fn);};
   function node(selector){
@@ -24,7 +24,7 @@ function harness(saved,{reducedMotion=true,appSource}={}){
       setAttribute(name,value){attrs.set(name,String(value));this[name]=value;},
       getAttribute(name){return attrs.get(name)??null;},
       removeAttribute(name){attrs.delete(name);delete this[name];},
-      getBoundingClientRect(){const width=selector==='#mentor-measure'?this.textContent.length*8:selector==='.ai-top'?616:240;return {left:0,top:0,width,height:240,right:width,bottom:240};},
+      getBoundingClientRect(){const width=selector==='#mentor-measure'?this.textContent.length*8:selector==='.ai-top'?616:240,custom=rects[selector],rect={left:0,top:0,width,height:240,...(typeof custom==='function'?custom(c):custom)};return {...rect,right:rect.left+rect.width,bottom:rect.top+rect.height};},
       append(child){if(child.parent)child.parent.children=child.parent.children.filter(item=>item!==child);this.children.push(child);child.parent=this;},
       prepend(child){if(child.parent)child.parent.children=child.parent.children.filter(item=>item!==child);this.children.unshift(child);child.parent=this;},
       contains(child){return this.children.includes(child);},
@@ -43,7 +43,7 @@ function harness(saved,{reducedMotion=true,appSource}={}){
     setTimeout(fn,ms){const timer={fn,ms,cancelled:false};timers.push(timer);return timer;},
     clearTimeout(timer){if(timer)timer.cancelled=true;},
     setInterval(fn,ms){const timer={fn,ms};intervals.push(timer);return timer;},clearInterval(){},
-    innerWidth:1200,innerHeight:800,scrollY:0,scrollTo(){},addEventListener(type,fn){subscribe(windowEvents,type,fn);},
+    innerWidth:1200,innerHeight:viewportHeight,scrollY:initialScroll,scrollTo(...args){const options=typeof args[0]==='object'?{...args[0]}:{left:args[0],top:args[1]};scrollCalls.push(options);c.scrollY=options.top??c.scrollY;},addEventListener(type,fn){subscribe(windowEvents,type,fn);},
   });
   c.window=c;
   vm.runInContext(appSource??source(),c);
@@ -73,7 +73,7 @@ function harness(saved,{reducedMotion=true,appSource}={}){
   const escape=()=>{let prevented=false;node('#learning').emit('cancel',{preventDefault(){prevented=true;}});if(!prevented)node('#learning').close();};
   const emitDocument=(type,event={})=>{for(const fn of events.get(type)||[])fn(event);};
   const emitWindow=(type,event={})=>{for(const fn of windowEvents.get(type)||[])fn(event);};
-  return {node,evaluate,data,click,seed,answer,finishReview,tick,escape,document,emitDocument,emitWindow,context:c,timers,intervals,events,storage,media,saved:()=>JSON.parse(storage.get(STATE_KEY))};
+  return {node,evaluate,data,click,seed,answer,finishReview,tick,escape,document,emitDocument,emitWindow,context:c,timers,intervals,events,storage,media,scrollCalls,saved:()=>JSON.parse(storage.get(STATE_KEY))};
 }
 
 module.exports={harness};

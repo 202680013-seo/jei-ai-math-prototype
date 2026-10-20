@@ -350,3 +350,6 @@ body.has-personalized-learning .heading>.learning-context{flex:0 0 auto;width:au
   .program-outcome-screen #composition-topic-context{font-size:16px}
   .program-outcome-screen .diagnosis-inline-summary .program-outcome-metrics{gap:16px}
 }
+
+/* Leave enough space to center even the final row of unfinished work. */
+body.has-resume-scroll-space .learning-workspace main,body.has-resume-scroll-space.learning-navigation-open .learning-workspace main{padding-bottom:max(100px,var(--resume-scroll-space,100px))}
