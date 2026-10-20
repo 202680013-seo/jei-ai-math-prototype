@@ -1,5 +1,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
-const {harness}=require('./helpers/ui-harness.cjs');
+const {harness:baseHarness}=require('./helpers/ui-harness.cjs');
+// V5 behavior stays pinned while the working design moves on to V6.
+const harness=(saved,options={})=>baseHarness(saved,{...options,appSource:fs.readFileSync('dist/versions/v61/app.js','utf8')});
 
 test('V5 starts at an actionable diagnosis welcome without starting a session or inventing progress',()=>{
   const h=harness();
