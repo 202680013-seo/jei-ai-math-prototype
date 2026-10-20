@@ -1,5 +1,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
-const {harness}=require('./helpers/ui-harness.cjs');
+const {harness:baseHarness}=require('./helpers/ui-harness.cjs');
+// The original V6 stays pinned while the working design advances.
+const harness=(saved,options={})=>baseHarness(saved,{...options,appSource:fs.readFileSync('dist/versions/v62/app.js','utf8')});
 const {MathModel:M}=require('../dist/working/model.js');
 const first=h=>h.node('#diagnosis-welcome').getAttribute('data-welcome-first');
 const guide=h=>h.node('#diagnosis-welcome-guide');
@@ -99,7 +101,7 @@ test('V6 hides the paper on prescribed and passed topics and can deliberately re
 });
 
 test('V6 standalone entry is independent and preserves the existing V4 and V5 learner links',()=>{
-  const registry=JSON.parse(fs.readFileSync('dist/versions.json','utf8')),version=registry.versions.find(v=>v.label==='V6');assert(version);
+  const registry=JSON.parse(fs.readFileSync('dist/versions.json','utf8')),version=registry.versions.filter(v=>/^V6(?:\.|$)/.test(v.label)).at(-1);assert(version);
   const html=fs.readFileSync('dist/v6.html','utf8');assert.match(html,/data-v6-standalone="true"/);
   assert.match(html,new RegExp('data-version="'+version.id+'"'));assert.match(html,/v6\.css/);
   assert.match(html,/NanumSquareRoundR\.woff2/);assert.match(html,/apple-mobile-web-app-capable/);assert(!html.includes('<iframe'));

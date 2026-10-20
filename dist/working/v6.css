@@ -1,98 +1,84 @@
-/* V6 · A first invitation, then a quiet companion for unfinished diagnosis. */
-.diagnosis-welcome[hidden],.welcome-guide[hidden],.welcome-dismiss[hidden]{display:none}
-.diagnosis-welcome{--welcome-tint:color-mix(in srgb,var(--theme-accent) 7%,var(--theme-page));--welcome-line:color-mix(in srgb,var(--theme-accent) 14%,var(--theme-page));position:relative;isolation:isolate;border:1px solid var(--welcome-line);border-radius:30px;background:var(--welcome-tint);color:var(--theme-title);overflow:hidden;animation:welcome-arrive .65s cubic-bezier(.22,.61,.36,1) both}
-.welcome-utility{position:absolute;z-index:2;top:18px;left:28px;right:22px;display:flex;align-items:center;justify-content:space-between;min-height:36px;gap:12px}
+/* V6.1 · V5.1's horizontal invitation, with one softly changing tip. */
+.diagnosis-welcome[hidden],.welcome-guide[hidden],.welcome-dismiss[hidden],.welcome-guide-slide[hidden],.welcome-guide-pause[hidden]{display:none!important}
+.diagnosis-welcome{--welcome-tint:color-mix(in srgb,var(--theme-accent) 7%,var(--theme-page));--welcome-line:color-mix(in srgb,var(--theme-accent) 13%,var(--theme-page));position:relative;isolation:isolate;overflow:hidden;border:1px solid var(--welcome-line);border-radius:28px;background:var(--welcome-tint);color:var(--theme-title);animation:welcome-arrive .65s cubic-bezier(.22,.61,.36,1) both}
+.welcome-utility{position:absolute;z-index:2;top:16px;left:28px;right:20px;display:flex;align-items:center;justify-content:space-between;min-height:36px;gap:12px}
 .welcome-utility>span{color:var(--theme-primary);font-size:13px;font-weight:800;line-height:20px}
 .welcome-utility>div{display:flex;align-items:center;gap:10px}
 .welcome-help{display:grid;place-items:center;width:36px;height:36px;padding:0;border:0;border-radius:50%;background:color-mix(in srgb,var(--theme-surface) 70%,transparent);color:var(--theme-muted);transition:background .2s,color .2s}
 .welcome-help:hover:not(:disabled){background:var(--theme-surface);color:var(--theme-primary);border:0}
 .welcome-dismiss{min-height:36px;padding:6px 4px;border:0;background:transparent;color:var(--theme-muted);font-size:12px;font-weight:700;line-height:20px}
 .welcome-dismiss:hover:not(:disabled){background:transparent;color:var(--theme-title);border:0}
-.welcome-main{display:grid;grid-template-columns:minmax(0,1fr) 260px;align-items:center;gap:56px;min-height:330px;padding:65px 48px 34px}
-.welcome-copy{position:relative;min-width:0}
+.welcome-main{display:grid;grid-template-columns:minmax(0,1fr) 240px;align-items:center;gap:48px;min-height:304px;padding:60px 44px 28px}
+.welcome-copy{position:relative;z-index:1;min-width:0}
 #diagnosis-welcome-title{margin:0;font-size:clamp(26px,3cqw,32px);font-weight:800;letter-spacing:-.5px;line-height:1.45;word-break:keep-all;overflow-wrap:anywhere}
-.welcome-guide{margin:18px 0 0}
-.welcome-tips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:680px;margin:0 auto;padding:0;list-style:none;text-align:left}
-.welcome-tips>li{display:flex;align-items:center;gap:10px;min-width:0;padding:12px;border-radius:16px;background:color-mix(in srgb,var(--theme-surface) 75%,transparent)}
-.welcome-tip-icon{display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:12px;background:var(--welcome-tint);color:var(--theme-primary)}
-.welcome-tip-copy{display:block;min-width:0;color:var(--theme-title);font-size:14px;font-weight:700;line-height:21px;word-break:keep-all}
-#diagnosis-welcome-action{margin-top:28px}
-#diagnosis-welcome-action>.diagnostic-start-button{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:22px;width:auto;max-width:100%;min-width:240px;min-height:56px;margin:0;padding:16px 24px;border:0;border-radius:15px;background:var(--theme-primary);color:var(--theme-on-primary);font-size:18px;font-weight:800;line-height:24px;text-align:center;transition:background .2s ease,transform .2s ease;animation:welcome-invite 5.6s ease-in-out infinite}
+.welcome-guide{width:min(100%,360px);margin:14px 0 0}
+.welcome-guide-frame{position:relative;height:80px;overflow:hidden;border-radius:16px;background:color-mix(in srgb,var(--theme-surface) 76%,transparent)}
+.welcome-guide-slide{position:absolute;inset:12px 16px;display:flex;align-items:center;gap:12px;min-width:0;opacity:1;transform:none;animation:welcome-tip-enter .5s cubic-bezier(.22,.61,.36,1) both}
+.welcome-guide[data-guide-phase=leaving] .welcome-guide-slide:not([hidden]){animation:none;opacity:0;transform:translateY(-5px);transition:opacity .24s ease,transform .24s ease}
+.welcome-tip-icon{display:grid;place-items:center;flex:none;width:38px;height:38px;border-radius:12px;background:var(--welcome-tint);color:var(--theme-primary)}
+.welcome-tip-copy{display:block;min-width:0;color:var(--theme-title);font-size:15px;font-weight:700;line-height:23px;word-break:keep-all}
+.welcome-guide-controls{display:flex;align-items:center;gap:2px;height:28px;margin:3px 0 0 2px}
+.welcome-guide-dot{display:grid;place-items:center;flex:none;width:28px;height:28px;margin:0;padding:0;border:0;border-radius:8px;background:transparent;color:var(--theme-primary)}
+.welcome-guide-dot>span{display:block;width:6px;height:6px;border-radius:6px;background:currentColor;opacity:.23;transition:width .4s ease,opacity .4s ease}
+.welcome-guide-dot[aria-pressed=true]>span{width:18px;opacity:.8}
+.welcome-guide-dot:hover:not(:disabled){background:transparent;border:0}.welcome-guide-dot:hover>span{opacity:.75}
+.welcome-guide-pause{display:grid;place-items:center;width:28px;height:28px;margin-left:7px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--theme-muted)}
+.welcome-guide-pause:hover:not(:disabled){border:0;background:color-mix(in srgb,var(--theme-surface) 70%,transparent);color:var(--theme-primary)}
+#diagnosis-welcome-action{margin-top:26px}
+.diagnosis-welcome[data-welcome-first=true] #diagnosis-welcome-action{margin-top:17px}
+#diagnosis-welcome-action>.diagnostic-start-button{display:inline-flex;align-items:center;justify-content:center;gap:20px;width:auto;max-width:100%;min-width:232px;min-height:56px;margin:0;padding:16px 22px;border:0;border-radius:14px;background:var(--theme-primary);color:var(--theme-on-primary);font-size:18px;font-weight:800;line-height:24px;text-align:center;transition:background .2s ease,transform .2s ease}
 #diagnosis-welcome-action>.diagnostic-start-button::before{display:none}
-#diagnosis-welcome-action>.diagnostic-start-button>svg{flex:none;animation:welcome-arrow 5.6s ease-in-out infinite}
+#diagnosis-welcome-action>.diagnostic-start-button>svg{flex:none}
 #diagnosis-welcome-action>.diagnostic-start-button:hover:not(:disabled){background:var(--theme-primary-hover);transform:translateY(-2px)}
 #diagnosis-welcome-action>.diagnostic-start-button:active:not(:disabled){transform:none}
-#diagnosis-welcome-action>.diagnostic-start-button:focus-visible,.welcome-help:focus-visible,.welcome-dismiss:focus-visible{outline:3px solid var(--theme-accent);outline-offset:5px}
-.welcome-art{position:relative;width:260px;height:230px;justify-self:center;pointer-events:none;user-select:none}
-.welcome-orbit{position:absolute;left:20px;top:5px;width:220px;height:220px;border-radius:50%;background:color-mix(in srgb,var(--theme-accent) 8%,var(--theme-page))}
-.diagnosis-sheet{position:absolute;top:13px;left:44px;width:172px;min-height:202px;padding:20px;border:1px solid var(--welcome-line);border-radius:22px;background:var(--theme-surface);box-shadow:0 14px 28px color-mix(in srgb,var(--theme-primary) 7%,transparent);transform:rotate(-4deg);animation:welcome-paper 6.4s ease-in-out infinite}
+#diagnosis-welcome-action>.diagnostic-start-button:focus-visible,.welcome-help:focus-visible,.welcome-dismiss:focus-visible,.welcome-guide-dot:focus-visible,.welcome-guide-pause:focus-visible{outline:3px solid var(--theme-accent);outline-offset:4px}
+.welcome-art{position:relative;width:240px;height:224px;justify-self:center;pointer-events:none;user-select:none}
+.welcome-orbit{position:absolute;left:13px;top:5px;width:214px;height:214px;border-radius:50%;background:color-mix(in srgb,var(--theme-accent) 8%,var(--theme-page))}
+.diagnosis-sheet{position:absolute;top:12px;left:34px;width:172px;min-height:202px;padding:20px;border:1px solid var(--welcome-line);border-radius:22px;background:var(--theme-surface);box-shadow:0 10px 24px color-mix(in srgb,var(--theme-primary) 5%,transparent);transform:rotate(-4deg);animation:welcome-paper 7s ease-in-out infinite}
 .sheet-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
 .sheet-icon{display:grid;place-items:center;flex:none;width:36px;height:38px;border-radius:11px;background:var(--welcome-tint)}
 .sheet-icon>img{display:block;width:25px;height:30px}
 #diagnosis-sheet-percent{display:flex;align-items:baseline;gap:1px;color:var(--theme-primary);font-size:29px;font-weight:800;line-height:38px;letter-spacing:-1px}
 #diagnosis-sheet-percent>span{font-size:12px;letter-spacing:0}
-.sheet-items{display:grid;gap:11px}
-.sheet-row{display:flex;align-items:center;gap:9px;min-height:18px}
+.sheet-items{display:grid;gap:11px}.sheet-row{display:flex;align-items:center;gap:9px;min-height:18px}
 .sheet-answer{display:grid;place-items:center;flex:none;width:18px;height:18px;border:1.5px solid var(--theme-line);border-radius:6px;color:var(--theme-muted);font-size:10px;font-weight:800;line-height:14px}
 .sheet-rule{display:block;flex:1;height:6px;border-radius:3px;background:var(--theme-soft);transition:background .4s ease}
-.sheet-row:nth-child(2) .sheet-rule{max-width:68%}
-.sheet-row:nth-child(3) .sheet-rule{max-width:83%}
+.sheet-row:nth-child(2) .sheet-rule{max-width:68%}.sheet-row:nth-child(3) .sheet-rule{max-width:83%}
 .sheet-row.is-solved .sheet-answer{border-color:var(--theme-accent);background:var(--theme-accent);color:var(--theme-on-active)}
 .sheet-row.is-solved .sheet-rule{background:color-mix(in srgb,var(--theme-accent) 32%,var(--theme-page))}
-.sheet-row.is-next .sheet-answer{border-color:var(--theme-accent);color:var(--theme-primary);background:var(--welcome-tint);animation:welcome-next 4.8s ease-in-out infinite}
+.sheet-row.is-next .sheet-answer{border-color:var(--theme-accent);color:var(--theme-primary);background:var(--welcome-tint)}
 .sheet-count{display:block;margin-top:17px;color:var(--theme-muted);font-size:12px;font-weight:800;line-height:18px;text-align:right;letter-spacing:.2px}
-/* First exposure uses the vertical canvas; future visits keep only action and progress. */
-.diagnosis-welcome[data-welcome-first=true] .welcome-main{display:flex;flex-direction:column;gap:18px;min-height:500px;padding:62px 32px 34px}
-.diagnosis-welcome[data-welcome-first=true] .welcome-art{order:0;height:170px}
-.diagnosis-welcome[data-welcome-first=true] .welcome-orbit{width:180px;height:180px;left:40px;top:-2px}
-.diagnosis-welcome[data-welcome-first=true] .diagnosis-sheet{top:0;min-height:188px;padding:17px 20px;scale:.9;transform-origin:top center}
-.diagnosis-welcome[data-welcome-first=true] .sheet-heading{margin-bottom:13px}
-.diagnosis-welcome[data-welcome-first=true] .sheet-items{gap:9px}
-.diagnosis-welcome[data-welcome-first=true] .sheet-count{margin-top:12px}
-.diagnosis-welcome[data-welcome-first=true] .welcome-copy{order:1;width:min(100%,720px);text-align:center}
-.diagnosis-welcome[data-welcome-first=true] #diagnosis-welcome-action{margin-top:23px}
-.diagnosis-welcome[data-welcome-motion=paused] :is(.diagnosis-sheet,.sheet-answer,.diagnostic-start-button,.diagnostic-start-button>svg){animation-play-state:paused}
-.welcome-tips.is-expanded{grid-template-columns:1fr;gap:12px;max-width:none}
-.welcome-tips.is-expanded>li{align-items:flex-start;gap:14px;padding:14px 12px;background:var(--theme-surface-alt)}
-.welcome-tips.is-expanded .welcome-tip-icon{width:40px;height:40px}
-.welcome-tips.is-expanded .welcome-tip-copy>strong{display:block;font-size:15px;font-weight:800;line-height:22px}
-.welcome-tips.is-expanded .welcome-tip-copy>span{display:block;margin-top:5px;color:var(--theme-muted);font-size:14px;line-height:22px}
+.diagnosis-welcome[data-welcome-motion=paused] .diagnosis-sheet{animation-play-state:paused}
+/* Full explanations remain available on demand after the first visit. */
+.welcome-tips{display:grid;grid-template-columns:1fr;gap:12px;margin:0;padding:0;list-style:none;text-align:left}
+.welcome-tips>li{display:flex;align-items:flex-start;gap:14px;padding:14px 12px;border-radius:16px;background:var(--theme-surface-alt)}
+.welcome-tips .welcome-tip-icon{width:40px;height:40px}
+.welcome-tip-copy>strong{display:block;font-size:15px;font-weight:800;line-height:22px}
+.welcome-tip-copy>span{display:block;margin-top:5px;color:var(--theme-muted);font-size:14px;line-height:22px}
 .welcome-help-copy .actions{margin:24px 0 0}
 .welcome-help-copy .actions>.primary{width:100%;min-height:52px;border-radius:14px;font-size:17px;font-weight:800}
 @keyframes welcome-arrive{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
-@keyframes welcome-paper{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-5px) rotate(-2deg)}}
-@keyframes welcome-invite{0%,35%,100%{box-shadow:0 4px 12px color-mix(in srgb,var(--theme-primary) 8%,transparent)}60%{box-shadow:0 0 0 6px color-mix(in srgb,var(--theme-primary) 7%,transparent),0 7px 18px color-mix(in srgb,var(--theme-primary) 12%,transparent)}}
-@keyframes welcome-arrow{0%,42%,75%,100%{transform:none}57%{transform:translateX(3px)}}
-@keyframes welcome-next{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 0 3px color-mix(in srgb,var(--theme-accent) 9%,transparent)}}
-@container learning-content (max-width:850px){
- .welcome-main{grid-template-columns:minmax(0,1fr) 220px;padding:62px 32px 30px;gap:24px;min-height:310px}
- .welcome-art{width:220px}.welcome-orbit{left:0}.diagnosis-sheet{left:24px}
- .diagnosis-welcome[data-welcome-first=true] .welcome-orbit{left:20px}
+@keyframes welcome-tip-enter{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes welcome-paper{0%,100%{transform:rotate(-4deg)}50%{transform:translateY(-3px) rotate(-3deg)}}
+@container learning-content (max-width:900px){
+ .welcome-main{grid-template-columns:minmax(0,1fr) 210px;padding:58px 32px 28px;gap:24px;min-height:294px}
+ .welcome-art{width:210px;height:214px}.welcome-orbit{width:200px;height:200px;left:5px}.diagnosis-sheet{left:19px;top:6px}
 }
 @container learning-content (max-width:700px){
- .welcome-main{grid-template-columns:minmax(0,1fr) 190px;padding:60px 26px 28px;gap:16px}
- #diagnosis-welcome-title{font-size:26px}
- #diagnosis-welcome-action>.diagnostic-start-button{min-width:210px;padding-inline:20px;gap:12px;font-size:17px}
- .welcome-art{width:190px;height:216px}.welcome-orbit{width:190px;height:190px;top:12px}
- .diagnosis-sheet{left:9px;top:8px}
- .diagnosis-welcome[data-welcome-first=true] .welcome-main{min-height:444px;padding:58px 24px 28px;gap:12px}
- .diagnosis-welcome[data-welcome-first=true] .welcome-art{height:156px}
- .diagnosis-welcome[data-welcome-first=true] .welcome-orbit{left:8px;top:-6px;width:174px;height:164px}
- .diagnosis-welcome[data-welcome-first=true] .diagnosis-sheet{scale:.82;transform-origin:top center}
- .welcome-tips{gap:8px}.welcome-tips>li{gap:8px;padding:11px 9px}
- .welcome-tip-copy{font-size:13px;line-height:20px}.welcome-tip-icon{width:28px;height:32px;border-radius:10px}
- .welcome-tips.is-expanded>li{align-items:flex-start}
+ .welcome-main{grid-template-columns:minmax(0,1fr) 164px;gap:18px;padding:58px 26px 26px;min-height:280px}
+ #diagnosis-welcome-title{font-size:26px}.welcome-guide-frame{height:84px}.welcome-guide-slide{inset:10px 12px;gap:10px}
+ .welcome-tip-copy{font-size:14px;line-height:22px}.welcome-tip-icon{width:32px;height:34px;border-radius:10px}
+ #diagnosis-welcome-action>.diagnostic-start-button{min-width:210px;gap:12px;font-size:17px}
+ .welcome-art{width:164px;height:192px}.welcome-orbit{width:164px;height:164px;left:0;top:14px}
+ .diagnosis-sheet{left:-4px;top:6px;scale:.88;transform-origin:top center}
 }
 @container learning-content (max-width:520px){
- .diagnosis-welcome{border-radius:24px}.welcome-utility{left:22px;right:18px;top:15px}
- .welcome-main{display:flex;flex-direction:column;gap:12px;padding:60px 24px 30px;min-height:0}
- .welcome-copy{order:1;text-align:center;width:100%}.welcome-art{order:0;height:188px}
- .diagnosis-sheet{scale:.88;transform-origin:top center}.welcome-orbit{height:182px;top:0}
- #diagnosis-welcome-title{font-size:25px}
- #diagnosis-welcome-action{margin-top:22px}
- #diagnosis-welcome-action>.diagnostic-start-button{width:100%;min-width:0;gap:14px}
- .diagnosis-welcome[data-welcome-first=true] .welcome-main{min-height:0;padding-bottom:30px}
- .welcome-tips:not(.is-expanded)>li{flex-direction:column;align-items:center;gap:7px;padding:12px 6px;text-align:center}
+ .diagnosis-welcome{border-radius:24px}.welcome-utility{left:22px;right:18px;top:14px}
+ .welcome-main{grid-template-columns:1fr;min-height:0;padding:64px 24px 28px;gap:18px}
+ .welcome-copy{text-align:center}.welcome-guide{margin-inline:auto}.welcome-guide-slide{text-align:left}.welcome-guide-controls{justify-content:center}
+ #diagnosis-welcome-title{font-size:25px}#diagnosis-welcome-action>.diagnostic-start-button{width:100%;min-width:0;gap:14px}
+ .diagnosis-welcome[data-diagnosis-state=idle] .welcome-art{display:none}
+ .diagnosis-welcome[data-diagnosis-state=active] .welcome-art{grid-row:1;height:170px}
+ .diagnosis-welcome[data-diagnosis-state=active] .welcome-copy{grid-row:2}
 }
-@container learning-content (max-width:400px){.welcome-tips:not(.is-expanded){grid-template-columns:1fr;gap:8px}.welcome-tips:not(.is-expanded)>li{flex-direction:row;justify-content:center;gap:14px;padding:10px 12px;text-align:left}.welcome-tips:not(.is-expanded) .welcome-tip-copy{min-width:140px}}
-@media(prefers-reduced-motion:reduce){.diagnosis-welcome,.diagnosis-welcome :is(.diagnosis-sheet,.sheet-answer,.diagnostic-start-button,.diagnostic-start-button>svg){animation:none!important;transition:none!important}.diagnosis-welcome .diagnostic-start-button{transform:none!important}}
+@media(prefers-reduced-motion:reduce){.diagnosis-welcome,.diagnosis-welcome :is(.diagnosis-sheet,.sheet-rule,.diagnostic-start-button,.welcome-guide-slide,.welcome-guide-dot>span){animation:none!important;transition:none!important}.diagnosis-welcome .diagnostic-start-button{transform:none!important}}
