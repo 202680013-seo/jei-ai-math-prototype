@@ -659,12 +659,12 @@ const DIAGNOSIS_WELCOME_TIPS=[
 function diagnosisWelcomeTipsHTML(expanded=false){
   return `<ul class="welcome-tips${expanded?' is-expanded':''}" aria-label="실력알기 이용 안내">${DIAGNOSIS_WELCOME_TIPS.map(tip=>`<li data-welcome-tip="${tip.key}"><span class="welcome-tip-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${tip.icon}</svg></span><span class="welcome-tip-copy">${expanded?`<strong>${tip.title}</strong><span>${tip.detail}</span>`:tip.label}</span></li>`).join('')}</ul>`;
 }
-// V6.2 lets three quiet messages settle into the invitation, without carousel UI.
+// V6.2 keeps its content together and softly repeats guidance without carousel UI.
 const WELCOME_GUIDE_HOLD=4800,WELCOME_GUIDE_FADE=240;
 let diagnosisWelcomeFirstTopic=null,diagnosisSheetSignature=null,welcomeGuideRun=null;
 let welcomeGuideHover=false,welcomeGuideFocus=false,welcomeGuideSuspended=false;
 function rotatingWelcomeGuideHTML(){
-  const copy=['차분히 집중해서<br>스스로 문제를 풀어요','잠깐 나가도 괜찮아요<br>풀던 문제부터 이어가요','실력알기를 마치면<br>나에게 맞는 학습을 준비해요'];
+  const copy=['차분히, 스스로 풀어봐요.','잠깐 쉬어도 이어서 풀 수 있어요.','마치면 나에게 맞는 학습을 만나요.'];
   return `<div class="welcome-guide-frame" aria-live="off">${DIAGNOSIS_WELCOME_TIPS.map((tip,i)=>`<div id="welcome-guide-slide-${i}" class="welcome-guide-slide" data-welcome-tip="${tip.key}" hidden><span class="welcome-tip-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${tip.icon}</svg></span><span class="welcome-tip-copy">${copy[i]}</span></div>`).join('')}</div>`;
 }
 function clearWelcomeGuideTimers(run=welcomeGuideRun){
@@ -689,7 +689,6 @@ function syncWelcomeGuideClock(){
   }
   const run=welcomeGuideRun;
   if(!welcomeGuideCanAdvance()){clearWelcomeGuideTimers(run);return;}
-  if(run.index===DIAGNOSIS_WELCOME_TIPS.length-1)return;
   if(run.timer||run.fadeTimer)return;
   const generation=run.generation;
   run.timer=setTimeout(()=>{
@@ -699,14 +698,14 @@ function syncWelcomeGuideClock(){
     run.fadeTimer=setTimeout(()=>{
       if(welcomeGuideRun!==run||run.generation!==generation)return;run.fadeTimer=null;
       if(!welcomeGuideCanAdvance()){clearWelcomeGuideTimers(run);return;}
-      run.index++;run.phase='reading';
+      run.index=(run.index+1)%DIAGNOSIS_WELCOME_TIPS.length;run.phase='reading';
       $('#diagnosis-welcome-guide').setAttribute('data-guide-phase','reading');renderWelcomeGuideSlide(run);syncWelcomeGuideClock();
     },WELCOME_GUIDE_FADE);
   },WELCOME_GUIDE_HOLD);
 }
 function isDiagnosisWelcomeTopic(topic){return !composing&&!topic.diagnosisOutcome&&topic.programs.length===0&&['idle','active'].includes(topic.diagnosis);}
 function observeDiagnosisWelcomeVisit(){
-  const visible=mainResumeOverviewVisible();
+  const visible=mainResumeOverviewVisible()&&!welcomeGuideSuspended;
   // A hidden browser tab or settings dim pauses the tip, without consuming this visit.
   const leftOverview=$('main').hidden||myOpen||editing||diagnosisOutcomeRun||composing||skyBusy||activityKind||$('#learning').open||$('#help').open||$('#activity').open||$('#prescription').open;
   if(diagnosisWelcomeFirstTopic&&(leftOverview||current()!==diagnosisWelcomeFirstTopic))diagnosisWelcomeFirstTopic=null;
@@ -740,8 +739,10 @@ function syncDiagnosisWelcome(topic){
     fill.setAttribute('y',y);fill.setAttribute('height',height);
     sheet.setAttribute('data-has-progress',String(progress.solved>0));
     // Geometry uses the actual ratio, not the rounded accessible percentage.
-    $('#diagnosis-sheet-waterline').setAttribute('d',progress.solved>0&&progress.solved<progress.total?`M20 ${y} C60 ${y-4} 116 ${y+4} 180 ${y} L180 218 H20 Z`:'');
-    $('#diagnosis-sheet-count').textContent=progress.solved>0?`${progress.solved} / ${progress.total}문항`:'한 문제씩 채워가요';
+    const wave=Array.from({length:3},(_,i)=>{const x=-140+i*160;return `C${x+40} ${y-6} ${x+120} ${y+6} ${x+160} ${y}`;}).join(' ');
+    $('#diagnosis-sheet-waterline').setAttribute('d',progress.solved>0&&progress.solved<progress.total?`M-140 ${y} ${wave} L340 218 H-140 Z`:'');
+    const counter=$('#diagnosis-sheet-count');counter.textContent=progress.solved>0?`${progress.solved} / ${progress.total}`:'';
+    counter.setAttribute('visibility',progress.solved>0?'visible':'hidden');
   }
   button.classList.add('diagnostic-start-button');button.setAttribute('aria-label',label);
   if(first)button.setAttribute('aria-describedby','diagnosis-welcome-guide');else button.removeAttribute('aria-describedby');
@@ -1438,7 +1439,7 @@ welcomeGuideElement.addEventListener('pointerleave',()=>{welcomeGuideHover=false
 $('#diagnosis-welcome').addEventListener('focusin',()=>{welcomeGuideFocus=true;syncWelcomeGuideClock();});
 $('#diagnosis-welcome').addEventListener('focusout',event=>{if(event.relatedTarget&&$('#diagnosis-welcome').contains(event.relatedTarget))return;welcomeGuideFocus=false;syncWelcomeGuideClock();});
 matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change',()=>{syncWelcomeGuideClock();if(welcomeGuideRun)renderWelcomeGuideSlide(welcomeGuideRun);});
-window.addEventListener?.('pagehide',()=>{welcomeGuideSuspended=true;syncWelcomeGuideClock();});
+window.addEventListener?.('pagehide',()=>{welcomeGuideSuspended=true;observeDiagnosisWelcomeVisit();});
 window.addEventListener?.('pageshow',()=>{welcomeGuideSuspended=false;observeDiagnosisWelcomeVisit();});
 $('#activity').addEventListener('close',()=>{
   if(activityKind==='diagnosis-guide'){activityKind=null;render();$('#diagnosis-help-trigger').focus({preventScroll:true});}

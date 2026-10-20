@@ -7,14 +7,14 @@ function advance(h){const r=run(h);assert(r?.timer);r.timer.fn();assert(r.fadeTi
 function releaseDim(h){const t=h.evaluate('guidanceClosingTimer');if(t&&!t.cancelled)t.fn();}
 function activeState(answers=[0],i=1){const state=M.create();state.grades[3][0].diagnosis='active';state.grades[3][0].diagnosticSession={answers,index:i,started:Date.now(),notes:'saved'};state.ui={diagnosisWelcomeSeen:true,diagnosisIntroSeen:true};return state;}
 
-test('V6.2 has no carousel controls and lets three first-visit messages settle on the final benefit',()=>{
+test('V6.2 has no carousel controls and keeps the first-visit guidance cycling without moving the real action',()=>{
   const h=harness(undefined,{reducedMotion:false}),before=h.data('current()'),button=h.node('#diagnostic').innerHTML,parent=h.node('#diagnostic').parent;
   const markup=h.node('#diagnosis-welcome-guide').innerHTML;
   assert(!markup.includes('<button'));assert(!markup.includes('welcome-guide-controls'));
   assert.equal(index(h),0);assert.equal(run(h).timer.ms,4800);
-  advance(h);assert.equal(index(h),1);advance(h);assert.equal(index(h),2);assert.equal(run(h).timer,null);
+  for(const next of [1,2,0,1,2]){advance(h);assert.equal(index(h),next);assert.equal(run(h).timer.ms,4800);}
   assert.equal(h.node('#welcome-guide-slide-0').hidden,true);assert.equal(h.node('#welcome-guide-slide-1').hidden,true);assert.equal(h.node('#welcome-guide-slide-2').hidden,false);
-  h.evaluate('render();render();syncGuidanceReminders()');assert.equal(index(h),2);assert.equal(run(h).timer,null);
+  const timer=run(h).timer;h.evaluate('render();render();syncGuidanceReminders()');assert.equal(index(h),2);assert.equal(run(h).timer,timer);
   assert.equal(h.node('#diagnostic').innerHTML,button);assert.equal(h.node('#diagnostic').parent,parent);assert.deepEqual(h.data('current()'),before);
   assert.equal(h.node('#learning').open,false);assert.equal(h.evaluate('daily().timerRunning'),false);
 });
@@ -28,7 +28,8 @@ test('V6.2 pauses the short explanation on hover, keyboard focus and hidden or d
   h.document.visibilityState='visible';h.emitDocument('visibilitychange');fade.fn();assert.equal(index(h),0);assert.equal(r.timer.ms,4800);
   h.node('#diagnosis-welcome').emit('focusin');assert.equal(r.timer,null);h.node('#diagnosis-welcome').emit('focusout',{});assert.equal(r.timer.ms,4800);
   h.click('test');assert.equal(r.timer,null);h.click('close-panel');releaseDim(h);assert.equal(run(h),r);assert.equal(r.timer.ms,4800);
-  h.emitWindow('pagehide');assert.equal(r.timer,null);h.emitWindow('pageshow');assert.equal(r.timer.ms,4800);
+  h.emitWindow('pagehide');assert.equal(r.timer,null);assert.equal(h.node('#diagnosis-welcome').getAttribute('data-welcome-motion'),'paused');
+  h.emitWindow('pageshow');assert.equal(r.timer.ms,4800);assert.equal(h.node('#diagnosis-welcome').getAttribute('data-welcome-motion'),'running');
 });
 
 test('V6.2 preserves one-time guidance and the full help while reduced motion uses a static benefit',()=>{
@@ -47,11 +48,13 @@ test('V6.2 fills the actual paper area using saved valid answers, including answ
     assert(Math.abs(height-200*expected/3)<.00001);assert(Math.abs(y+height-218)<.00001);
     assert.equal(sheet.getAttribute('aria-valuenow'),String(Math.round(expected/3*100)));
     assert.equal(sheet.getAttribute('data-has-progress'),String(expected>0));
-    assert.equal(h.node('#diagnosis-sheet-count').textContent,expected?`${expected} / 3문항`:'한 문제씩 채워가요');
+    assert.equal(h.node('#diagnosis-sheet-count').textContent,expected?`${expected} / 3`:'');
+    assert.equal(h.node('#diagnosis-sheet-count').getAttribute('visibility'),expected?'visible':'hidden');
     assert.equal(h.node('#diagnosis-sheet-waterline').getAttribute('d')==='',expected===0||expected===3);
   }
   const html=fs.readFileSync('dist/working/index.html','utf8');assert(!html.includes('diagnosis-sheet-percent'));assert(!html.includes('diagnosis-sheet-items'));assert(!html.includes('welcome-dismiss'));
   assert.match(html,/id="diagnosis-sheet-fill"/);assert.match(html,/clip-path="url\(#diagnosis-ink-clip\)"/);
+  assert(!html.includes('한 문제씩 채워가요'));assert.match(html,/<text id="diagnosis-sheet-count"/);
 });
 
 test('V6.2 resumes real questions, adds actual answers to the fill and preserves mounted geometry during stable renders',()=>{
