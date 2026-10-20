@@ -16,7 +16,8 @@ test('the compact result control appears only after a diagnosis produces learnin
   h.evaluate('select(3,1)');
   assert.equal(h.node('#learning-context').hidden,true);
   assert.equal(h.node('#diagnostic-result-slot').hidden,true);
-  assert.equal(h.node('#diagnostic').parent,h.node('#diagnosis-slot'));
+  assert.equal(h.node('#diagnostic').parent,h.node('#diagnosis-welcome-action'));
+  assert.equal(h.node('#diagnosis-welcome').hidden,false);
 });
 
 test('topic changes refresh the explanation count and result label without changing saved learning',()=>{

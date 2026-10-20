@@ -595,6 +595,22 @@ function syncLearningContext(topic){
   $('#learning-context').hidden=!ready;
   if(ready)document.body.classList.add('has-personalized-learning');else document.body.classList.remove('has-personalized-learning');
 }
+// V5 changes only the pre-diagnosis overview. The same real diagnosis action owns the CTA.
+function syncDiagnosisWelcome(topic){
+  const visible=!composing&&!topic.diagnosisOutcome&&topic.programs.length===0&&['idle','active'].includes(topic.diagnosis);
+  const host=$('#diagnosis-welcome'),button=$('#diagnostic');host.hidden=!visible;$('#diagnosis-slot').hidden=visible;
+  button.classList.remove('diagnostic-start-button');
+  if(!visible){if(button.getAttribute('aria-describedby')==='diagnosis-welcome-note')button.removeAttribute('aria-describedby');return;}
+  const active=topic.diagnosis==='active',label=active?'실력알기 이어하기':'실력알기 시작하기';
+  host.setAttribute('data-diagnosis-state',topic.diagnosis);
+  $('#diagnosis-welcome-title').innerHTML=active?'풀던 문제부터<br>차근차근 이어가요':'지금의 실력을 알아보고,<br>나만의 코스를 만나요';
+  $('#diagnosis-welcome-description').textContent=active?'지금까지 푼 내용은 저장되어 있어요.':'이미 아는 내용은 가볍게, 필요한 학습은 꼼꼼하게.';
+  const progress=$('#diagnosis-welcome-progress');progress.hidden=!active;
+  progress.textContent=active?`${(topic.diagnosticSession?.answers||[]).filter(answer=>Number.isInteger(answer)&&answer>=0).length} / ${DEMO.length}문항 풀었어요`:'';
+  button.classList.add('diagnostic-start-button');button.setAttribute('aria-label',label);button.setAttribute('aria-describedby','diagnosis-welcome-note');
+  button.innerHTML=`<span>${label}</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>`;
+  $('#diagnosis-welcome-action').append(button);
+}
 function render(){observeSpeech();if(cardRevealRun&&cardRevealRun.target!==current())clearPrescribedCardReveal();daily();const s=current();syncLearningHeader(s);syncLearningContext(s);$('#diagnosis-slot').append($('#diagnostic'));$('#diagnostic').classList.remove('grid-diagnostic','card','clean-passed','diagnostic-summary-trigger');$('#diagnostic').setAttribute('aria-label','실력알기');$('#diagnostic-result-slot').hidden=true;$('#diagnosis-section').hidden=false;$('#grade-badge').innerHTML=`<strong>${grade(state.grade)}</strong><span>등급</span><span class="grade-topic-number">${String(state.index+1).padStart(2,'0')}</span>`;$('#group-title').textContent=groupName(state.index);$('#diagnostic').innerHTML=`<div><strong>실력알기</strong>${s.diagnosis==='done'?`<small>${s.programs.length?'처방 프로그램 '+s.programs.length+'개':'부족한 학습 목표 0개'}</small>`:''}</div>${badge(s.diagnosis==='done'?(s.programs.length?'passed':'clean'):s.diagnosis)}`;renderProgramCards(s);const rec=M.recommend(state);setRecommendationText(rec.text);$('#recommend').disabled=!!composing||['done','locked'].includes(rec.kind);
 if(isCleanPass(s)&&!composing){const pass=cleanPassInfo();$('#diagnostic').classList.add('clean-passed');$('#diagnostic').innerHTML=`<div><strong>진단 통과</strong><small>추가 학습 없이 통과했어요 · 결과 보기</small></div><span class="badge clean">✓ 통과</span>`;setRecommendationText(pass.next?cleanPassPrepareLabel(pass):'이번 등급 학습 완료');$('#recommend').disabled=!pass.next;}
 if(composing){setRecommendationText('맞춤 프로그램을 준비하고 있어요');$('#diagnostic').innerHTML='<div><strong>실력알기</strong><small>진단 결과에 맞춰 필요한 학습을 구성하고 있습니다.</small></div><span class="badge active">진단 완료 · 구성 중</span>';$('#diagnostic').disabled=true;$('#programs').hidden=true;$('#composition').hidden=false;renderComposition();}
@@ -604,6 +620,7 @@ d.innerHTML=`<span class="result-icon" aria-hidden="true"><img src="assets/figma
 $('#diagnostic-result-slot').hidden=false;$('#diagnostic-result-slot').append(d);$('#diagnosis-section').hidden=true;
 if(reveal)revealPrescribedCards();reveal=false;
 }}
+syncDiagnosisWelcome(s);
 const pieces=skyState().items.reduce((n,x)=>n+x.pieces,0);$('.constellation-trigger').setAttribute('aria-label','나의 별자리 · 별 조각 '+pieces+'개');syncRecommendation(isCleanPass(s)&&!composing?cleanPassInfo().next:rec.kind==='today'?M.learningRecommend(state):rec);animateMessage();renderPanel();if(myOpen)renderMy();syncGuidanceReminders();const viewKey=state.grade+':'+state.index;if(overviewViewKey!==null&&overviewViewKey!==viewKey&&!myOpen){softReveal($('.heading'));if(!$('#programs').hidden)softReveal($('#programs'));}overviewViewKey=viewKey;}
 const COURSE_REVEAL={wait:440,stagger:105,card:680,limit:15,invite:760};
 let cardRevealRun=null;
