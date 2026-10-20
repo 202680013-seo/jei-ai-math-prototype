@@ -70,3 +70,12 @@ test('V6.2 resumes real questions, adds actual answers to the fill and preserves
   h.click('test');h.click('welcome-preview-progress');releaseDim(h);assert.equal(h.node('#diagnosis-welcome-guide').hidden,true);
   assert.equal(h.node('#diagnosis-welcome-progress').getAttribute('aria-valuenow'),'33');
 });
+
+test('V6.2 keeps its SVG fill and clipping inside the native document instead of the source asset base URL',()=>{
+  const h=harness(activeState());
+  for(const href of ['https://example.test/v6.html','https://example.test/views/v64.html?theme=green#top']){
+    h.context.location={href};h.evaluate('syncDiagnosisSheetReferences()');const page=href.split('#')[0];
+    assert.equal(h.node('#diagnosis-sheet-clip').getAttribute('clip-path'),`url("${page}#diagnosis-ink-clip")`);
+    for(const id of ['fill','waterline'])assert.equal(h.node('#diagnosis-sheet-'+id).getAttribute('fill'),`url("${page}#diagnosis-ink-color")`);
+  }
+});

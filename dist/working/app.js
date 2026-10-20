@@ -717,6 +717,12 @@ function diagnosisWelcomeProgress(topic){
   const solved=topic.diagnosis==='active'?DEMO.reduce((n,question,i)=>n+(Number.isInteger(answers[i])&&answers[i]>=0&&answers[i]<question.choices.length?1:0),0):0;
   return {total,solved,percent:Math.round(solved/total*100)};
 }
+function syncDiagnosisSheetReferences(){
+  // Native entrypoints have a base URL for assets. SVG fragments belong to this document.
+  const href=window.location?.href;if(!href)return;const page=href.split('#')[0];
+  $('#diagnosis-sheet-clip').setAttribute('clip-path',`url("${page}#diagnosis-ink-clip")`);
+  for(const id of ['diagnosis-sheet-fill','diagnosis-sheet-waterline'])$('#'+id).setAttribute('fill',`url("${page}#diagnosis-ink-color")`);
+}
 function syncDiagnosisWelcome(topic){
   observeDiagnosisWelcomeVisit();
   const visible=isDiagnosisWelcomeTopic(topic),host=$('#diagnosis-welcome'),button=$('#diagnostic');
@@ -735,6 +741,7 @@ function syncDiagnosisWelcome(topic){
   const signature=state.grade+':'+state.index+':'+JSON.stringify([progress,topic.diagnosticSession?.answers]);
   if(signature!==diagnosisSheetSignature){
     diagnosisSheetSignature=signature;
+    syncDiagnosisSheetReferences();
     const height=200*progress.solved/progress.total,y=218-height,fill=$('#diagnosis-sheet-fill');
     fill.setAttribute('y',y);fill.setAttribute('height',height);
     sheet.setAttribute('data-has-progress',String(progress.solved>0));
