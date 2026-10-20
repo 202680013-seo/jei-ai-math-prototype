@@ -1,5 +1,6 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
-const {harness}=require('./helpers/ui-harness.cjs');
+const {harness:baseHarness}=require('./helpers/ui-harness.cjs');
+const harness=(saved,options={})=>baseHarness(saved,{...options,appSource:fs.readFileSync('dist/versions/v63/app.js','utf8')});
 const run=h=>h.evaluate('welcomeGuideRun');
 const index=h=>Number(h.node('#diagnosis-welcome-guide').getAttribute('data-guide-index'));
 function advance(h){const r=run(h);assert(r?.timer);r.timer.fn();assert.equal(r.phase,'leaving');assert(r.fadeTimer);r.fadeTimer.fn();return r;}
