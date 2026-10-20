@@ -14,6 +14,52 @@ function setup(version,options={}){
 }
 function runScroll(h){const run=h.evaluate('mainResumeScrollRun');assert(run);assert.equal(run.timer.ms,600);run.timer.fn();return run;}
 function releaseDim(h){const timer=h.evaluate('guidanceClosingTimer');if(timer&&!timer.cancelled)timer.fn();}
+function enableFrames(h){
+  h.document.documentElement=h.node('html');
+  h.context.requestAnimationFrame=fn=>({fn,cancelled:false});
+  h.context.cancelAnimationFrame=frame=>{frame.cancelled=true;};
+  return timestamp=>{const run=h.evaluate('mainResumeScrollRun');assert(run?.frame);run.frame.fn(timestamp);};
+}
+
+test('frame-driven return eases in and out, reaches the same actual card center and performs no per-frame layout reads',()=>{
+  for(const version of ['working','versions/v59',...Array.from({length:7},(_,i)=>'versions/v'+(61+i))]){
+    const h=setup(version),tick=enableFrames(h),before=h.data('current().programs'),run=runScroll(h);
+    assert.equal(run.driver,'frames');assert(run.duration>=1100&&run.duration<=1800);
+    let reads=0;for(const sel of ['.ai',selector]){const node=h.node(sel),get=node.getBoundingClientRect.bind(node);node.getBoundingClientRect=()=>{reads++;return get();};}
+    tick(1000);assert.equal(h.context.scrollY,0);assert.equal(h.node('html').getAttribute('data-resume-scrolling'),'true');
+    h.emitWindow('scrollend');assert.equal(h.evaluate('mainResumeScrollRun'),run);
+    const positions=[0];for(let t=1000+100;t<1000+run.duration;t+=100){tick(t);positions.push(h.context.scrollY);}
+    tick(1000+run.duration);positions.push(h.context.scrollY);
+    assert(positions.every((value,i)=>!i||value>=positions[i-1]));assert.equal(h.context.scrollY,766);
+    assert(positions[1]<positions[Math.floor(positions.length/2)]*.1,'departure is gentle');
+    assert.equal(reads,0);assert.equal(h.evaluate('mainResumeScrollRun'),null);
+    assert.equal(h.node('html').getAttribute('data-resume-scrolling'),null);assert.deepEqual(h.data('current().programs'),before);
+  }
+});
+
+test('input, resize and hidden pages cancel a moving frame clock without trailing scroll writes',()=>{
+  for(const type of ['wheel','touchstart','pointerdown','keydown','resize','hidden']){
+    const h=setup('working'),tick=enableFrames(h),run=runScroll(h);tick(0);tick(run.duration*.4);
+    const stale=run.frame;
+    if(type==='resize')h.emitWindow('resize');
+    else if(type==='hidden'){h.document.visibilityState='hidden';h.emitDocument('visibilitychange');}
+    else h.emitDocument(type,{key:'ArrowDown'});
+    const calls=h.scrollCalls.length;assert.equal(h.evaluate('mainResumeScrollRun'),null);assert.equal(stale.cancelled,true);
+    assert.equal(h.node('html').getAttribute('data-resume-scrolling'),null);stale.fn(run.duration);assert.equal(h.scrollCalls.length,calls);
+  }
+});
+
+test('animation follows elapsed time at different frame rates and reacts immediately to reduced motion',()=>{
+  for(const step of [1000/30,1000/60,1000/120]){
+    const h=setup('working'),tick=enableFrames(h),run=runScroll(h);tick(0);
+    for(let t=step;t<run.duration/2;t+=step)tick(t);
+    tick(run.duration/2);assert(Math.abs(h.context.scrollY-383)<.00001);
+    h.evaluate('render();render();syncGuidanceReminders()');assert.equal(h.evaluate('mainResumeScrollRun'),run);
+    tick(run.duration);assert.equal(h.context.scrollY,766);assert.equal(h.evaluate('mainResumeScrollRun'),null);
+  }
+  const h=setup('working'),tick=enableFrames(h),run=runScroll(h);tick(0);h.media.matches=true;tick(16);
+  assert.equal(h.context.scrollY,766);assert.equal(h.evaluate('mainResumeScrollRun'),null);
+});
 
 for(const version of ['working','versions/v59','versions/v61']){
   test(version+' shows the overview top once, waits 600ms and centers the active card below the sticky header',()=>{

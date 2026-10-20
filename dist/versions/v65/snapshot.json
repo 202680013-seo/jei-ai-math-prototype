@@ -2,7 +2,7 @@
   "id": "v65",
   "date": "2026-10-20",
   "files": {
-    "app.js": "52e233ad273a7cd0eb7e9210447580298694e57f947c48962cf89662742f95db",
+    "app.js": "068fee4c9e97921b4dcc298834fdb7381586e380d9afcd30a9d416419556ea68",
     "assets/active-card-art.svg": "db896082a62eeeff84e4fc46ad01dc1443872423cb15172700722ecd4b63d88d",
     "assets/figma-v4-1/active-card-art.svg": "8571151b8c4436cea38a513d5bbe7ea0eb82850551f7fc647e38b7595bc414c9",
     "assets/figma-v4-1/close.svg": "0d458db2351ecd3772ee6dff1a9f8b3b6e5137d5e9857f0ec745fa03cd453458",
@@ -36,7 +36,7 @@
     "index.html": "cbc96f7774ff0a7737df4f537cc263ffa6475dd7c40975dbd17e31f761d6f486",
     "mentor-copy.js": "b87e40882ae9a1407d910a91815f9cb233b83d0e361ce53d4984ac0ad76f58e2",
     "mentor-policy.js": "905517e380a4c4377ae5d141b4e1b4b2ba8fd4c87fc33f339bb841f0e4efd845",
-    "mobile.css": "a9df9990277db2fb210fa7c6322ff5dda49e70f83d4bcf4d4379c3730e4e32a4",
+    "mobile.css": "80c19dfcc7bbb99e9b55cbf2a4f58678b5c185d214cdf2d8af63a865596f3b2b",
     "model.js": "050bb99a3a8ec37432e3344ad1dc6aae878bcda0c016ba8d5dff05b35983767a",
     "sky.js": "0839e3db0daf10e9ce3dcac4220419aa401ba8b578d1bd5c2c7b07ee02aa180b",
     "style.css": "b3744d2102d6fb6f9ce40fff7bfb7b21b5bc39bd51b7a84d6eec64099725642e",

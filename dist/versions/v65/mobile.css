@@ -1,3 +1,4 @@
+:root[data-resume-scrolling=true],:root[data-resume-scrolling=true] body{scroll-behavior:auto!important;overflow-anchor:none}
 /* Common mobile correction for V4.9, V5 and V6. Desktop/tablet compositions stay intact. */
 #group-panel .group-list{padding-bottom:calc(14px + var(--rail-tail-space,0px))}
 .mobile-sheet-handle{display:none}

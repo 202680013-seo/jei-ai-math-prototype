@@ -570,7 +570,42 @@ function mainResumeOverviewVisible(){
 function cancelMainResumeScroll(){
   const run=mainResumeScrollRun;if(!run)return;mainResumeScrollRun=null;
   clearTimeout(run.timer);clearTimeout(run.finishTimer);
-  if(run.phase==='moving')window.scrollTo({top:window.scrollY||0,behavior:'instant'});
+  if(run.frame!==null)window.cancelAnimationFrame?.(run.frame);
+  document.documentElement?.removeAttribute('data-resume-scrolling');
+  if(run.phase==='moving'&&run.driver==='native')window.scrollTo({top:window.scrollY||0,behavior:'instant'});
+}
+function finishMainResumeScroll(run){
+  if(mainResumeScrollRun!==run)return;
+  clearTimeout(run.finishTimer);mainResumeScrollRun=null;
+  document.documentElement?.removeAttribute('data-resume-scrolling');
+}
+function animateMainResumeScroll(run,target){
+  const start=window.scrollY||0,distance=target-start;
+  if(Math.abs(distance)<1){finishMainResumeScroll(run);return;}
+  run.phase='moving';
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){window.scrollTo({top:target,left:0,behavior:'instant'});finishMainResumeScroll(run);return;}
+  // A bounded time-based curve replaces browser-dependent smooth-scroll timing.
+  // Read card/header geometry once before departure; only write scroll position per frame.
+  if(typeof window.requestAnimationFrame!=='function'){
+    run.driver='native';window.scrollTo({top:target,left:0,behavior:'smooth'});
+    run.finishTimer=setTimeout(()=>finishMainResumeScroll(run),1600);return;
+  }
+  run.driver='frames';run.duration=Math.max(1100,Math.min(1800,900+Math.sqrt(Math.abs(distance))*16));
+  run.startedAt=null;run.reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
+  document.documentElement?.setAttribute('data-resume-scrolling','true');
+  const frame=timestamp=>{
+    if(mainResumeScrollRun!==run)return;
+    run.frame=null;
+    if(run.reducedMotion.matches){window.scrollTo({top:target,left:0,behavior:'instant'});finishMainResumeScroll(run);return;}
+    run.startedAt??=timestamp;
+    const t=Math.max(0,Math.min(1,(timestamp-run.startedAt)/run.duration));
+    // Smootherstep: zero velocity and zero acceleration at both ends.
+    const eased=t*t*t*(t*(t*6-15)+10);
+    window.scrollTo({top:start+distance*eased,left:0,behavior:'instant'});
+    if(t===1){finishMainResumeScroll(run);return;}
+    run.frame=window.requestAnimationFrame(frame);
+  };
+  run.frame=window.requestAnimationFrame(frame);
 }
 function mainResumeGeometry(program){
   const card=$('#programs [data-action="program"][data-id="'+program.id+'"]');
@@ -596,23 +631,22 @@ function syncMainResumeScroll(){
   cancelMainResumeScroll();const geometry=mainResumeGeometry(program);
   if(!geometry||geometry.documentCenter<=geometry.center+32)return;
   setMainResumeSpace(geometry);window.scrollTo({top:0,left:0,behavior:'instant'});
-  const run=mainResumeScrollRun={topic,programId:program.id,phase:'waiting',timer:null,finishTimer:null};
+  const run=mainResumeScrollRun={topic,programId:program.id,phase:'waiting',timer:null,finishTimer:null,frame:null,driver:null};
   run.timer=setTimeout(()=>{
     if(mainResumeScrollRun!==run)return;
     if(!mainResumeOverviewVisible()||!mainGuidanceVisible()||current()!==run.topic||M.currentProgram(current())?.id!==run.programId){cancelMainResumeScroll();return;}
     const currentGeometry=mainResumeGeometry(program);if(!currentGeometry){cancelMainResumeScroll();return;}
     setMainResumeSpace(currentGeometry);
-    const target=Math.max(0,currentGeometry.documentCenter-currentGeometry.center),reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-    run.phase='moving';window.scrollTo({top:target,left:0,behavior:reduced?'instant':'smooth'});
-    if(reduced){mainResumeScrollRun=null;return;}
-    run.finishTimer=setTimeout(()=>{if(mainResumeScrollRun===run)mainResumeScrollRun=null;},1600);
+    const target=Math.max(0,currentGeometry.documentCenter-currentGeometry.center);
+    animateMainResumeScroll(run,target);
   },MAIN_RESUME_DELAY);
 }
 for(const type of ['wheel','touchstart','pointerdown'])document.addEventListener(type,cancelMainResumeScroll,{passive:true});
 document.addEventListener('keydown',event=>{if(!['Shift','Control','Alt','Meta'].includes(event.key))cancelMainResumeScroll();});
 window.addEventListener?.('pagehide',()=>{cancelMainResumeScroll();mainResumeVisible=false;});
 window.addEventListener?.('pageshow',event=>{if(event.persisted){mainResumeVisible=false;syncMainResumeScroll();}});
-window.addEventListener?.('scrollend',()=>{const run=mainResumeScrollRun;if(run?.phase==='moving'){clearTimeout(run.finishTimer);mainResumeScrollRun=null;}});
+window.addEventListener?.('resize',cancelMainResumeScroll);
+window.addEventListener?.('scrollend',()=>{const run=mainResumeScrollRun;if(run?.phase==='moving'&&run.driver==='native')finishMainResumeScroll(run);});
 let programCardsMarkup=null,programCardsView=null;
 function renderProgramCards(topic){
   const markup=topic.programs.map(p=>programCard(topic,p)).join(''),view=state.grade+':'+state.index;

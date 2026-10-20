@@ -51,9 +51,10 @@ for(const version of targets){
 }
 
 test('the authorized versions all load the same mobile correction after their original version styles',()=>{
-  const common=fs.readFileSync('dist/working/mobile.css','utf8');
+  const mobileOnly=css=>css.replace(/^:root\[data-resume-scrolling=true\].*\n/,'');
+  const common=mobileOnly(fs.readFileSync('dist/working/mobile.css','utf8'));
   for(const v of targets){
-    assert.equal(fs.readFileSync('dist/'+v.path+'mobile.css','utf8'),common);
+    assert.equal(mobileOnly(fs.readFileSync('dist/'+v.path+'mobile.css','utf8')),common);
     const html=fs.readFileSync('dist/'+v.path+'index.html','utf8');
     const styles=[...html.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m=>m[1]);
     assert.equal(styles.at(-1),'mobile.css');assert(html.includes('viewport-fit=cover'));
