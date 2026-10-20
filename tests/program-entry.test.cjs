@@ -39,8 +39,8 @@ test('the explicit entry action begins once, transitions to questions and preser
   h.click('program-begin');assert.deepEqual(h.data('current().programs[0]'),selected);assert.equal(h.evaluate('current().attempts'),1);
   h.click('close-learning');assert.equal(h.evaluate('daily().timerRunning'),false);
   const reloaded=harness(h.saved());reloaded.click('program',0);assert.equal(reloaded.evaluate('editing.intro'),true);
-  assert(reloaded.node('#learning').innerHTML.includes('이어서 학습하기'));assert.deepEqual(reloaded.data('current().programs[0]'),selected);
-  reloaded.click('program-begin');assert.deepEqual(reloaded.data('current().programs[0]'),selected);
+  assert(reloaded.node('#learning').innerHTML.includes('이어서 학습하기'));const withoutClock=({studyTiming,...program})=>program;assert.deepEqual(withoutClock(reloaded.data('current().programs[0]')),withoutClock(selected));assert.equal(reloaded.evaluate('current().programs[0].studyTiming.normal.runningSince'),null);
+  reloaded.click('program-begin');assert.deepEqual(withoutClock(reloaded.data('current().programs[0]')),withoutClock(selected));assert.notEqual(reloaded.evaluate('current().programs[0].studyTiming.normal.runningSince'),null);
   assert(!reloaded.node('#learning').innerHTML.includes('<small>선택한 답</small>'));
   assert(reloaded.node('#learning').innerHTML.includes('answer-correct'));assert.equal(reloaded.evaluate('daily().timerRunning'),true);
   reloaded.click('learner-next');assert.equal(reloaded.evaluate('current().programs[0].completedFrames'),1);

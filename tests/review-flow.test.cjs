@@ -4,6 +4,7 @@ const assert=require('node:assert/strict');
 const {MathModel:M}=require('../dist/working/model.js');
 const {harness}=require('./helpers/ui-harness.cjs');
 
+function finishCompletion(h){if(h.evaluate('!!diagnosisOutcomeRun')){h.click('diagnosis-outcome-confirm');while(h.evaluate('!!diagnosisOutcomeRun'))h.evaluate('diagnosisOutcomeTimer').fn();}}
 function canonical(h,id=0){return h.data(`(({status,progress,completedFrames,wrongFrames,demoChoice})=>({status,progress,completedFrames,wrongFrames,demoChoice}))(current().programs[${id}])`);}
 
 test('completed-program review is independent of the next active program and keeps normal lock gates',()=>{
@@ -53,7 +54,7 @@ test('an interrupted review persists answers and resumes without resetting a com
 
 test('mistakes during voluntary review never downgrade an already passed program or relock later cards',()=>{
   const h=harness();h.seed();const original=canonical(h),next=h.data('current().programs[1]');
-  h.click('program',0);h.click('learner-review');h.finishReview(true);
+  h.click('program',0);h.click('learner-review');h.finishReview(true);finishCompletion(h);
   assert.deepEqual(canonical(h),original);
   assert.equal(h.evaluate('current().programs[0].reviewSession.wrongFrames.length'),1);
   assert.equal(h.evaluate('daily().timerRunning'),false);
@@ -65,7 +66,7 @@ test('mistakes during voluntary review never downgrade an already passed program
 test('all-correct remediation upgrades a failed result while retaining the initial result and next work',()=>{
   const h=harness();h.seed('failed');const original=canonical(h),next=h.data('current().programs[1]');
   assert.equal(h.evaluate('M.wrongEntries(state).length'),1);
-  h.click('program',0);h.click('learner-review');h.finishReview();
+  h.click('program',0);h.click('learner-review');h.finishReview();finishCompletion(h);
   assert.equal(h.evaluate('current().programs[0].status'),'passed');
   assert.equal(h.evaluate('current().programs[0].progress'),100);
   assert.equal(h.evaluate('current().programs[0].completedFrames'),original.completedFrames);
@@ -84,7 +85,7 @@ test('all-correct remediation upgrades a failed result while retaining the initi
 
 test('an unsuccessful remediation preserves the failed result and its original diagnostic evidence',()=>{
   const h=harness();h.seed('failed');const original=canonical(h);
-  h.click('program',0);h.click('learner-review');h.finishReview(true);
+  h.click('program',0);h.click('learner-review');h.finishReview(true);finishCompletion(h);
   assert.deepEqual(canonical(h),original);
   assert.equal(h.evaluate('M.wrongEntries(state).length'),1);
   assert.equal(h.evaluate('current().programs[0].reviewed'),false);

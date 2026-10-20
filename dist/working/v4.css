@@ -1,4 +1,4 @@
-/* V4.8 — QmDlOvkNKFdZJHCY89h0vY / main 3:11, main2 3:96.
+/* V4.9 — QmDlOvkNKFdZJHCY89h0vY / main 3:11, main2 3:96.
    Keep the existing learning flows; apply the supplied component geometry. */
 :root{--forest:var(--theme-title);--muted:var(--theme-muted);--line:var(--theme-line);--soft:var(--theme-soft);--paper:var(--theme-surface);--lime:var(--theme-accent);--learning-page:var(--theme-page);--top-action-height:48px;--group-drawer-width:min(320px,calc(100vw - 24px));--card-status-slot:44px;--card-status-symbol:44px;--status-pass-fill:#3b82f6;--status-pass-mark:#fff;--status-review-fill:#f2b642;--status-review-mark:#fff;--status-lock-surface:#edf0f3;--status-lock-fill:#b7bec3;--completed-card-fill:var(--theme-completed);--study-action-hover:var(--theme-primary-hover);--study-action-on-hover:#fff;--navigation-idle:#b7bec3}
 html,body{background:var(--theme-page);color:var(--theme-text)}
@@ -336,4 +336,17 @@ body.has-personalized-learning .heading>.learning-context{flex:0 0 auto;width:au
   .diagnosis-collection::before,.fragment-particle,.top-shortcuts .constellation-trigger.is-receiving-fragments{animation:none!important}
   .diagnosis-collection::before,.fragment-particle{display:none}
   .top-shortcuts .constellation-trigger.is-receiving-fragments{box-shadow:0 0 0 4px var(--theme-soft-strong)}
+}
+
+/* V4.9 · Program and review results share diagnosis summary / reward geometry. */
+.program-outcome-metrics{grid-template-columns:repeat(2,minmax(0,1fr));max-width:420px;margin-left:auto;margin-right:auto}
+.program-result>.program-outcome-metrics{margin:28px auto;gap:30px}
+.program-outcome-screen .composition{position:relative;isolation:isolate}
+.program-outcome-screen #composition-topic-context{font-size:18px;font-weight:800;color:var(--theme-title)}
+.program-outcome-screen .diagnosis-inline-summary>.badge{display:inline-block;margin-top:12px}
+.program-outcome-screen .diagnosis-inline-summary .program-outcome-metrics{gap:30px;margin:20px auto 24px}
+.program-outcome-screen .completion-confetti{top:-30px;left:0;width:100%;height:370px}
+@media(max-width:600px){
+  .program-outcome-screen #composition-topic-context{font-size:16px}
+  .program-outcome-screen .diagnosis-inline-summary .program-outcome-metrics{gap:16px}
 }
