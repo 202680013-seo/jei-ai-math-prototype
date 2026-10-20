@@ -570,44 +570,58 @@ function mainResumeOverviewVisible(){
 }
 function clearMainResumeMotion(run){
   clearTimeout(run.timer);clearTimeout(run.finishTimer);
+  if(run.frame!=null)window.cancelAnimationFrame?.(run.frame);
   run.reducedMotion?.removeEventListener?.('change',run.motionChange);
   document.documentElement?.removeAttribute('data-resume-scrolling');
 }
 function cancelMainResumeScroll(){
   const run=mainResumeScrollRun;if(!run)return;mainResumeScrollRun=null;
   clearMainResumeMotion(run);
-  if(run.phase==='moving')window.scrollTo({top:window.scrollY||0,behavior:'instant'});
+  if(run.phase==='moving'&&run.driver==='native')window.scrollTo({top:window.scrollY||0,behavior:'instant'});
 }
 function finishMainResumeScroll(run){
   if(mainResumeScrollRun!==run)return;mainResumeScrollRun=null;clearMainResumeMotion(run);
 }
 function animateMainResumeScroll(run,target){
-  // Clamp once to the real scroll range. An unreachable destination would hit
-  // the page boundary before the browser has finished slowing down.
+  // Clamp once so deceleration ends at a reachable position, including the last row.
   const scroller=document.scrollingElement||document.documentElement;
   const max=scroller?.scrollHeight-(scroller?.clientHeight||window.innerHeight);
   if(Number.isFinite(max))target=Math.min(target,Math.max(0,max));
-  if(Math.abs(target-(window.scrollY||0))<1){finishMainResumeScroll(run);return;}
+  const start=window.scrollY||0,distance=target-start;
+  if(Math.abs(distance)<1){finishMainResumeScroll(run);return;}
   run.phase='moving';run.target=target;
   run.reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
   if(run.reducedMotion.matches){window.scrollTo({top:target,left:0,behavior:'instant'});finishMainResumeScroll(run);return;}
-  run.driver='native';
   document.documentElement?.setAttribute('data-resume-scrolling','true');
   run.motionChange=()=>{
     if(mainResumeScrollRun!==run||!run.reducedMotion.matches)return;
     window.scrollTo({top:run.target,left:0,behavior:'instant'});finishMainResumeScroll(run);
   };
   run.reducedMotion.addEventListener?.('change',run.motionChange);
-  // One request lets the browser schedule the entire motion. No per-frame
-  // instant writes, forced layout reads or artificial duration cutoff.
-  window.scrollTo({top:target,left:0,behavior:'smooth'});
-  run.finishTimer=setTimeout(()=>finishMainResumeScroll(run),5000);
+  if(typeof window.requestAnimationFrame!=='function'){
+    run.driver='native';window.scrollTo({top:target,left:0,behavior:'smooth'});
+    run.finishTimer=setTimeout(()=>finishMainResumeScroll(run),5000);return;
+  }
+  // Native smooth-scroll duration cannot be tuned. Keep one explicit clock,
+  // with a lower peak speed and a long, gentle arrival instead of a fast rush.
+  run.driver='timed';run.duration=Math.max(950,Math.min(1200,650+Math.sqrt(Math.abs(distance))*13));
+  run.elapsed=0;run.lastFrame=null;
+  const frame=timestamp=>{
+    if(mainResumeScrollRun!==run)return;run.frame=null;
+    // A busy frame must not skip a large stretch of the journey. Do not read
+    // card/header geometry, repaint markup or start another smooth scroll here.
+    if(run.lastFrame!==null)run.elapsed+=Math.max(0,Math.min(48,timestamp-run.lastFrame));
+    run.lastFrame=timestamp;
+    const t=Math.min(1,run.elapsed/run.duration),eased=(1-Math.cos(Math.PI*t))/2;
+    window.scrollTo({top:start+distance*eased,left:0,behavior:'instant'});
+    if(t===1){finishMainResumeScroll(run);return;}
+    run.frame=window.requestAnimationFrame(frame);
+  };
+  run.frame=window.requestAnimationFrame(frame);
 }
 function settleMainResumeScroll(){
-  const run=mainResumeScrollRun;if(run?.phase!=='moving')return;
+  const run=mainResumeScrollRun;if(run?.phase!=='moving'||run.driver!=='native')return;
   clearTimeout(run.finishTimer);
-  // Scroll-event fallback for browsers without scrollend. This only releases
-  // bookkeeping after motion has settled; it never snaps to the destination.
   run.finishTimer=setTimeout(()=>finishMainResumeScroll(run),180);
 }
 function resizeMainResumeScroll(){
@@ -657,7 +671,7 @@ window.addEventListener?.('pageshow',event=>{if(event.persisted){mainResumeVisib
 window.addEventListener?.('resize',resizeMainResumeScroll);
 window.addEventListener?.('orientationchange',cancelMainResumeScroll);
 window.addEventListener?.('scroll',settleMainResumeScroll,{passive:true});
-window.addEventListener?.('scrollend',()=>{const run=mainResumeScrollRun;if(run?.phase==='moving'&&Math.abs((window.scrollY||0)-run.target)<2)finishMainResumeScroll(run);});
+window.addEventListener?.('scrollend',()=>{const run=mainResumeScrollRun;if(run?.phase==='moving'&&run.driver==='native'&&Math.abs((window.scrollY||0)-run.target)<2)finishMainResumeScroll(run);});
 let programCardsMarkup=null,programCardsView=null;
 function renderProgramCards(topic){
   const markup=topic.programs.map(p=>programCard(topic,p)).join(''),view=state.grade+':'+state.index;
