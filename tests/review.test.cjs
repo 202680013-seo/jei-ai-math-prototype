@@ -4,6 +4,10 @@ const R=require('../dist/review-model.js'),root=path.resolve(__dirname,'..'),dis
 test('all saved design files remain intact and V1 matches the handed-off original',()=>{
   R.validate(data);
   for(const version of data.versions){const folder=path.join(dist,version.path),manifest=JSON.parse(fs.readFileSync(path.join(folder,'snapshot.json')));for(const [file,hash] of Object.entries(manifest.files))assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(folder,file))).digest('hex'),hash,version.id+'/'+file);}
+  if(data.working.matchesBaseline){
+    const baseline=JSON.parse(fs.readFileSync(path.join(dist,'versions',data.working.basedOn,'snapshot.json')));
+    for(const [file,hash] of Object.entries(baseline.files))assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(dist,'working',file))).digest('hex'),hash,'working must match its declared '+data.working.basedOn+' baseline: '+file);
+  }
   const original=JSON.parse(fs.readFileSync(path.join(root,'SOURCE_BASELINE.json')));for(const [file,info] of Object.entries(original.files)){if(file.startsWith('dist/'))assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(dist,'versions/v1',file.slice(5)))).digest('hex'),info.sha256);}
 });
 test('comparison links round-trip, reject invalid paths, and always show distinct versions',()=>{

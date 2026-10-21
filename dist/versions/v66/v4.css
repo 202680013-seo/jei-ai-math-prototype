@@ -1,6 +1,6 @@
 /* V4.9 — QmDlOvkNKFdZJHCY89h0vY / main 3:11, main2 3:96.
    Keep the existing learning flows; apply the supplied component geometry. */
-:root{--forest:var(--theme-title);--muted:var(--theme-muted);--line:var(--theme-line);--soft:var(--theme-soft);--paper:var(--theme-surface);--lime:var(--theme-accent);--learning-page:var(--theme-page);--top-action-height:48px;--recommendation-width:280px;--group-drawer-width:min(320px,calc(100vw - 24px));--card-status-slot:44px;--card-status-symbol:44px;--status-pass-fill:#3b82f6;--status-pass-mark:#fff;--status-review-fill:#f2b642;--status-review-mark:#fff;--status-lock-surface:#edf0f3;--status-lock-fill:#b7bec3;--completed-card-fill:var(--theme-completed);--study-action-hover:var(--theme-primary-hover);--study-action-on-hover:#fff;--navigation-idle:#b7bec3}
+:root{--forest:var(--theme-title);--muted:var(--theme-muted);--line:var(--theme-line);--soft:var(--theme-soft);--paper:var(--theme-surface);--lime:var(--theme-accent);--learning-page:var(--theme-page);--top-action-height:48px;--recommendation-width:280px;--recommendation-copy-gap:8px;--recommendation-arrow-size:18px;--group-drawer-width:min(320px,calc(100vw - 24px));--card-status-slot:44px;--card-status-symbol:44px;--status-pass-fill:#3b82f6;--status-pass-mark:#fff;--status-review-fill:#f2b642;--status-review-mark:#fff;--status-lock-surface:#edf0f3;--status-lock-fill:#b7bec3;--completed-card-fill:var(--theme-completed);--study-action-hover:var(--theme-primary-hover);--study-action-on-hover:#fff;--navigation-idle:#b7bec3}
 html,body{background:var(--theme-page);color:var(--theme-text)}
 :root{--rail-tab-width:60px;--rail-tab-gap:16px;--learning-content-max:1080px;--learning-gutter:max(calc(var(--rail-tab-width) + var(--rail-tab-gap)),env(safe-area-inset-left,0px),env(safe-area-inset-right,0px))}
 /* Match both tablet gutters. The smaller tab always stays outside the canvas. */
@@ -361,7 +361,11 @@ body.has-resume-scroll-space .learning-workspace main,body.has-resume-scroll-spa
 body .ai .mentor-cluster>.recommend{width:var(--recommendation-width);min-width:var(--recommendation-width);max-width:var(--recommendation-width);justify-self:start}
 body .ai .mentor-cluster .recommend-content{flex:0 0 auto;width:max-content}
 body .ai .mentor-cluster #recommend-copy{width:max-content;white-space:nowrap}
-@media(max-width:650px){:root{--recommendation-width:228px}}
+/* Intrinsic grid tracks leave the label/copy/arrow next to each other even
+   when a shorter activity leaves spare room in the fixed outer container. */
+body .ai .mentor-cluster .recommend button{display:grid;grid-template-columns:max-content max-content var(--recommendation-arrow-size);column-gap:var(--recommendation-copy-gap);justify-content:start}
+body .ai .mentor-cluster .recommend .recommend-arrow{position:static;inset:auto;justify-self:start;margin:0;width:var(--recommendation-arrow-size);height:var(--recommendation-arrow-size)}
+@media(max-width:650px){:root{--recommendation-width:228px;--recommendation-copy-gap:6px;--recommendation-arrow-size:14px}}
 @media(min-width:651px){
   @container learning-content (max-width:392px){
     .mentor-cluster>.ai-top{grid-column:1;grid-row:1}

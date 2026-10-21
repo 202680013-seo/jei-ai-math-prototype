@@ -59,7 +59,7 @@ function calendarHTML(){const [year,month]=monthParts(),first=new Date(Date.UTC(
 for(let day=1;day<=days;day++){const date=year+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0'),rec=history[date],learned=rec&&(rec.started||rec.minutes>0||Object.keys(rec.log||{}).length),done=learned&&rec.target&&rec.minutes>=rec.target;cells+=`<button data-action="calendar-day" data-date="${date}" class="${date===todayKey()?'is-today':''} ${learned?done?'goal-done':'some-learning':'no-learning'}" ${learned?'':'disabled'} aria-label="${date} ${learned?done?'목표 달성':'학습 기록':'학습 기록 없음'}">${day}</button>`;}
 return `<div class="calendar-nav"><button data-action="calendar-prev" aria-label="이전 달">←</button><strong>${year}년 ${month}월</strong><button data-action="calendar-next" ${calendarMonth>=todayKey().slice(0,7)?'disabled':''} aria-label="다음 달">→</button></div><div class="calendar-grid">${['일','월','화','수','목','금','토'].map(x=>`<small>${x}</small>`).join('')}${cells}</div><p class="calendar-key">○ 학습 없음 · ◐ 목표 미달성 · ● 목표 달성<br>테두리: 오늘</p>`;}
 function openMy(){if(panel)closePanel();archiveDay();myScroll=window.scrollY||0;myTimer=daily().timerRunning;daily().timerRunning=false;myOpen=true;syncMainResumeScroll();calendarMonth=todayKey().slice(0,7);renderMy();$('main').hidden=true;$('.my-trigger').hidden=true;$('.groups-trigger').hidden=true;$('#mypage').hidden=false;softReveal($('#mypage'));window.scrollTo(0,0);$('#mypage [data-action="back-main"]').focus();save();}
-function backMain(){mentorEntry++;myOpen=false;$('#mypage').hidden=true;$('main').hidden=false;$('.my-trigger').hidden=false;$('.groups-trigger').hidden=false;daily().timerRunning=myTimer;window.scrollTo(0,myScroll);render();softReveal($('main'));$('.my-trigger').focus({preventScroll:true});}
+function backMain(){mentorEntry++;myOpen=false;$('#mypage').hidden=true;$('main').hidden=false;$('.my-trigger').hidden=false;$('.groups-trigger').hidden=false;daily().timerRunning=myTimer;if(!mainResumeProgram(current()))window.scrollTo(0,myScroll);render();softReveal($('main'));$('.my-trigger').focus({preventScroll:true});}
 function renderMy(){if(!myOpen)return;const d=daily(),a=M.wrongEntries(state),[year,month]=monthParts(),prefix=year+'-'+String(month).padStart(2,'0'),best=Math.max(0,...Object.entries(state.history||{}).filter(([date])=>date.startsWith(prefix)).map(([,rec])=>rec.minutes||0));
 $('#mypage').innerHTML=`<div class="my-page-top"><button data-action="back-main">← 학습으로</button><h1>내 학습</h1><button data-action="user-settings" aria-label="학습자 설정">설정</button></div><div class="my-profile"><strong>${esc(state.profile.name)}</strong><span>${grade(state.grade)}등급</span><small>학습 기록 시작 ${state.profile.startDate}</small></div><div class="my-layout"><section class="my-card calendar-card"><h2>학습 캘린더</h2>${calendarHTML()}</section><div class="my-side"><section class="my-card"><h2>학습 도움</h2><button data-action="my-answers">도와줘요 <span>새 답변 ${d.unreadAnswers}</span></button><button data-action="my-wrongnotes">오답노트 <span>남은 학습 ${a.length}</span></button></section><section class="my-card"><h2>일일 학습 시간</h2><strong>${d.minutes}분 ${d.target?'/ 목표 '+d.target+'분':''}</strong><div class="actions"><button data-action="goal">${d.target?'목표 변경':'목표 정하기'}</button><button data-action="report">오늘의 리포트</button></div></section><section class="my-card"><h2>한 달 최고 기록</h2><strong>${best}분</strong></section></div></div>`;}
 const K=SkyModel;let skyDetail=null,skyTools=false,skyPictures=false,skySearch=false,skyQuery='',skyZoom=1,skyPan={x:0,y:0},skyRun=null,skyTimers=[],skyToast='',skyDrag=null,skyWasDragged=false;
@@ -107,7 +107,7 @@ if(!reduced&&t.animate){t.hidden=false;t.style.left=cx+'px';t.style.top=cy+'px';
 activityKind='constellation';$('#activity').classList.add('sky-dialog');renderActivity();$('#activity').showModal();if(!reduced&&$('#activity').animate){try{await $('#activity').animate([{clipPath:`circle(28px at ${cx}px ${cy}px)`,opacity:.2},{clipPath:`circle(${skyRevealRadius(cx,cy)}px at ${cx}px ${cy}px)`,opacity:1}],{duration:820,easing:'cubic-bezier(.45,0,.3,1)'}).finished;}catch{}}t.hidden=true;t.getAnimations?.().forEach(a=>a.cancel());skyBusy=false;afterSkyEnter();}
 async function skyExit(){if(skyBusy||skyRun)return;clearSkyTimers();const s=skyState();if(s.guide){s.guide=null;s.guideDone=true;}skyDetail=null;skyToast='';save();skyBusy=true;const dialog=$('#activity'),t=$('#sky-transition'),b=$('.constellation-trigger'),rect=b.getBoundingClientRect(),cx=rect.left+rect.width/2,cy=rect.top+rect.height/2,reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 if(!reduced&&dialog.animate){try{await dialog.animate([{clipPath:`circle(${skyRevealRadius(cx,cy)}px at ${cx}px ${cy}px)`,opacity:1},{clipPath:`circle(28px at ${cx}px ${cy}px)`,opacity:.2}],{duration:640,easing:'cubic-bezier(.45,0,.3,1)',fill:'forwards'}).finished;}catch{}}
-dialog.close();dialog.getAnimations?.().forEach(a=>a.cancel());dialog.classList.remove('sky-dialog');activityKind=null;if(!reduced&&t.animate){t.hidden=false;t.style.left=cx+'px';t.style.top=cy+'px';try{await t.animate([{transform:'translate(-50%,-50%) scale(1)',opacity:.8},{transform:'translate(-50%,-50%) scale(.96)',opacity:0}],{duration:260,easing:'ease-out'}).finished;}catch{}}t.hidden=true;t.getAnimations?.().forEach(a=>a.cancel());daily().timerRunning=skyTimer;skyBusy=false;window.scrollTo(0,skyMainScroll);if(skyReturnToLearning&&!M.currentProgram(current()))$('.card.is-current')?.scrollIntoView?.({block:'center'});skyReturnToLearning=false;render();b.focus({preventScroll:true});}
+dialog.close();dialog.getAnimations?.().forEach(a=>a.cancel());dialog.classList.remove('sky-dialog');activityKind=null;if(!reduced&&t.animate){t.hidden=false;t.style.left=cx+'px';t.style.top=cy+'px';try{await t.animate([{transform:'translate(-50%,-50%) scale(1)',opacity:.8},{transform:'translate(-50%,-50%) scale(.96)',opacity:0}],{duration:260,easing:'ease-out'}).finished;}catch{}}t.hidden=true;t.getAnimations?.().forEach(a=>a.cancel());daily().timerRunning=skyTimer;skyBusy=false;if(!mainResumeProgram(current()))window.scrollTo(0,skyMainScroll);if(skyReturnToLearning&&!M.currentProgram(current()))$('.card.is-current')?.scrollIntoView?.({block:'center'});skyReturnToLearning=false;render();b.focus({preventScroll:true});}
 function rewardsAction(act,b){if(skyAction(act,b))return true;const id=Number(b.dataset.id);
 if(act==='mypage'){openMy();return true;}if(act==='back-main'){backMain();return true;}
 if(act==='my-answers'){openActivity('answers');return true;}if(act==='my-wrongnotes'){openActivity('wrongnotes');return true;}if(act==='user-settings'){openActivity('settings');return true;}
@@ -562,8 +562,8 @@ function measureLearningHeader(){
 }
 // On a genuine overview entry, show its top before returning to unfinished work.
 // Stable guidance renders never restart this run, and direct input always wins.
-const MAIN_RESUME_DELAY=600;
-let mainResumeScrollRun=null,mainResumeVisible=false,mainResumeTopic=null,mainResumeSpaceKey=null,mainResumeBatch=false;
+const MAIN_RESUME_DELAY=600,MAIN_RESUME_BOUNCE_ROOM=4;
+let mainResumeScrollRun=null,mainResumeVisible=false,mainResumeTopic=null,mainResumeSpaceKey=null,mainResumeBatch=false,mainResumeRequestKey=null,mainResumeExtra=0;
 if(window.history&&'scrollRestoration' in window.history)window.history.scrollRestoration='manual';
 function mainResumeOverviewVisible(){
   return document.visibilityState!=='hidden'&&!$('main').hidden&&!myOpen&&!editing&&!diagnosisOutcomeRun&&!composing&&!skyBusy&&!activityKind&&panel!=='test'&&!$('#learning').open&&!$('#help').open&&!$('#activity').open&&!$('#prescription').open;
@@ -582,6 +582,30 @@ function cancelMainResumeScroll(){
 function finishMainResumeScroll(run){
   if(mainResumeScrollRun!==run)return;mainResumeScrollRun=null;clearMainResumeMotion(run);
 }
+function mainResumeArrivalCurve(overshoot){
+  // Match position, speed AND acceleration at the cosine's final 20%.
+  // The quintic then crosses the destination without stopping and settles once.
+  const join=.8,position=(1-Math.cos(Math.PI*join))/2;
+  const build=span=>{
+    const velocity=Math.PI*Math.sin(Math.PI*join)*span/2;
+    const acceleration=Math.PI**2*Math.cos(Math.PI*join)*span**2/2,remaining=1-position;
+    const c3=10*remaining-6*velocity-1.5*acceleration;
+    const c4=-15*remaining+8*velocity+1.5*acceleration;
+    const c5=6*remaining-3*velocity-.5*acceleration;
+    const at=u=>position+u*(velocity+u*(acceleration/2+u*(c3+u*(c4+u*c5))));
+    // The derivative factors into (1-u)^2 times this quadratic.
+    const a=5*c5,b=acceleration+2*velocity,disc=b*b-4*a*velocity;
+    let peak=1,peakAt=1;
+    if(disc>=0)for(const u of [(-b-Math.sqrt(disc))/(2*a),(-b+Math.sqrt(disc))/(2*a)]){
+      if(u>0&&u<1&&at(u)>peak){peak=at(u);peakAt=u;}
+    }
+    return {join,span,position,velocity,acceleration,c3,c4,c5,peak,peakAt};
+  };
+  // Fit the terminal duration once to a pixel-sized overshoot, independent of trip length.
+  let low=.2,high=.6;
+  for(let i=0;i<26;i++){const span=(low+high)/2;if(build(span).peak>1+overshoot)high=span;else low=span;}
+  return build((low+high)/2);
+}
 function animateMainResumeScroll(run,target){
   // Clamp once so deceleration ends at a reachable position, including the last row.
   const scroller=document.scrollingElement||document.documentElement;
@@ -598,15 +622,45 @@ function animateMainResumeScroll(run,target){
     window.scrollTo({top:run.target,left:0,behavior:'instant'});finishMainResumeScroll(run);
   };
   run.reducedMotion.addEventListener?.('change',run.motionChange);
-  // Match the supplied reference: one browser-owned smooth motion, not
-  // competing instant scroll writes on every animation frame.
-  run.driver='native';window.scrollTo({top:target,left:0,behavior:'smooth'});
-  run.finishTimer=setTimeout(()=>finishMainResumeScroll(run),5000);
+  if(typeof window.requestAnimationFrame!=='function'){
+    run.driver='native';window.scrollTo({top:target,left:0,behavior:'smooth'});
+    run.finishTimer=setTimeout(()=>finishMainResumeScroll(run),5000);return;
+  }
+  // Native smooth scrolling has no duration setting. Keep the ZIP's single
+  // departure, but let one frame clock own the complete, slightly slower trip.
+  run.driver='timed';run.travelDuration=Math.min(1120,900+Math.sqrt(Math.abs(distance))*4);
+  const room=distance>0?(Number.isFinite(max)?max-target:Infinity):target;
+  run.overshoot=Math.min(3,Math.abs(distance)*.01,Math.max(0,room-.05));
+  run.arrival=run.overshoot>.05?mainResumeArrivalCurve(run.overshoot/Math.abs(distance)):null;
+  run.duration=run.travelDuration*(run.arrival?run.arrival.join+run.arrival.span:1);
+  let startedAt=null;
+  const step=timestamp=>{
+    if(mainResumeScrollRun!==run||run.phase!=='moving')return;
+    run.frame=null;if(startedAt===null)startedAt=timestamp;
+    // Real elapsed time: a delayed frame must not stretch the animation clock.
+    const elapsed=Math.max(0,timestamp-startedAt);
+    const progress=elapsed/run.travelDuration,curve=run.arrival;
+    let eased=(1-Math.cos(Math.PI*Math.min(1,progress)))/2;
+    if(curve&&progress>=curve.join){
+      const u=Math.min(1,(progress-curve.join)/curve.span);
+      eased=curve.position+u*(curve.velocity+u*(curve.acceleration/2+u*(curve.c3+u*(curve.c4+u*curve.c5))));
+    }
+    const complete=elapsed>=run.duration;
+    window.scrollTo({top:complete?target:start+distance*eased,left:0,behavior:'instant'});
+    if(complete){finishMainResumeScroll(run);return;}
+    run.frame=window.requestAnimationFrame(step);
+  };
+  run.frame=window.requestAnimationFrame(step);
 }
 function settleMainResumeScroll(){
-  const run=mainResumeScrollRun;if(run?.phase!=='moving'||run.driver!=='native')return;
-  clearTimeout(run.finishTimer);
-  run.finishTimer=setTimeout(()=>finishMainResumeScroll(run),180);
+  const run=mainResumeScrollRun;if(!run)return;
+  if(run.phase==='waiting'||run.phase==='preparing'){
+    // A scrollbar/accessibility scroll may arrive without wheel or touch input.
+    if(Math.abs(window.scrollY||0)>1)cancelMainResumeScroll();
+    return;
+  }
+  if(run.phase!=='moving'||run.driver!=='native')return;
+  clearTimeout(run.finishTimer);run.finishTimer=setTimeout(()=>finishMainResumeScroll(run),180);
 }
 function resizeMainResumeScroll(){
   const run=mainResumeScrollRun;if(!run)return;
@@ -614,36 +668,55 @@ function resizeMainResumeScroll(){
   // layout-width/orientation change invalidates this fixed destination.
   if(Math.abs(window.innerWidth-run.viewportWidth)>1)cancelMainResumeScroll();
 }
+function mainResumeProgram(topic){
+  // An opened card is eligible under the existing sequential study gate.
+  // This includes completed/review cards and the next available start card.
+  return M.currentProgram(topic)||[...topic.programs].reverse().find(program=>M.canStudy(topic,program))||null;
+}
 function mainResumeGeometry(program){
-  const card=$('#programs [data-action="program"][data-id="'+program.id+'"]');
-  if(!card)return null;const rect=card.getBoundingClientRect();if(rect.height<=0)return null;
-  const height=window.visualViewport?.height||window.innerHeight;
-  const header=document.body.classList.contains('has-long-learning-list')?Math.min(height-80,$('.ai').getBoundingClientRect().height):0;
-  return {card,rect,height,header,center:(height+header)/2,documentCenter:rect.top+(window.scrollY||0)+rect.height/2};
+  const selector=program.progress>=100?'#programs > .program-card[data-id="'+program.id+'"]':'#programs [data-action="program"][data-id="'+program.id+'"]';
+  const card=$(selector);if(!card)return null;const rect=card.getBoundingClientRect();if(rect.height<=0)return null;
+  const height=window.visualViewport?.height||window.innerHeight,ai=$('.ai'),style=window.getComputedStyle?.(ai);
+  const pinned=style?['sticky','fixed'].includes(style.position):document.body.classList.contains('has-long-learning-list');
+  const header=pinned?Math.min(height,Math.max(0,parseFloat(style?.top)||0)+ai.getBoundingClientRect().height):0;
+  return {card,rect,height,header,center:header+(height-header)/2,documentCenter:rect.top+(window.scrollY||0)+rect.height/2};
 }
 function setMainResumeSpace(geometry){
-  const value=Math.ceil(Math.max(100,(geometry.height-geometry.header-geometry.rect.height)/2+24))+'px';
+  const main=$('main'),scroller=document.scrollingElement||document.documentElement,computed=window.getComputedStyle?.(main);
+  const bounceRoom=matchMedia('(prefers-reduced-motion: reduce)').matches?0:MAIN_RESUME_BOUNCE_ROOM;
+  const documentHeight=Number(scroller?.scrollHeight),layoutHeight=Number(scroller?.clientHeight)||window.innerHeight;
+  let value;
+  if(computed&&Number.isFinite(documentHeight)&&documentHeight>0){
+    const base=Math.max(0,(parseFloat(computed.paddingBottom)||0)-mainResumeExtra);
+    const naturalHeight=documentHeight-mainResumeExtra,target=Math.max(0,geometry.documentCenter-geometry.center);
+    value=Math.ceil(base+Math.max(0,target+layoutHeight+bounceRoom-naturalHeight));mainResumeExtra=value-base;
+  }else{
+    // Non-layout environments can still use the measured viewport/card ratio.
+    value=Math.ceil(Math.max(0,(geometry.height-geometry.header-geometry.rect.height)/2)+bounceRoom);mainResumeExtra=0;
+  }
   document.body.classList.add('has-resume-scroll-space');
-  const style=$('main').style;if(style.setProperty)style.setProperty('--resume-scroll-space',value);else style['--resume-scroll-space']=value;
+  const style=main.style;if(style.setProperty)style.setProperty('--resume-scroll-space',value+'px');else style['--resume-scroll-space']=value+'px';
 }
 function syncMainResumeScroll(){
-  const topic=current(),program=M.currentProgram(topic),topicKey=state.grade+':'+state.index,spaceKey=program?topicKey+':'+program.id:null;
-  if(spaceKey!==mainResumeSpaceKey){document.body.classList.remove('has-resume-scroll-space');mainResumeSpaceKey=spaceKey;}
+  const topic=current(),program=mainResumeProgram(topic),topicKey=state.grade+':'+state.index,spaceKey=program?topicKey+':'+program.id:null;
+  const opened=topic.programs.filter(item=>M.canStudy(topic,item)).map(item=>item.id).join(','),requestKey=topicKey+':'+(program?.id??'none')+':'+opened;
+  if(spaceKey!==mainResumeSpaceKey){document.body.classList.remove('has-resume-scroll-space');mainResumeSpaceKey=spaceKey;mainResumeExtra=0;}
   const visible=!mainResumeBatch&&!guidanceClosing&&mainResumeOverviewVisible();
   if(!visible){cancelMainResumeScroll();mainResumeVisible=false;return;}
-  const entered=!mainResumeVisible||mainResumeTopic!==topicKey;
+  const entered=!mainResumeVisible||mainResumeTopic!==topicKey||mainResumeRequestKey!==requestKey;
   mainResumeVisible=true;mainResumeTopic=topicKey;
   if(mainResumeScrollRun&&(mainResumeScrollRun.topic!==topic||mainResumeScrollRun.programId!==program?.id))cancelMainResumeScroll();
-  if(!entered||!program)return;
+  if(!entered)return;mainResumeRequestKey=requestKey;
+  if(!program)return;
   cancelMainResumeScroll();const geometry=mainResumeGeometry(program);
-  if(!geometry||geometry.documentCenter<=geometry.center+32)return;
+  if(!geometry)return;
   setMainResumeSpace(geometry);window.scrollTo({top:0,left:0,behavior:'instant'});
   const run=mainResumeScrollRun={topic,programId:program.id,phase:'waiting',timer:null,finishTimer:null,driver:null,viewportWidth:window.innerWidth};
   run.timer=setTimeout(()=>{
     if(mainResumeScrollRun!==run||run.phase!=='waiting')return;run.timer=null;run.phase='preparing';
     const depart=()=>{
       if(mainResumeScrollRun!==run||run.phase!=='preparing')return;run.frame=null;
-      if(!mainResumeOverviewVisible()||!mainGuidanceVisible()||current()!==run.topic||M.currentProgram(current())?.id!==run.programId){cancelMainResumeScroll();return;}
+      if(!mainResumeOverviewVisible()||!mainGuidanceVisible()||current()!==run.topic||mainResumeProgram(current())?.id!==run.programId){cancelMainResumeScroll();return;}
       const currentGeometry=mainResumeGeometry(program);if(!currentGeometry){cancelMainResumeScroll();return;}
       setMainResumeSpace(currentGeometry);
       animateMainResumeScroll(run,Math.max(0,currentGeometry.documentCenter-currentGeometry.center));
@@ -714,7 +787,7 @@ function diagnosisWelcomeTipsHTML(expanded=false){
 const WELCOME_GUIDE_HOLD=4800,WELCOME_GUIDE_FADE=240;
 let diagnosisWelcomeFirstTopic=null,diagnosisSheetSignature=null,welcomeGuideRun=null;
 // A visual study of diagnosis, independent of the learner's score and saved progress.
-const DIAGNOSIS_ART_KIND='brain';
+const DIAGNOSIS_ART_KIND='puzzle';
 const DIAGNOSIS_ART_CONFIG={lens:{parts:1,height:134},puzzle:{parts:4,height:112},brain:{parts:1,height:154}};
 let diagnosisArtPreview=null;
 function cancelDiagnosisArtPreview(){
@@ -1251,9 +1324,11 @@ let lastPanel='groups',groupPanelPhase='closed',panelMotionTimer=null,panelMotio
 const railScrollBindings=new WeakSet();let railScrollObserver=null;
 let groupRevealTimer=null,groupRevealGeneration=0,groupPanelMarkup='',railPositionKey=null;
 function railCurrentTopicIndex(){
-  if(browseGrade===state.grade)return state.index;
-  const active=(state.grades[browseGrade]||[]).findIndex(topic=>M.status(topic,state.policy)==='active');
-  return active<0?0:active;
+  const topics=state.grades[browseGrade]||[];
+  const inProgress=topic=>!!topic&&topic.diagnosis!=='idle'&&(topic.diagnosis!=='done'||topic.programs.some(program=>program.status!=='passed'));
+  if(browseGrade===state.grade&&inProgress(topics[state.index]))return state.index;
+  const active=topics.findIndex(inProgress);
+  return active>=0?active:browseGrade===state.grade?state.index:0;
 }
 function alignRailToCurrent(force=false){
   if(panel!=='groups')return;

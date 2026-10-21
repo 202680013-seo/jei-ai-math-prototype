@@ -45,7 +45,7 @@ test('the real replay button prepares one final fixture, waits once and starts o
     h.node(selector).getBoundingClientRect=()=>({top:1330-h.context.scrollY,height:232});
     h.node('.ai').getBoundingClientRect=()=>({height:180});
     const beforeDeparture=h.data('current().programs');frame();
-    const timed=version==='versions/v66';
+    const timed=version==='versions/v66'||version==='working';
     assert.equal(run.driver,timed?'timed':'native');assert.equal(run.target,956);
     if(timed){
       assert(run.frame);assert.equal(h.scrollCalls.length,before+1,'frame driver starts after the two layout frames');
@@ -160,12 +160,21 @@ for(const version of ['working','versions/v59','versions/v61']){
     assert.deepEqual(h.scrollCalls[1],{top:766,left:0,behavior:'smooth'});
     const rect=h.node(selector).getBoundingClientRect();assert.equal(rect.top+rect.height/2,(800+160)/2);
     assert(h.node('body').classList.contains('has-resume-scroll-space'));
-    assert.equal(h.node('main').style['--resume-scroll-space'],'228px');
+    assert.equal(h.node('main').style['--resume-scroll-space'],version==='working'?'208px':'228px');
     assert.deepEqual(h.data('current().programs'),before);
   });
 
-  test(version+' leaves visible active cards, unstarted learning, and completed learning still',()=>{
+  test(version+(version==='working'?' retains V6.2.2 entry and last-opened fallback behavior':' leaves visible active cards, unstarted learning, and completed learning still'),()=>{
     const first=setup(version,{initialScroll:0,rects:{[selector]:{top:250,height:232}}});
+    if(version==='working'){
+      assert(first.evaluate('mainResumeScrollRun'));assert.equal(first.scrollCalls.length,1);runScroll(first);
+      assert.equal(first.evaluate('mainResumeScrollRun'),null,'a zero-distance destination finishes without movement');
+      for(const [status,id] of [['idle',12],['passed',13],['failed',13],['locked',11]]){
+        const saved=fixture(),p=saved.grades[3][0].programs[12];p.status=status;if(status==='passed'||status==='failed')M.setProgress(p,100);
+        const h=setup(version,{saved});assert.equal(h.evaluate('mainResumeScrollRun.programId'),id);assert.equal(h.scrollCalls.length,1);
+      }
+      return;
+    }
     assert.equal(first.evaluate('mainResumeScrollRun'),null);assert.equal(first.scrollCalls.length,0);
     for(const status of ['idle','passed','failed','locked']){
       const saved=fixture(),p=saved.grades[3][0].programs[12];p.status=status;if(status==='passed'||status==='failed')M.setProgress(p,100);

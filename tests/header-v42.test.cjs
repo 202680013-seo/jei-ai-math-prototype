@@ -9,9 +9,9 @@ function finishPage(h){if(h.evaluate('bubblePhase')==='thinking')h.evaluate('thi
 test('all supplied recommendation labels fit the fixed 1440 header with their real Nanum font metrics',()=>{
   const recommendation=metrics.recommendation;
   assert.equal(crypto.createHash('sha256').update(fs.readFileSync('dist/shared/fonts/NanumSquareRoundB.woff2')).digest('hex'),recommendation.fontSha256);
-  // 320px outer width: two borders, horizontal padding, two gaps, badge and 18px arrow.
-  const available=320-4-24-24-recommendation.badgeWidth-18;
-  assert(available>190);
+  // Current V6.2.2 baseline: fixed 280px outer width and compact intrinsic tracks.
+  const available=280-4-20-16-recommendation.badgeWidth-18;
+  assert(available>160);
   for(const {label,width}of recommendation.labels)assert(width<=available,label+' would be clipped');
   const h=setup();h.evaluate("setRecommendationText('리포트 확인하며 오늘의 학습 정리하기')");assert.equal(h.node('#recommend-copy').textContent,'오늘의 학습 기록 확인하기');
   h.evaluate("setRecommendationText('오늘의 목표 학습 시간 정하기')");assert.equal(h.node('#recommend-copy').textContent,'목표 학습 시간 조정하기');
@@ -22,7 +22,7 @@ test('1440 header icons have isolated styles and the rail glyph comes from the l
   const html=fs.readFileSync('dist/working/index.html','utf8'),css=fs.readFileSync('dist/working/v4.css','utf8');
   assert(!/<img[^>]+class="my-profile"/.test(html));assert(html.includes('class="shortcut-profile-art"'));
   assert(html.includes('class="shortcut-report-art"'));assert(html.includes('class="constellation-art"'));
-  assert(css.includes('grid-template-columns:minmax(0,1fr) 320px'));
+  assert(css.includes('grid-template-columns:minmax(0,1fr) var(--recommendation-width)'));
   assert(css.includes('body.has-long-learning-list .ai::before{content:none;box-shadow:none}'));
   assert(css.includes('text-overflow:clip;white-space:nowrap'));
   const manifest=JSON.parse(fs.readFileSync('dist/working/assets/figma-v4-1/manifest.json','utf8'));
