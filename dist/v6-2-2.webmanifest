@@ -1,0 +1,26 @@
+{
+  "id": "/v6-2-2.html",
+  "name": "재능스스로AI수학 · V6.2.2",
+  "short_name": "AI 수학 6.2.2",
+  "description": "V6.2.2 실력 퍼즐 · 학습 프로토타입",
+  "lang": "ko",
+  "start_url": "/v6-2-2.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/app-icons/v6-2-2-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/app-icons/v6-2-2-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

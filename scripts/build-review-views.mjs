@@ -47,6 +47,10 @@ export function buildReviewViews(root=defaultRoot){
     html=html.replace(/<html([^>]*)>/i,`<html$1 data-${family.toLowerCase()}-standalone="true">`);
     html=html.replace(/<base\b[^>]*>/i,`<base href="/versions/${version.id}/">`);
     html=html.replace(/<\/head>/i,`<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="AI 수학 ${family}"><meta name="theme-color" content="#ffffff"></head>`);
+    if(version.label==='V6.2.2'){
+      html=html.replace('name="apple-mobile-web-app-title" content="AI 수학 V6"','name="apple-mobile-web-app-title" content="AI 수학 6.2.2"');
+      html=html.replace(/<\/head>/i,'<link rel="manifest" href="/v6-2-2.webmanifest" crossorigin="use-credentials"><link rel="apple-touch-icon" sizes="180x180" href="/app-icons/v6-2-2-180.png"><link rel="icon" type="image/png" sizes="192x192" href="/app-icons/v6-2-2-192.png"><meta name="mobile-web-app-capable" content="yes"><meta name="application-name" content="AI 수학 6.2.2"></head>');
+    }
     writeFileSync(join(dist,file),html);
   }
   for(const name of ['index.html','preview.html']){const file=join(dist,name);let html=applyTypography(readFileSync(file,'utf8'));for(const asset of ['workspace.css','workspace.js','theme-model.js','review-model.js','preview.js'])html=html.replace(new RegExp(`(src|href)=(["'])${asset.replaceAll('.','\\.')}[?]?[^"']*\\2`,'g'),`$1="${asset}?r=${hash(readFileSync(join(dist,asset)))}"`);writeFileSync(file,html);}
