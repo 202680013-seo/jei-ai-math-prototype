@@ -6,10 +6,10 @@ const measure=s=>Array.from(s).reduce((sum,char)=>sum+(metrics.mentor.glyphWidth
 function setup(reducedMotion=false){const h=harness(undefined,{reducedMotion});h.node('.ai-top').getBoundingClientRect=()=>({width:616,height:48});h.node('#mentor-measure').getBoundingClientRect=function(){return {width:measure(this.textContent),height:22};};return h;}
 function finishPage(h){if(h.evaluate('bubblePhase')==='thinking')h.evaluate('thinkTimer')?.fn();for(let i=0;i<500&&h.evaluate('aiState')==='반응 중';i++)h.evaluate('animTimer')?.fn();assert.equal(h.evaluate('bubblePhase'),'holding');}
 
-test('all supplied recommendation labels fit the fixed 1440 header with their real Nanum font metrics',()=>{
+test('all supplied recommendation labels fit the capped content-sized 1440 header with their real Nanum font metrics',()=>{
   const recommendation=metrics.recommendation;
   assert.equal(crypto.createHash('sha256').update(fs.readFileSync('dist/shared/fonts/NanumSquareRoundB.woff2')).digest('hex'),recommendation.fontSha256);
-  // Current V6.2.2 baseline: fixed 280px outer width and compact intrinsic tracks.
+  // V6.2.2: content-sized box has a 280px cap for the longest activity.
   const available=280-4-20-16-recommendation.badgeWidth-18;
   assert(available>160);
   for(const {label,width}of recommendation.labels)assert(width<=available,label+' would be clipped');
@@ -22,7 +22,7 @@ test('1440 header icons have isolated styles and the rail glyph comes from the l
   const html=fs.readFileSync('dist/working/index.html','utf8'),css=fs.readFileSync('dist/working/v4.css','utf8');
   assert(!/<img[^>]+class="my-profile"/.test(html));assert(html.includes('class="shortcut-profile-art"'));
   assert(html.includes('class="shortcut-report-art"'));assert(html.includes('class="constellation-art"'));
-  assert(css.includes('grid-template-columns:minmax(0,1fr) var(--recommendation-width)'));
+  assert(css.includes('grid-template-columns:minmax(0,1fr) max-content'));
   assert(css.includes('body.has-long-learning-list .ai::before{content:none;box-shadow:none}'));
   assert(css.includes('text-overflow:clip;white-space:nowrap'));
   const manifest=JSON.parse(fs.readFileSync('dist/working/assets/figma-v4-1/manifest.json','utf8'));

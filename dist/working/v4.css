@@ -12,7 +12,7 @@ body.learning-navigation-open .learning-workspace main{width:min(calc(100% - 48p
 .ai::after{content:'';position:absolute;left:0;right:0;bottom:36px;height:1px;background:#eef2f4;pointer-events:none}
 body.has-long-learning-list .ai{top:0}
 body.has-long-learning-list .ai::before{content:none;box-shadow:none}
-.mentor-cluster{grid-column:1;grid-row:1;display:grid;grid-template-columns:minmax(0,1fr) var(--recommendation-width);column-gap:32px;row-gap:0;align-items:center;min-width:0;padding:0;border:0;background:transparent}
+.mentor-cluster{grid-column:1;grid-row:1;display:grid;grid-template-columns:minmax(0,1fr) max-content;column-gap:32px;row-gap:0;align-items:center;min-width:0;padding:0;border:0;background:transparent}
 .mentor-cluster>.ai-top{grid-column:1;grid-row:1;min-width:0;height:48px;min-height:48px;gap:12px;padding:0;border:0;background:transparent;box-shadow:none}
 .ai-top .symbol{width:44px;min-width:44px;height:44px}
 .mentor-piece,.mentor-core{background:var(--theme-accent)}
@@ -128,7 +128,7 @@ body.has-long-learning-list .ai::before{content:none;box-shadow:none}
 .groups-trigger:focus-visible{outline:2px solid #84b5ff;outline-offset:2px;border-radius:0 72px 72px 0}
 .settings-trigger{color:#b7bec3}
 @media(max-width:1100px){.mentor-cluster{column-gap:12px}}
-@media(max-width:980px){.grid,body.learning-navigation-open #programs.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.mentor-cluster{grid-template-columns:minmax(0,1fr) var(--recommendation-width)}}
+@media(max-width:980px){.grid,body.learning-navigation-open #programs.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.mentor-cluster{grid-template-columns:minmax(0,1fr) max-content}}
 @media(max-width:760px){.grid,body.learning-navigation-open #programs.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){
   .ai{grid-template-columns:minmax(0,1fr) 104px;row-gap:14px;padding:24px 0 49px}
@@ -354,22 +354,23 @@ body.has-personalized-learning .heading>.learning-context{flex:0 0 auto;width:au
 /* Leave enough space to center even the final row of unfinished work. */
 body.has-resume-scroll-space .learning-workspace main,body.has-resume-scroll-space.learning-navigation-open .learning-workspace main{padding-bottom:max(100px,var(--resume-scroll-space,100px))}
 
-/* V6.2.2: longest supplied activity is 14 characters including spaces.
-   NanumSquareRound Bold: 161.47px at 15px / 129.14px at 12px.
-   Fixed outer width includes label, text, close arrow gaps, padding and borders.
-   Keep the same width during loading; let the arrow follow the actual copy. */
-body .ai .mentor-cluster>.recommend{width:var(--recommendation-width);min-width:var(--recommendation-width);max-width:var(--recommendation-width);justify-self:start}
-body .ai .mentor-cluster .recommend-content{flex:0 0 auto;width:max-content}
+/* V6.2.2: fit the actual activity, capped at the longest supplied copy.
+   Keep the invisible ready copy and arrow track during loading so width stays
+   stable; reserve only the loader's required clearance for shorter labels. */
+body .ai .mentor-cluster>.recommend{width:max-content;min-width:0;max-width:var(--recommendation-width);justify-self:end}
+body .ai .mentor-cluster .recommend-content{flex:0 0 auto;width:max-content;min-width:129px}
 body .ai .mentor-cluster #recommend-copy{width:max-content;white-space:nowrap}
-/* Intrinsic grid tracks leave the label/copy/arrow next to each other even
-   when a shorter activity leaves spare room in the fixed outer container. */
 body .ai .mentor-cluster .recommend button{display:grid;grid-template-columns:max-content max-content var(--recommendation-arrow-size);column-gap:var(--recommendation-copy-gap);justify-content:start}
 body .ai .mentor-cluster .recommend .recommend-arrow{position:static;inset:auto;justify-self:start;margin:0;width:var(--recommendation-arrow-size);height:var(--recommendation-arrow-size)}
-@media(max-width:650px){:root{--recommendation-width:228px;--recommendation-copy-gap:6px;--recommendation-arrow-size:14px}}
+@media(max-width:650px){
+  :root{--recommendation-width:228px;--recommendation-copy-gap:6px;--recommendation-arrow-size:14px}
+  body .ai .mentor-cluster .recommend-content{min-width:109px}
+}
+@media(max-width:374px){body .ai .mentor-cluster>.recommend{justify-self:start}}
 @media(min-width:651px){
   @container learning-content (max-width:392px){
     .mentor-cluster>.ai-top{grid-column:1;grid-row:1}
     .top-shortcuts{grid-column:2;grid-row:1}
-    .mentor-cluster>.recommend{grid-column:1/-1;grid-row:2}
+    body .ai .mentor-cluster>.recommend{grid-column:1/-1;grid-row:2;justify-self:start}
   }
 }
