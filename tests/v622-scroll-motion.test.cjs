@@ -21,16 +21,18 @@ function setup(distance=766){
 test('V6.2.2 travels in about a second with a gentle start/end at 30, 60 and 120Hz and no layout reads',()=>{
   for(const hz of [30,60,120]){
     const {h,run,frame,pending}=setup();const before=h.data('current().programs');
-    assert.equal(run.driver,'timed');assert(run.duration>1000&&run.duration<1030);assert.equal(run.finishTimer,null);
+    assert.equal(run.driver,'timed');assert(run.travelDuration>1000&&run.travelDuration<1030);assert.equal(run.duration,run.travelDuration+180);assert.equal(run.finishTimer,null);
     const geometry=new Map();
     for(const sel of ['.ai',selector]){const node=h.node(sel);geometry.set(node,node.getBoundingClientRect);node.getBoundingClientRect=()=>{throw Error('motion must not read layout');};}
     const origin=1000,positions=[];frame(origin);
-    for(let elapsed=1000/hz;elapsed<run.duration;elapsed+=1000/hz){
+    for(let elapsed=1000/hz;elapsed<run.travelDuration;elapsed+=1000/hz){
       frame(origin+elapsed);positions.push(h.context.scrollY);
       h.emitWindow('scroll');h.emitWindow('scrollend');
       assert.equal(h.evaluate('mainResumeScrollRun'),run,'scrollend events must not end the timed driver');
     }
-    frame(origin+run.duration);
+    frame(origin+run.travelDuration);assert.equal(h.context.scrollY,766);
+    frame(origin+run.travelDuration+90);assert.equal(h.context.scrollY,763);
+    frame(origin+run.duration+1);
     assert.equal(h.context.scrollY,766);assert.equal(h.evaluate('mainResumeScrollRun'),null);assert.equal(pending.size,0);
     assert.equal(h.node('html').getAttribute('data-resume-scrolling'),null);assert.deepEqual(h.data('current().programs'),before);
     assert(positions.every((y,i)=>!i||y>=positions[i-1]));
@@ -42,16 +44,16 @@ test('V6.2.2 travels in about a second with a gentle start/end at 30, 60 and 120
 });
 
 test('V6.2.2 uses real elapsed time through a missed frame instead of stretching the clock',()=>{
-  const {h,run,frame}=setup();frame(500);frame(500+run.duration*.1);
+  const {h,run,frame}=setup();frame(500);frame(500+run.travelDuration*.1);
   assert(h.context.scrollY<30);
-  frame(500+run.duration*.5);assert(Math.abs(h.context.scrollY-383)<.001);
+  frame(500+run.travelDuration*.5);assert(Math.abs(h.context.scrollY-383)<.001);
   // A slow frame does not create another duration or an extra completion snap.
   frame(500+run.duration+50);assert.equal(h.context.scrollY,766);assert.equal(h.evaluate('mainResumeScrollRun'),null);
 });
 
 test('V6.2.2 bounds short/long trips and clamps the destination before easing',()=>{
   for(const distance of [40,4000]){
-    const {h,run,frame}=setup(distance);assert(run.duration>=900&&run.duration<=1120);
+    const {h,run,frame}=setup(distance);assert(run.travelDuration>=900&&run.travelDuration<=1120);assert.equal(run.duration,run.travelDuration+180);
     frame(0);frame(run.duration);assert.equal(h.context.scrollY,distance);assert.equal(h.evaluate('mainResumeScrollRun'),null);
   }
   const {h,frame}=setup(2000);h.evaluate('cancelMainResumeScroll();mainResumeVisible=false');
@@ -59,6 +61,26 @@ test('V6.2.2 bounds short/long trips and clamps the destination before easing',(
   const run=h.evaluate('mainResumeScrollRun');run.timer.fn();frame(0);frame(16);
   assert.equal(run.target,300);frame(32);frame(32+run.duration);
   assert.equal(h.context.scrollY,300);assert(h.scrollCalls.every(call=>call.top<=300));
+});
+
+test('V6.2.2 arrival rebounds once by at most 3px inside the scroll range, including both boundaries',()=>{
+  for(const [start,target] of [[0,300],[300,0],[0,40]]){
+    const {h,frame}=setup(300);
+    h.evaluate('cancelMainResumeScroll()');h.context.scrollY=start;
+    h.document.scrollingElement={scrollHeight:1100,clientHeight:800};
+    h.evaluate(`mainResumeScrollRun={phase:'preparing'};animateMainResumeScroll(mainResumeScrollRun,${target})`);
+    const run=h.evaluate('mainResumeScrollRun'),before=h.scrollCalls.length;
+    frame(100);frame(100+run.travelDuration);
+    assert.equal(h.context.scrollY,target,'original travel still reaches the same target at the same time');
+    const positions=[];
+    for(const t of [.1,.25,.5,.75,.9]){frame(100+run.travelDuration+run.settleDuration*t);positions.push(h.context.scrollY);}
+    assert(Math.abs(positions[2]-target)<=3);assert(Math.abs(positions[2]-target)>0);
+    assert.equal(positions[2],target+run.rebound);
+    assert(Math.abs(positions[0]-target)<Math.abs(positions[1]-target));
+    assert(Math.abs(positions[4]-target)<Math.abs(positions[3]-target));
+    frame(101+run.duration);assert.equal(h.context.scrollY,target);assert.equal(h.evaluate('mainResumeScrollRun'),null);
+    assert(h.scrollCalls.slice(before).every(call=>call.top>=0&&call.top<=300),'no clipping or extra bottom space');
+  }
 });
 
 test('V6.2.2 cancels one moving frame on input/navigation, ignores stale callbacks and preserves manual position',()=>{

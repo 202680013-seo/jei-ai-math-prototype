@@ -49,7 +49,7 @@ test('the real replay button prepares one final fixture, waits once and starts o
     assert.equal(run.driver,timed?'timed':'native');assert.equal(run.target,956);
     if(timed){
       assert(run.frame);assert.equal(h.scrollCalls.length,before+1,'frame driver starts after the two layout frames');
-      frame(100);frame(100+run.duration/2);
+      frame(100);frame(100+run.travelDuration/2);
       assert(Math.abs(h.context.scrollY-478)<.01);assert.equal(run.finishTimer,null,'no native completion timer competes');
     }else{
       assert.equal(run.frame,null);

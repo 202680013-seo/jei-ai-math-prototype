@@ -604,16 +604,25 @@ function animateMainResumeScroll(run,target){
   }
   // Native smooth scrolling has no duration setting. Keep the ZIP's single
   // departure, but let one frame clock own the complete, slightly slower trip.
-  run.driver='timed';run.duration=Math.min(1120,900+Math.sqrt(Math.abs(distance))*4);
+  run.driver='timed';run.travelDuration=Math.min(1120,900+Math.sqrt(Math.abs(distance))*4);
+  run.settleDuration=180;run.duration=run.travelDuration+run.settleDuration;
+  // One tiny inward rebound stays reachable even when the target is the last row.
+  run.rebound=-Math.sign(distance)*Math.min(3,Math.abs(distance)*.01);
   let startedAt=null;
   const step=timestamp=>{
     if(mainResumeScrollRun!==run||run.phase!=='moving')return;
     run.frame=null;if(startedAt===null)startedAt=timestamp;
     // Real elapsed time: a delayed frame must not stretch the animation clock.
-    const progress=Math.min(1,Math.max(0,(timestamp-startedAt)/run.duration));
-    const eased=(1-Math.cos(Math.PI*progress))/2;
-    window.scrollTo({top:start+distance*eased,left:0,behavior:'instant'});
-    if(progress===1){finishMainResumeScroll(run);return;}
+    const elapsed=Math.max(0,timestamp-startedAt);
+    const progress=Math.min(1,elapsed/run.travelDuration);
+    let top=start+distance*(1-Math.cos(Math.PI*progress))/2;
+    if(elapsed>=run.travelDuration){
+      const settle=Math.min(1,(elapsed-run.travelDuration)/run.settleDuration);
+      // Zero speed at both ends: a single 0–3px–0 pulse, never a repeated spring.
+      top=target+(settle===1?0:run.rebound*Math.sin(Math.PI*settle)**2);
+    }
+    window.scrollTo({top,left:0,behavior:'instant'});
+    if(elapsed>=run.duration){finishMainResumeScroll(run);return;}
     run.frame=window.requestAnimationFrame(step);
   };
   run.frame=window.requestAnimationFrame(step);
