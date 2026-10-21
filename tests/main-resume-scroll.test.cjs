@@ -25,10 +25,10 @@ function layoutFrames(h){
   nativeMotion(h);
   h.context.requestAnimationFrame=fn=>({fn,cancelled:false});
   h.context.cancelAnimationFrame=frame=>{frame.cancelled=true;};
-  return ()=>{const run=h.evaluate('mainResumeScrollRun');assert(run?.frame);const frame=run.frame;frame.fn();return frame;};
+  return timestamp=>{const run=h.evaluate('mainResumeScrollRun');assert(run?.frame);const frame=run.frame;frame.fn(timestamp);return frame;};
 }
 
-test('the real replay button prepares one final fixture, waits once and issues one smooth request after layout settles',()=>{
+test('the real replay button prepares one final fixture, waits once and starts one motion after layout settles',()=>{
   for(const version of ['working','versions/v59',...Array.from({length:7},(_,i)=>'versions/v'+(61+i))]){
     const h=setup(version);h.click('test');const frame=layoutFrames(h),before=h.scrollCalls.length;
     h.evaluate('let replayRenderCount=0;const replayOriginalRender=render;render=function(){replayRenderCount++;return replayOriginalRender();};');
@@ -45,14 +45,26 @@ test('the real replay button prepares one final fixture, waits once and issues o
     h.node(selector).getBoundingClientRect=()=>({top:1330-h.context.scrollY,height:232});
     h.node('.ai').getBoundingClientRect=()=>({height:180});
     const beforeDeparture=h.data('current().programs');frame();
-    assert.equal(run.driver,'native');assert.equal(run.frame,null);
-    assert.deepEqual(h.scrollCalls.slice(before),[{top:0,left:0,behavior:'instant'},{top:956,left:0,behavior:'smooth'}]);
+    const timed=version==='versions/v66';
+    assert.equal(run.driver,timed?'timed':'native');assert.equal(run.target,956);
+    if(timed){
+      assert(run.frame);assert.equal(h.scrollCalls.length,before+1,'frame driver starts after the two layout frames');
+      frame(100);frame(100+run.duration/2);
+      assert(Math.abs(h.context.scrollY-478)<.01);assert.equal(run.finishTimer,null,'no native completion timer competes');
+    }else{
+      assert.equal(run.frame,null);
+      assert.deepEqual(h.scrollCalls.slice(before),[{top:0,left:0,behavior:'instant'},{top:956,left:0,behavior:'smooth'}]);
+    }
+    const motionCalls=h.scrollCalls.length;
     h.evaluate('render();renderPanel();syncGuidanceReminders()');queued.fn();
-    assert.equal(h.scrollCalls.length,before+2,'ordinary renders and an old departure callback never repeat the journey');
+    assert.equal(h.scrollCalls.length,motionCalls,'ordinary renders and an old departure callback never repeat the journey');
     assert.deepEqual(h.data('current().programs'),beforeDeparture);
     assert.equal((h.events.get('click')||[]).filter(fn=>fn.name==='syncMainResumeScroll').length,0,'use existing guidance observer');
-    h.context.scrollY=956;h.emitWindow('scrollend');assert.equal(h.evaluate('mainResumeScrollRun'),null);
-    assert.equal(h.scrollCalls.length,before+2,'completion never snaps');
+    if(timed){frame(101+run.duration);assert.equal(h.context.scrollY,956);}
+    else{h.context.scrollY=956;h.emitWindow('scrollend');}
+    assert.equal(h.evaluate('mainResumeScrollRun'),null);
+    const finishedCalls=h.scrollCalls.length;h.emitWindow('scrollend');
+    assert.equal(h.scrollCalls.length,finishedCalls,'completion never adds a snap');
   }
 });
 

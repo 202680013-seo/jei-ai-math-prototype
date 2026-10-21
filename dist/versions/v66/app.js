@@ -598,10 +598,25 @@ function animateMainResumeScroll(run,target){
     window.scrollTo({top:run.target,left:0,behavior:'instant'});finishMainResumeScroll(run);
   };
   run.reducedMotion.addEventListener?.('change',run.motionChange);
-  // Match the supplied reference: one browser-owned smooth motion, not
-  // competing instant scroll writes on every animation frame.
-  run.driver='native';window.scrollTo({top:target,left:0,behavior:'smooth'});
-  run.finishTimer=setTimeout(()=>finishMainResumeScroll(run),5000);
+  if(typeof window.requestAnimationFrame!=='function'){
+    run.driver='native';window.scrollTo({top:target,left:0,behavior:'smooth'});
+    run.finishTimer=setTimeout(()=>finishMainResumeScroll(run),5000);return;
+  }
+  // Native smooth scrolling has no duration setting. Keep the ZIP's single
+  // departure, but let one frame clock own the complete, slightly slower trip.
+  run.driver='timed';run.duration=Math.min(1120,900+Math.sqrt(Math.abs(distance))*4);
+  let startedAt=null;
+  const step=timestamp=>{
+    if(mainResumeScrollRun!==run||run.phase!=='moving')return;
+    run.frame=null;if(startedAt===null)startedAt=timestamp;
+    // Real elapsed time: a delayed frame must not stretch the animation clock.
+    const progress=Math.min(1,Math.max(0,(timestamp-startedAt)/run.duration));
+    const eased=(1-Math.cos(Math.PI*progress))/2;
+    window.scrollTo({top:start+distance*eased,left:0,behavior:'instant'});
+    if(progress===1){finishMainResumeScroll(run);return;}
+    run.frame=window.requestAnimationFrame(step);
+  };
+  run.frame=window.requestAnimationFrame(step);
 }
 function settleMainResumeScroll(){
   const run=mainResumeScrollRun;if(!run)return;
