@@ -21,61 +21,67 @@ function nativeMotion(h){
   return top=>{h.context.scrollY=top;h.emitWindow('scroll');};
 }
 
-function timedMotion(h){
-  h.document.documentElement=h.node('html');
+function layoutFrames(h){
+  nativeMotion(h);
   h.context.requestAnimationFrame=fn=>({fn,cancelled:false});
   h.context.cancelAnimationFrame=frame=>{frame.cancelled=true;};
-  let now=0;
-  const tick=time=>{const run=h.evaluate('mainResumeScrollRun');assert(run?.frame);run.frame.fn(time);now=time;};
-  return {tick,advance(time,step=16){while(now<time)tick(Math.min(time,now+step));}};
+  return ()=>{const run=h.evaluate('mainResumeScrollRun');assert(run?.frame);const frame=run.frame;frame.fn();return frame;};
 }
 
-test('controlled return keeps a short continuous ease with gentle departure and arrival, no layout reads or scrollend interruption',()=>{
+test('the real replay button prepares one final fixture, waits once and issues one smooth request after layout settles',()=>{
   for(const version of ['working','versions/v59',...Array.from({length:7},(_,i)=>'versions/v'+(61+i))]){
-    const h=setup(version),clock=timedMotion(h),before=h.data('current().programs'),run=runScroll(h);
-    assert.equal(run.driver,'timed');assert(run.duration>=740&&run.duration<=880);assert.equal(run.target,766);
-    let reads=0;for(const sel of ['.ai',selector]){const node=h.node(sel),get=node.getBoundingClientRect.bind(node);node.getBoundingClientRect=()=>{reads++;return get();};}
-    clock.tick(0);clock.advance(run.duration*.1);const departure=h.context.scrollY;
-    assert(departure>0&&departure<766*.03,'soft departure instead of an immediate rush');
-    h.emitWindow('scroll');h.emitWindow('scrollend');assert.equal(h.evaluate('mainResumeScrollRun'),run);assert.equal(run.finishTimer,null);
-    clock.advance(run.duration/2);assert(Math.abs(h.context.scrollY-383)<.001);
-    assert.equal(reads,0);h.evaluate('render();render();syncGuidanceReminders()');assert.equal(h.evaluate('mainResumeScrollRun'),run);reads=0;
-    clock.advance(run.duration*.9);const arrival=h.context.scrollY;
-    assert(766-arrival<766*.03,'last tenth gently covers the remaining small distance');
-    const count=h.scrollCalls.length;clock.advance(run.duration);assert.equal(h.context.scrollY,766);
-    assert(h.scrollCalls.length>count);assert.equal(h.scrollCalls.filter(c=>c.behavior==='smooth').length,0);
-    assert.equal(h.evaluate('mainResumeScrollRun'),null);assert.equal(h.node('html').getAttribute('data-resume-scrolling'),null);
-    assert.equal(reads,0);assert.deepEqual(h.data('current().programs'),before);
+    const h=setup(version);h.click('test');const frame=layoutFrames(h),before=h.scrollCalls.length;
+    h.evaluate('let replayRenderCount=0;const replayOriginalRender=render;render=function(){replayRenderCount++;return replayOriginalRender();};');
+    const listeners=(h.events.get('click')||[]).length;h.click('replay-resume-scroll');releaseDim(h);
+    assert.equal(h.evaluate('replayRenderCount'),1,'render only the final fixture');
+    assert.equal(h.evaluate('current().programs.length'),20);assert.equal(h.evaluate('M.currentProgram(current()).id'),12);
+    assert.deepEqual(h.scrollCalls.slice(before),[{top:0,left:0,behavior:'instant'}],'no intermediate preset scroll');
+    const run=h.evaluate('mainResumeScrollRun');assert(run);assert.equal(run.programId,12);
+    assert.equal(h.timers.filter(t=>t.ms===600&&!t.cancelled).length,1,'only one live departure timer');
+    const queued=run.timer;runScroll(h);assert.equal(run.timer,null);assert.equal(run.phase,'preparing');
+    h.evaluate('render();render();syncGuidanceReminders()');assert.equal(h.evaluate('mainResumeScrollRun'),run);
+    assert.equal(h.scrollCalls.length,before+1);assert.equal((h.events.get('click')||[]).length,listeners);
+    frame();assert.equal(h.scrollCalls.length,before+1,'first layout frame does not scroll');
+    h.node(selector).getBoundingClientRect=()=>({top:1330-h.context.scrollY,height:232});
+    h.node('.ai').getBoundingClientRect=()=>({height:180});
+    const beforeDeparture=h.data('current().programs');frame();
+    assert.equal(run.driver,'native');assert.equal(run.frame,null);
+    assert.deepEqual(h.scrollCalls.slice(before),[{top:0,left:0,behavior:'instant'},{top:956,left:0,behavior:'smooth'}]);
+    h.evaluate('render();renderPanel();syncGuidanceReminders()');queued.fn();
+    assert.equal(h.scrollCalls.length,before+2,'ordinary renders and an old departure callback never repeat the journey');
+    assert.deepEqual(h.data('current().programs'),beforeDeparture);
+    assert.equal((h.events.get('click')||[]).filter(fn=>fn.name==='syncMainResumeScroll').length,0,'use existing guidance observer');
+    h.context.scrollY=956;h.emitWindow('scrollend');assert.equal(h.evaluate('mainResumeScrollRun'),null);
+    assert.equal(h.scrollCalls.length,before+2,'completion never snaps');
   }
 });
 
-test('slow or delayed frames never stretch the real elapsed duration',()=>{
-  for(const step of [1000/10,1000/15,1000/30,1000/60,1000/120]){
-    const h=setup('working'),clock=timedMotion(h),run=runScroll(h);clock.tick(0);clock.advance(run.duration/2,step);
-    assert(Math.abs(h.context.scrollY-383)<.001);clock.advance(run.duration,step);
-    assert.equal(h.context.scrollY,766);assert.equal(h.evaluate('mainResumeScrollRun'),null);
-  }
-  const h=setup('working'),clock=timedMotion(h),run=runScroll(h);clock.tick(0);clock.tick(600);
-  assert.equal(run.elapsed,600);clock.tick(run.duration);
-  assert.equal(h.context.scrollY,766);assert.equal(h.evaluate('mainResumeScrollRun'),null,'a busy device still arrives on time');
-});
-
-test('timed motion survives address-bar resize and stops queued frames on input or reduced motion',()=>{
-  for(const type of ['wheel','touchstart','pointerdown','keydown','resize','orientationchange','hidden','reduced']){
-    const h=setup('working'),clock=timedMotion(h);let preferenceChange;
-    h.media.addEventListener=(type,fn)=>{preferenceChange=fn;};h.media.removeEventListener=()=>{};
-    const run=runScroll(h);clock.tick(0);clock.advance(320);
-    h.context.innerHeight=750;h.emitWindow('resize');assert.equal(h.evaluate('mainResumeScrollRun'),run);
-    const stale=run.frame;
+test('a pending layout frame is cancelled on input, navigation or hiding without leaking a native scroll',()=>{
+  for(const stage of [1,2])for(const type of ['wheel','touchstart','pointerdown','keydown','resize','hidden','help']){
+    const h=setup('working'),frame=layoutFrames(h),run=runScroll(h);if(stage===2)frame();
+    const pending=run.frame,before=h.scrollCalls.length;
     if(type==='resize'){h.context.innerWidth=800;h.emitWindow('resize');}
-    else if(type==='orientationchange')h.emitWindow(type);
     else if(type==='hidden'){h.document.visibilityState='hidden';h.emitDocument('visibilitychange');}
-    else if(type==='reduced'){h.media.matches=true;preferenceChange();assert.equal(h.context.scrollY,766);}
+    else if(type==='help')h.click('help');
     else h.emitDocument(type,{key:'ArrowDown'});
-    assert.equal(h.evaluate('mainResumeScrollRun'),null);assert.equal(stale.cancelled,true);
-    const count=h.scrollCalls.length;stale.fn(10000);assert.equal(h.scrollCalls.length,count);
-    assert.equal(h.node('html').getAttribute('data-resume-scrolling'),null);
+    assert.equal(h.evaluate('mainResumeScrollRun'),null);assert.equal(pending.cancelled,true);
+    pending.fn();assert.equal(h.scrollCalls.length,before);assert.equal(h.evaluate('mainResumeScrollRun'),null);
   }
+});
+
+test('height-only resize preserves the queued layout, while reduced motion uses the final measured target',()=>{
+  const h=setup('working'),frame=layoutFrames(h),run=runScroll(h);
+  h.context.innerHeight=750;h.emitWindow('resize');assert.equal(h.evaluate('mainResumeScrollRun'),run);
+  frame();h.media.matches=true;frame();assert.equal(h.scrollCalls.at(-1).behavior,'instant');
+  assert.equal(h.scrollCalls.at(-1).top,791);assert.equal(h.evaluate('mainResumeScrollRun'),null);
+});
+
+test('closing guidance defers the entry instead of consuming or repeating its request',()=>{
+  const h=setup('working');h.click('help');h.click('close-help');
+  assert.equal(h.evaluate('guidanceClosing'),true);assert.equal(h.evaluate('mainResumeScrollRun'),null);
+  const before=h.scrollCalls.length;h.evaluate('render();render();syncGuidanceReminders()');assert.equal(h.scrollCalls.length,before);
+  releaseDim(h);const run=h.evaluate('mainResumeScrollRun');assert(run);assert.equal(run.timer.ms,600);
+  h.evaluate('render();syncGuidanceReminders()');assert.equal(h.evaluate('mainResumeScrollRun'),run);assert.equal(h.scrollCalls.length,before+1);
 });
 
 test('one native motion request reaches the actual center without frame writes, stale scrollend or a final snap',()=>{

@@ -562,7 +562,7 @@ function measureLearningHeader(){
 // On a genuine overview entry, show its top before returning to unfinished work.
 // Stable guidance renders never restart this run, and direct input always wins.
 const MAIN_RESUME_DELAY=600;
-let mainResumeScrollRun=null,mainResumeVisible=false,mainResumeTopic=null,mainResumeSpaceKey=null;
+let mainResumeScrollRun=null,mainResumeVisible=false,mainResumeTopic=null,mainResumeSpaceKey=null,mainResumeBatch=false;
 if(window.history&&'scrollRestoration' in window.history)window.history.scrollRestoration='manual';
 function mainResumeOverviewVisible(){
   return document.visibilityState!=='hidden'&&!$('main').hidden&&!myOpen&&!editing&&!diagnosisOutcomeRun&&!composing&&!skyBusy&&!activityKind&&panel!=='test'&&!$('#learning').open&&!$('#help').open&&!$('#activity').open&&!$('#prescription').open;
@@ -597,25 +597,10 @@ function animateMainResumeScroll(run,target){
     window.scrollTo({top:run.target,left:0,behavior:'instant'});finishMainResumeScroll(run);
   };
   run.reducedMotion.addEventListener?.('change',run.motionChange);
-  if(typeof window.requestAnimationFrame!=='function'){
-    run.driver='native';window.scrollTo({top:target,left:0,behavior:'smooth'});
-    run.finishTimer=setTimeout(()=>finishMainResumeScroll(run),5000);return;
-  }
-  // Keep one short, continuous ease-in/out. Measure real elapsed time so a
-  // slower device does not stretch the same journey into a long crawl.
-  run.driver='timed';run.duration=Math.max(740,Math.min(880,520+Math.sqrt(Math.abs(distance))*9));
-  run.elapsed=0;run.startedAt=null;
-  const frame=timestamp=>{
-    if(mainResumeScrollRun!==run)return;run.frame=null;
-    // Use the animation timestamp, without accumulating capped frame deltas.
-    // Geometry and markup stay untouched throughout the motion.
-    run.startedAt??=timestamp;run.elapsed=Math.max(0,timestamp-run.startedAt);
-    const t=Math.min(1,run.elapsed/run.duration),eased=(1-Math.cos(Math.PI*t))/2;
-    window.scrollTo({top:start+distance*eased,left:0,behavior:'instant'});
-    if(t===1){finishMainResumeScroll(run);return;}
-    run.frame=window.requestAnimationFrame(frame);
-  };
-  run.frame=window.requestAnimationFrame(frame);
+  // Match the supplied reference: one browser-owned smooth motion, not
+  // competing instant scroll writes on every animation frame.
+  run.driver='native';window.scrollTo({top:target,left:0,behavior:'smooth'});
+  run.finishTimer=setTimeout(()=>finishMainResumeScroll(run),5000);
 }
 function settleMainResumeScroll(){
   const run=mainResumeScrollRun;if(run?.phase!=='moving'||run.driver!=='native')return;
@@ -643,7 +628,7 @@ function setMainResumeSpace(geometry){
 function syncMainResumeScroll(){
   const topic=current(),program=M.currentProgram(topic),topicKey=state.grade+':'+state.index,spaceKey=program?topicKey+':'+program.id:null;
   if(spaceKey!==mainResumeSpaceKey){document.body.classList.remove('has-resume-scroll-space');mainResumeSpaceKey=spaceKey;}
-  const visible=mainResumeOverviewVisible();
+  const visible=!mainResumeBatch&&!guidanceClosing&&mainResumeOverviewVisible();
   if(!visible){cancelMainResumeScroll();mainResumeVisible=false;return;}
   const entered=!mainResumeVisible||mainResumeTopic!==topicKey;
   mainResumeVisible=true;mainResumeTopic=topicKey;
@@ -654,12 +639,21 @@ function syncMainResumeScroll(){
   setMainResumeSpace(geometry);window.scrollTo({top:0,left:0,behavior:'instant'});
   const run=mainResumeScrollRun={topic,programId:program.id,phase:'waiting',timer:null,finishTimer:null,driver:null,viewportWidth:window.innerWidth};
   run.timer=setTimeout(()=>{
-    if(mainResumeScrollRun!==run)return;
-    if(!mainResumeOverviewVisible()||!mainGuidanceVisible()||current()!==run.topic||M.currentProgram(current())?.id!==run.programId){cancelMainResumeScroll();return;}
-    const currentGeometry=mainResumeGeometry(program);if(!currentGeometry){cancelMainResumeScroll();return;}
-    setMainResumeSpace(currentGeometry);
-    const target=Math.max(0,currentGeometry.documentCenter-currentGeometry.center);
-    animateMainResumeScroll(run,target);
+    if(mainResumeScrollRun!==run||run.phase!=='waiting')return;run.timer=null;run.phase='preparing';
+    const depart=()=>{
+      if(mainResumeScrollRun!==run||run.phase!=='preparing')return;run.frame=null;
+      if(!mainResumeOverviewVisible()||!mainGuidanceVisible()||current()!==run.topic||M.currentProgram(current())?.id!==run.programId){cancelMainResumeScroll();return;}
+      const currentGeometry=mainResumeGeometry(program);if(!currentGeometry){cancelMainResumeScroll();return;}
+      setMainResumeSpace(currentGeometry);
+      animateMainResumeScroll(run,Math.max(0,currentGeometry.documentCenter-currentGeometry.center));
+    };
+    // The one waiting timer is reused. Two cancellable layout frames let the
+    // final card grid and sticky header settle before measuring the target.
+    if(typeof window.requestAnimationFrame!=='function'){depart();return;}
+    run.frame=window.requestAnimationFrame(()=>{
+      if(mainResumeScrollRun!==run||run.phase!=='preparing')return;
+      run.frame=window.requestAnimationFrame(depart);
+    });
   },MAIN_RESUME_DELAY);
 }
 for(const type of ['wheel','touchstart','pointerdown'])document.addEventListener(type,cancelMainResumeScroll,{passive:true});
@@ -1230,9 +1224,11 @@ function resetValidationHints(first=false){
   state.ui??={testControls:false};
   Object.assign(state.ui,{diagnosisIntroSeen:!first,passedCardHintSeen:false,failedCardHintSeen:false,diagnosisResultHintSeen:false});
 }
-function loadValidationScenario(id,draft=false){
+function loadValidationScenario(id,draft=false,prepare=null){
   const names=draft?M.draftPresetNames:M.presetNames;
   if(!Number.isInteger(id)||id<0||id>=names.length)return;
+  mainResumeBatch=true;cancelMainResumeScroll();
+  try{
   resetValidationSurfaces();
   if(draft)M.draftPreset(state,id);else{
     M.preset(state,id);const topic=current();
@@ -1248,16 +1244,21 @@ function loadValidationScenario(id,draft=false){
   current().diagnosisResultHintPending=current().diagnosis==='done'&&current().programs.length>0;
   state.ui.prescriptionSeen=current().diagnosis==='done'&&current().programs.length>0;
   browseGrade=state.grade;presetIndex=draft?null:id;
-  if(panel)closePanel();save();render();
+  if(prepare)prepare();
+  if(panel)closePanel();
+  }finally{mainResumeBatch=false;}
+  mainResumeVisible=false;save();render();
 }
 function replayValidationResumeScroll(){
-  loadValidationScenario(9);
-  const topic=current();topic.programs=M.programs(20,state.grade,state.index);
-  topic.programs.slice(0,12).forEach(program=>{program.status='passed';M.setProgress(program,100);});
-  topic.programs[12].status='active';M.setProgress(topic.programs[12],50);
-  state.ui.passedCardHintSeen=true;daily().started=true;daily().target=20;
-  topic.recent='확인용 상태 · 20개 카드 중 13번째 학습 진행 중';
-  mainResumeVisible=false;save();render();
+  // Prepare the final 20-card fixture before closing settings or rendering.
+  // The default preset must never schedule a second, intermediate journey.
+  loadValidationScenario(9,false,()=>{
+    const topic=current();topic.programs=M.programs(20,state.grade,state.index);
+    topic.programs.slice(0,12).forEach(program=>{program.status='passed';M.setProgress(program,100);});
+    topic.programs[12].status='active';M.setProgress(topic.programs[12],50);
+    state.ui.passedCardHintSeen=true;daily().started=true;daily().target=20;
+    topic.recent='확인용 상태 · 20개 카드 중 13번째 학습 진행 중';
+  });
 }
 function validationDiagnosisBackground(passed=false){
   if(typeof diagnosisEndBackground==='undefined')return;
@@ -1402,5 +1403,4 @@ document.addEventListener('click',syncGuidanceReminders);
 document.addEventListener('visibilitychange',syncGuidanceReminders);
 for(const id of ['learning','help','activity','prescription'])$('#'+id).addEventListener('close',()=>{if(!guidanceClosing)holdGuidanceAfterClose();else syncGuidanceReminders();});
 
-// Observe the final state after the action handler, including a modal-to-main return.
-document.addEventListener('click',syncMainResumeScroll);
+// The existing guidance click observer also synchronizes overview scrolling.
