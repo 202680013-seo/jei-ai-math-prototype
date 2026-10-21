@@ -562,7 +562,7 @@ function measureLearningHeader(){
 }
 // On a genuine overview entry, show its top before returning to unfinished work.
 // Stable guidance renders never restart this run, and direct input always wins.
-const MAIN_RESUME_DELAY=600;
+const MAIN_RESUME_DELAY=600,MAIN_RESUME_BOUNCE_ROOM=4;
 let mainResumeScrollRun=null,mainResumeVisible=false,mainResumeTopic=null,mainResumeSpaceKey=null,mainResumeBatch=false,mainResumeRequestKey=null,mainResumeExtra=0;
 if(window.history&&'scrollRestoration' in window.history)window.history.scrollRestoration='manual';
 function mainResumeOverviewVisible(){
@@ -581,6 +581,30 @@ function cancelMainResumeScroll(){
 }
 function finishMainResumeScroll(run){
   if(mainResumeScrollRun!==run)return;mainResumeScrollRun=null;clearMainResumeMotion(run);
+}
+function mainResumeArrivalCurve(overshoot){
+  // Match position, speed AND acceleration at the cosine's final 20%.
+  // The quintic then crosses the destination without stopping and settles once.
+  const join=.8,position=(1-Math.cos(Math.PI*join))/2;
+  const build=span=>{
+    const velocity=Math.PI*Math.sin(Math.PI*join)*span/2;
+    const acceleration=Math.PI**2*Math.cos(Math.PI*join)*span**2/2,remaining=1-position;
+    const c3=10*remaining-6*velocity-1.5*acceleration;
+    const c4=-15*remaining+8*velocity+1.5*acceleration;
+    const c5=6*remaining-3*velocity-.5*acceleration;
+    const at=u=>position+u*(velocity+u*(acceleration/2+u*(c3+u*(c4+u*c5))));
+    // The derivative factors into (1-u)^2 times this quadratic.
+    const a=5*c5,b=acceleration+2*velocity,disc=b*b-4*a*velocity;
+    let peak=1,peakAt=1;
+    if(disc>=0)for(const u of [(-b-Math.sqrt(disc))/(2*a),(-b+Math.sqrt(disc))/(2*a)]){
+      if(u>0&&u<1&&at(u)>peak){peak=at(u);peakAt=u;}
+    }
+    return {join,span,position,velocity,acceleration,c3,c4,c5,peak,peakAt};
+  };
+  // Fit the terminal duration once to a pixel-sized overshoot, independent of trip length.
+  let low=.2,high=.6;
+  for(let i=0;i<26;i++){const span=(low+high)/2;if(build(span).peak>1+overshoot)high=span;else low=span;}
+  return build((low+high)/2);
 }
 function animateMainResumeScroll(run,target){
   // Clamp once so deceleration ends at a reachable position, including the last row.
@@ -605,24 +629,25 @@ function animateMainResumeScroll(run,target){
   // Native smooth scrolling has no duration setting. Keep the ZIP's single
   // departure, but let one frame clock own the complete, slightly slower trip.
   run.driver='timed';run.travelDuration=Math.min(1120,900+Math.sqrt(Math.abs(distance))*4);
-  run.settleDuration=180;run.duration=run.travelDuration+run.settleDuration;
-  // One tiny inward rebound stays reachable even when the target is the last row.
-  run.rebound=-Math.sign(distance)*Math.min(3,Math.abs(distance)*.01);
+  const room=distance>0?(Number.isFinite(max)?max-target:Infinity):target;
+  run.overshoot=Math.min(3,Math.abs(distance)*.01,Math.max(0,room-.05));
+  run.arrival=run.overshoot>.05?mainResumeArrivalCurve(run.overshoot/Math.abs(distance)):null;
+  run.duration=run.travelDuration*(run.arrival?run.arrival.join+run.arrival.span:1);
   let startedAt=null;
   const step=timestamp=>{
     if(mainResumeScrollRun!==run||run.phase!=='moving')return;
     run.frame=null;if(startedAt===null)startedAt=timestamp;
     // Real elapsed time: a delayed frame must not stretch the animation clock.
     const elapsed=Math.max(0,timestamp-startedAt);
-    const progress=Math.min(1,elapsed/run.travelDuration);
-    let top=start+distance*(1-Math.cos(Math.PI*progress))/2;
-    if(elapsed>=run.travelDuration){
-      const settle=Math.min(1,(elapsed-run.travelDuration)/run.settleDuration);
-      // Zero speed at both ends: a single 0–3px–0 pulse, never a repeated spring.
-      top=target+(settle===1?0:run.rebound*Math.sin(Math.PI*settle)**2);
+    const progress=elapsed/run.travelDuration,curve=run.arrival;
+    let eased=(1-Math.cos(Math.PI*Math.min(1,progress)))/2;
+    if(curve&&progress>=curve.join){
+      const u=Math.min(1,(progress-curve.join)/curve.span);
+      eased=curve.position+u*(curve.velocity+u*(curve.acceleration/2+u*(curve.c3+u*(curve.c4+u*curve.c5))));
     }
-    window.scrollTo({top,left:0,behavior:'instant'});
-    if(elapsed>=run.duration){finishMainResumeScroll(run);return;}
+    const complete=elapsed>=run.duration;
+    window.scrollTo({top:complete?target:start+distance*eased,left:0,behavior:'instant'});
+    if(complete){finishMainResumeScroll(run);return;}
     run.frame=window.requestAnimationFrame(step);
   };
   run.frame=window.requestAnimationFrame(step);
@@ -658,15 +683,16 @@ function mainResumeGeometry(program){
 }
 function setMainResumeSpace(geometry){
   const main=$('main'),scroller=document.scrollingElement||document.documentElement,computed=window.getComputedStyle?.(main);
+  const bounceRoom=matchMedia('(prefers-reduced-motion: reduce)').matches?0:MAIN_RESUME_BOUNCE_ROOM;
   const documentHeight=Number(scroller?.scrollHeight),layoutHeight=Number(scroller?.clientHeight)||window.innerHeight;
   let value;
   if(computed&&Number.isFinite(documentHeight)&&documentHeight>0){
     const base=Math.max(0,(parseFloat(computed.paddingBottom)||0)-mainResumeExtra);
     const naturalHeight=documentHeight-mainResumeExtra,target=Math.max(0,geometry.documentCenter-geometry.center);
-    value=Math.ceil(base+Math.max(0,target+layoutHeight-naturalHeight));mainResumeExtra=value-base;
+    value=Math.ceil(base+Math.max(0,target+layoutHeight+bounceRoom-naturalHeight));mainResumeExtra=value-base;
   }else{
     // Non-layout environments can still use the measured viewport/card ratio.
-    value=Math.ceil(Math.max(0,(geometry.height-geometry.header-geometry.rect.height)/2));mainResumeExtra=0;
+    value=Math.ceil(Math.max(0,(geometry.height-geometry.header-geometry.rect.height)/2)+bounceRoom);mainResumeExtra=0;
   }
   document.body.classList.add('has-resume-scroll-space');
   const style=main.style;if(style.setProperty)style.setProperty('--resume-scroll-space',value+'px');else style['--resume-scroll-space']=value+'px';

@@ -45,7 +45,7 @@ test('V6.2.2 uses measured sticky header top/card/document dimensions and only m
     assert.equal(h.scrollCalls.length,1);assert.equal(h.context.scrollY,0);finish(h);
     assert.equal(h.scrollCalls.at(-1).top,target);assert.equal(h.scrollCalls.at(-1).behavior,'smooth');
     const rect=h.node(cardSelector(19)).getBoundingClientRect();assert.equal(rect.top+rect.height/2,center);
-    const required=Math.max(0,target+c.height-natural);assert.equal(h.evaluate('mainResumeExtra'),Math.ceil(required));
+    const required=Math.max(0,target+c.height+4-natural);assert.equal(h.evaluate('mainResumeExtra'),Math.ceil(required));
     assert.equal(h.node('main').style['--resume-scroll-space'],Math.ceil(c.base+required)+'px');
     h.evaluate('setMainResumeSpace(mainResumeGeometry(mainResumeProgram(current())))');
     assert.equal(h.node('main').style['--resume-scroll-space'],Math.ceil(c.base+required)+'px','tail does not accumulate');
