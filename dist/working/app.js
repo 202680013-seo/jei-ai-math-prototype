@@ -787,8 +787,8 @@ function diagnosisWelcomeTipsHTML(expanded=false){
 const WELCOME_GUIDE_HOLD=4800,WELCOME_GUIDE_FADE=240;
 let diagnosisWelcomeFirstTopic=null,diagnosisSheetSignature=null,welcomeGuideRun=null;
 // A visual study of diagnosis, independent of the learner's score and saved progress.
-const DIAGNOSIS_ART_KIND='puzzle';
-const DIAGNOSIS_ART_CONFIG={lens:{parts:1,height:134},puzzle:{parts:4,height:112},brain:{parts:1,height:154}};
+const DIAGNOSIS_ART_KIND='clover';
+const DIAGNOSIS_ART_CONFIG={puzzle:{parts:4},clover:{parts:1}};
 let diagnosisArtPreview=null;
 function cancelDiagnosisArtPreview(){
   if(!diagnosisArtPreview)return;
@@ -813,38 +813,34 @@ function syncDiagnosisArtClock(){
     syncDiagnosisWelcome(current());syncDiagnosisArtClock();
   },run.step===3?3600:2400);
 }
-function syncDiagnosisArtReferences(){
-  // Asset <base> must never redirect SVG fragment references to a different document.
-  const href=window.location?.href;if(!href)return;const page=href.split('#')[0];
-  const config=DIAGNOSIS_ART_CONFIG[DIAGNOSIS_ART_KIND];
-  for(let i=0;i<config.parts;i++){
-    $('#diagnosis-art-clip-'+i).setAttribute('clip-path',`url("${page}#diagnosis-art-shape-${i}")`);
-    $('#diagnosis-art-fill-'+i).setAttribute('fill',`url("${page}#diagnosis-art-color")`);
-  }
-  if(DIAGNOSIS_ART_KIND==='lens')$('#diagnosis-art-lens-effects').setAttribute('clip-path',`url("${page}#diagnosis-art-shape-0")`);
-}
+function syncDiagnosisArtReferences(){}
 function syncDiagnosisArtProgress(progress){
-  const config=DIAGNOSIS_ART_CONFIG[DIAGNOSIS_ART_KIND],art=$('#diagnosis-welcome-progress');
+  const art=$('#diagnosis-welcome-progress');
   const preview=diagnosisArtPreview?.topic===current()?diagnosisArtPreview:null;
-  const ratio=preview?preview.step/3:progress.solved/progress.total;
+  const ratio=Math.min(1,Math.max(0,preview?preview.step/3:progress.solved/progress.total));
   const signature=state.grade+':'+state.index+':'+JSON.stringify([ratio,progress,!!preview]);
   if(signature===diagnosisSheetSignature)return;
-  diagnosisSheetSignature=signature;syncDiagnosisArtReferences();
+  diagnosisSheetSignature=signature;
   art.setAttribute('data-art-kind',DIAGNOSIS_ART_KIND);
   art.setAttribute('data-progress-stage',ratio===0?'empty':ratio===1?'complete':'partial');
   art.setAttribute('data-art-preview',String(!!preview));
   art.setAttribute('aria-label',preview?'실력알기 그래픽 모션 미리보기':'실력알기 진행률');
   art.setAttribute('aria-valuenow',Math.round(ratio*100));
   art.setAttribute('aria-valuetext',preview?`모션 미리보기 ${Math.round(ratio*100)}% · 실제 풀이 진도와 관계없어요`:`${progress.total}문항 중 ${progress.solved}문항 풀이 완료 · ${progress.percent}%`);
-  for(let i=0;i<config.parts;i++){
-    const part=Math.min(1,Math.max(0,ratio*config.parts-i));
-    $('#diagnosis-art-level-'+i).style.transform=`translateY(${config.height*(1-part)}px)`;
-    $('#diagnosis-art-piece-'+i).setAttribute('data-piece-state',part===0?'empty':part===1?'complete':'partial');
-    $('#diagnosis-art-symbol-'+i).style.opacity=String(.24+part*.62);
-  }
-  const counter=$('#diagnosis-art-count');
-  counter.textContent=preview?'':progress.solved?`${progress.solved} / ${progress.total}`:'';
-  counter.setAttribute('visibility',!preview&&progress.solved?'visible':'hidden');
+  // Discrete fitted pieces represent answered questions; correctness never changes progress.
+  const fitted=ratio===1?4:Math.floor(ratio*4);
+  art.setAttribute('data-fitted-pieces',fitted);
+  for(let i=0;i<4;i++)$('#diagnosis-art-piece-'+i).setAttribute('data-piece-state',i<fitted?'complete':'empty');
+  // The original full-color clover is revealed upward from the stem, over its Empty asset.
+  const clover=$('#diagnosis-clover-fill'),previous=Number(art.getAttribute('data-fill-level')||0);
+  clover.style.setProperty('--clover-fill-start',`${200*(1-previous)}px`);
+  clover.style.setProperty('--clover-fill-end',`${200*(1-ratio)}px`);
+  clover.style.clipPath=`inset(${200*(1-ratio)}px 0 84px 0)`;
+  art.setAttribute('data-fill-level',ratio);
+  art.setAttribute('data-fill-arrival',String(ratio>previous&&!matchMedia('(prefers-reduced-motion: reduce)').matches));
+  const counter=$('#diagnosis-art-count');counter.textContent=preview?'':progress.solved?`${progress.solved} / ${progress.total}문제 · ${progress.percent}%`:'';
+  counter.hidden=!!preview||!progress.solved;
+  $('#diagnosis-clover-bubble').hidden=ratio>0;
   $('#diagnosis-art-preview-label').hidden=!preview;
 }
 let welcomeGuideHover=false,welcomeGuideFocus=false,welcomeGuideSuspended=false;
@@ -914,13 +910,13 @@ function syncDiagnosisWelcome(topic){
   }
   const first=!active&&diagnosisWelcomeFirstTopic===topic;
   host.setAttribute('data-welcome-first',String(first));host.setAttribute('data-diagnosis-state',topic.diagnosis);
-  const guide=$('#diagnosis-welcome-guide');guide.hidden=!first;if(first&&!guide.innerHTML)guide.innerHTML=rotatingWelcomeGuideHTML();
-  $('#diagnosis-welcome-title').textContent=first?'실력알기로 시작해볼까요?':active?'풀던 문제부터 이어가요':'나의 실력을 알아볼까요?';
+  const guide=$('#diagnosis-welcome-guide');guide.hidden=true;
+  $('#diagnosis-welcome-title').textContent=active?'풀던 문제부터 이어가요':'나의 실력을 알아볼까요?';
   const progress=diagnosisWelcomeProgress(topic),sheet=$('#diagnosis-welcome-progress');sheet.hidden=false;
   syncDiagnosisArtProgress(progress);
   button.classList.add('diagnostic-start-button');button.setAttribute('aria-label',label);
-  if(first)button.setAttribute('aria-describedby','diagnosis-welcome-guide');else button.removeAttribute('aria-describedby');
-  const markup=`<span>${label}</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>`;
+  button.removeAttribute('aria-describedby');
+  const markup=`<span>${active?'이어서 알아보기':'실력 알아보기'}</span>`;
   if(button.innerHTML!==markup)button.innerHTML=markup;
   if(!$('#diagnosis-welcome-action').contains(button))$('#diagnosis-welcome-action').append(button);
   syncWelcomeGuideClock();
@@ -1642,6 +1638,9 @@ for(const id of ['learning','help','activity','prescription'])$('#'+id).addEvent
 
 document.addEventListener('click',observeDiagnosisWelcomeVisit);
 document.addEventListener('visibilitychange',observeDiagnosisWelcomeVisit);
+$('#diagnosis-clover-fill').addEventListener('animationend',event=>{
+  if(event.animationName==='clover-fill-arrive')$('#diagnosis-welcome-progress').setAttribute('data-fill-arrival','false');
+});
 const welcomeGuideElement=$('#diagnosis-welcome-guide');
 welcomeGuideElement.addEventListener('pointerenter',event=>{if(event.pointerType==='touch')return;welcomeGuideHover=true;syncWelcomeGuideClock();});
 welcomeGuideElement.addEventListener('pointerleave',()=>{welcomeGuideHover=false;syncWelcomeGuideClock();});

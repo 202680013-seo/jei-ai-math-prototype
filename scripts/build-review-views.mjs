@@ -39,8 +39,8 @@ export function buildReviewViews(root=defaultRoot){
     const version=registry.versions.filter(version=>new RegExp('^'+family+'(?:\\.|$)').test(version.label)).at(-1);
     if(version)nativeEntries.push({family,version,file:family.toLowerCase()+'.html'});
   }
-  // Named, native learner-only links keep the three V6.2 concepts independently reviewable on iPad.
-  for(const version of registry.versions.filter(version=>/^V6\.2\.[123]$/.test(version.label)))
+  // Named, native learner-only links keep the V6 concepts independently reviewable on iPad.
+  for(const version of registry.versions.filter(version=>/^V6\.(?:2\.[123]|[34])$/.test(version.label)))
     nativeEntries.push({family:'V6',version,file:version.label.toLowerCase().replaceAll('.','-')+'.html'});
   for(const {family,version,file} of nativeEntries){
     let html=readFileSync(join(out,version.id+'.html'),'utf8');

@@ -3,7 +3,7 @@ const {harness:baseHarness}=require('./helpers/ui-harness.cjs');
 const {MathModel:M}=require('../dist/working/model.js');
 const registry=JSON.parse(fs.readFileSync('dist/versions.json','utf8'));
 const targets=registry.versions.filter(v=>v.label==='V4.9'||/^V[56](?:\.|$)/.test(v.label));
-assert.equal(targets.length,9);
+assert.equal(targets.length,11);
 function outlineGeometry(h,height=210){
   const list=h.node('#group-panel .group-list'),count=h.evaluate('state.grades[state.grade].length');
   list.clientHeight=height;list.scrollHeight=count*64+6;
@@ -57,7 +57,7 @@ test('the authorized versions all load the same mobile correction after their or
     assert.equal(mobileOnly(fs.readFileSync('dist/'+v.path+'mobile.css','utf8')),common);
     const html=fs.readFileSync('dist/'+v.path+'index.html','utf8');
     const styles=[...html.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m=>m[1]);
-    assert.equal(styles.at(-1),'mobile.css');assert(html.includes('viewport-fit=cover'));
+    if(['V6.3','V6.4'].includes(v.label)){assert.equal(styles.at(-2),'mobile.css');assert.equal(styles.at(-1),'diagnosis-entry.css');}else assert.equal(styles.at(-1),'mobile.css');assert(html.includes('viewport-fit=cover'));
     const view=fs.readFileSync('dist/views/'+v.id+'.html','utf8');assert.match(view,/href="mobile\.css\?r=[a-f\d]+"/);
   }
   for(const file of ['v4.html','v5.html','v6.html','v6-2-1.html','v6-2-2.html','v6-2-3.html'])assert.match(fs.readFileSync('dist/'+file,'utf8'),/href="mobile\.css\?r=[a-f\d]+"/);
