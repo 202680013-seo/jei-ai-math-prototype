@@ -1,7 +1,6 @@
 /* V3: V1's structure + Pretendard Korean UI + Wise's lime/forest palette.
    Component shapes, responsive rules and drawn icons are adaptations for learning. */
-@font-face{font-family:Pretendard;src:url('fonts/PretendardVariable.woff2') format('woff2');font-style:normal;font-weight:100 900;font-display:swap}
-:root{font-family:Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:14px;color:var(--jei-c-163300,#163300);background:var(--jei-c-f7f9f4,#f7f9f4);--lime:var(--jei-c-9fe870,#9fe870);--forest:var(--jei-c-163300,#163300);--muted:var(--jei-c-65705f,#65705f);--line:var(--jei-c-e0e6db,#e0e6db);--soft:var(--jei-c-edf5e7,#edf5e7);--paper:#fff}
+:root{font-family:'NanumSquareRound',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:14px;color:var(--jei-c-163300,#163300);background:var(--jei-c-f7f9f4,#f7f9f4);--lime:var(--jei-c-9fe870,#9fe870);--forest:var(--jei-c-163300,#163300);--muted:var(--jei-c-65705f,#65705f);--line:var(--jei-c-e0e6db,#e0e6db);--soft:var(--jei-c-edf5e7,#edf5e7);--paper:#fff}
 body{min-height:100dvh;line-height:1.5;-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word}
 button,input,select,textarea{font-family:inherit}
 button{border-color:var(--line);border-radius:12px;padding:11px 16px;font-weight:600;transition:background .16s,border-color .16s,box-shadow .16s,transform .16s}
