@@ -97,7 +97,14 @@ for(const version of ['working','versions/v48','versions/v49']){
 
   test(version+' no-prescription replay uses the same completion flow and a fresh fixture cannot retain its result popup',()=>{
     const h=setup();h.click('test');h.click('replay-clean-pass');
-    if(version==='working'){assert.equal(h.evaluate('current().diagnosisOutcome.stage'),'summary');h.click('diagnosis-outcome-confirm');h.evaluate('diagnosisOutcomeTimer').fn();h.evaluate('diagnosisOutcomeTimer').fn();}
+    if(version==='working'){
+      assert.equal(h.evaluate('current().diagnosisOutcome.stage'),'summary');
+      assert.equal(h.node('#composition-title').textContent,'실력알기를 통과했어요!');h.click('diagnosis-outcome-confirm');
+      while(h.evaluate('!!diagnosisOutcomeRun'))h.evaluate('diagnosisOutcomeTimer').fn();
+      assert.equal(h.node('#learning').open,false);assert.equal(h.evaluate('current().diagnosis'),'idle');assert.equal(h.evaluate('panel'),null);
+      h.click('preset',0);h.click('diagnosis');assert.equal(h.evaluate('editing.intro'),true);
+      assert(!h.node('#learning').innerHTML.includes('pass-celebrate'));return;
+    }
     assert.equal(h.evaluate('panel'),null);assert.equal(h.node('#learning').open,true);assert.equal(h.evaluate('editing.complete'),true);
     assert.equal(h.node('#learning').classList.contains('diagnosis-post-flow'),popup);assert.match(h.node('#learning').innerHTML,/훌륭해요!/);
     assert.equal(h.evaluate('current().programs.length'),0);h.click('pass-next');assert.match(h.node('#learning').innerHTML,/다음 학습 준비/);

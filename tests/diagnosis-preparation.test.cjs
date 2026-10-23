@@ -17,7 +17,7 @@ test('both outcomes integrate actual counts and time into the original full scre
     const result=h.data('current().diagnosticResult'),html=h.node('#diagnosis-inline-summary').innerHTML;
     assert.equal(closes,0);assert.equal(learning.open,true);assert.equal(h.node('#prescription').open,false);
     assert.equal(phase(h),'summary');assert.equal(h.evaluate('diagnosisOutcomeTimer'),null);
-    assert.equal(h.node('#composition-title').textContent,'수고했어요!');assert.equal(h.node('#diagnosis-inline-summary').hidden,false);
+    assert.equal(h.node('#composition-title').textContent,wrong.length?'수고했어요!':'실력알기를 통과했어요!');assert.equal(h.node('#diagnosis-inline-summary').hidden,false);
     assert(html.includes(`정답 ${3-wrong.length}개 · 오답 ${wrong.length}개`));assert(html.includes(`전체 3개 중 ${wrong.length}개`));assert(html.includes('학습 시간'));
     assert(learning.classList.contains('diagnosis-summary-screen'));assert(!learning.innerHTML.includes('diagnosis-outcome-summary'));
     assert(!learning.innerHTML.includes('diagnosis-outcome-scrim'));assert(!learning.innerHTML.includes('문항 3 / 3'));
@@ -32,7 +32,7 @@ test('both outcomes integrate actual counts and time into the original full scre
   }
 });
 
-test('passed diagnosis rewards once, collects into the shortcut, and waits for explicit next-diagnosis action',()=>{
+test('passed diagnosis rewards once, collects, completes the clover and returns to the next diagnosis invitation',()=>{
   const h=harness(),before=h.evaluate('skyState().totalPieces');finish(h,[]);
   h.click('diagnosis-outcome-confirm');assert.equal(phase(h),'reward');
   assert(h.node('#learning').innerHTML.includes('3문제를 맞혔어요!'));assert(h.node('#learning').innerHTML.includes('별 조각 <strong>+3'));
@@ -41,11 +41,15 @@ test('passed diagnosis rewards once, collects into the shortcut, and waits for e
   h.evaluate("setDiagnosisOutcomeStage('reward')");assert.equal(h.evaluate('skyState().totalPieces'),before+3);
   const restored=harness(h.saved());assert.equal(phase(restored),'reward');assert.equal(restored.evaluate('skyState().totalPieces'),before+3);
   advance(restored);assert.equal(phase(restored),'collecting');assert.equal(restored.node('#learning-workspace').inert,true);advance(restored);
-  assert.equal(restored.evaluate('diagnosisOutcomeRun'),null);assert.equal(restored.node('#learning').open,true);
-  assert(restored.node('#learning').innerHTML.includes('진단을 통과했어요!'));assert.equal(restored.evaluate('state.index'),0);
-  assert.equal(restored.evaluate('current().programs.length'),0);assert.equal(restored.evaluate('current().diagnosticResult.incorrect'),0);
-  restored.click('pass-details');restored.click('pass-summary');restored.click('pass-next');assert.equal(restored.evaluate('state.index'),0);
-  restored.click('pass-begin');assert.equal(restored.evaluate('state.index'),1);assert.equal(restored.evaluate('current().diagnosis'),'active');
+  assert.equal(phase(restored),'clover-complete');assert.equal(restored.node('#learning').open,false);
+  assert.equal(restored.node('#diagnosis-welcome-progress').getAttribute('aria-valuenow'),'100');
+  for(const stage of ['clover-complete','clover-glow','rail-complete','rail-next','rail-close']){
+    assert.equal(restored.evaluate('diagnosisOutcomeRun.target.diagnosisOutcome.stage'),stage);advance(restored);
+  }
+  assert.equal(restored.evaluate('diagnosisOutcomeRun'),null);assert.equal(restored.evaluate('state.index'),1);
+  assert.equal(restored.evaluate('current().diagnosis'),'idle');assert.equal(restored.node('#learning').open,false);
+  assert.equal(restored.evaluate('state.grades[3][0].diagnosticResult.incorrect'),0);
+  assert.equal(restored.node('#diagnosis-welcome-title').textContent,'나의 실력을 알아볼까요?');
   assert.equal(restored.evaluate('skyState().totalPieces'),before+3);
 });
 

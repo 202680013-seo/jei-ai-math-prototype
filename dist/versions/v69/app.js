@@ -220,19 +220,12 @@ function cleanPassReadyHTML(pass){
 }
 function continueCleanPass(){
   if(diagnosisOutcomeRun||!isCleanPass(current()))return;
-  const pass=cleanPassInfo();if(!pass.next){closeLearning();return;}
-  daily().timerRunning=false;current().cleanPassStage='ready';
-  editing={kind:'diagnosis',complete:true,passStage:'ready'};
-  save();refreshDialog();if(!$('#learning').open)$('#learning').showModal();$('#pass-title')?.focus();
+  const {next}=cleanPassInfo();
+  if(next)select(next.grade,next.index);
+  closeLearning();
 }
-function beginCleanPassNext(){
-  if(!isCleanPass(current())||!editing?.complete||(editing.passStage||current().cleanPassStage)!=='ready')return;
-  const {next}=cleanPassInfo();if(!next){closeLearning();return;}
-  select(next.grade,next.index);
-  if(next.kind==='overview'){closeLearning();return;}
-  openLearning(next.kind,next.id);
-  const heading=$('#learning h1, #learning h2');heading?.setAttribute('tabindex','-1');heading?.focus();
-}
+// Stale controls from an older saved screen can return to the overview, never start a question.
+function beginCleanPassNext(){continueCleanPass();}
 // Decorative mentor motion follows the actual local message lifecycle.
 // A short minimum hold lets each shape read clearly even across rapid updates.
 let mentorTimer=null,mentorToken=0,mentorMode='idle',mentorShape='clover',mentorChangedAt=0;
@@ -884,9 +877,10 @@ function syncWelcomeGuideClock(){
     },WELCOME_GUIDE_FADE);
   },WELCOME_GUIDE_HOLD);
 }
-function isDiagnosisWelcomeTopic(topic){return !composing&&!topic.diagnosisOutcome&&topic.programs.length===0&&['idle','active'].includes(topic.diagnosis);}
+function completedCloverTopic(topic){return isCleanPass(topic)&&topic.cleanPassStage==='complete';}
+function isDiagnosisWelcomeTopic(topic){return !composing&&(completedCloverTopic(topic)||(isCleanPassAdvance()&&diagnosisOutcomeRun.target===topic)||!topic.diagnosisOutcome&&topic.programs.length===0&&['idle','active'].includes(topic.diagnosis));}
 function observeDiagnosisWelcomeVisit(){
-  const visible=mainResumeOverviewVisible()&&!welcomeGuideSuspended;
+  const visible=(mainResumeOverviewVisible()||isCleanPassAdvance()&&document.visibilityState!=='hidden'&&!$('#learning').open)&&!welcomeGuideSuspended;
   // A hidden browser tab or settings dim pauses the tip, without consuming this visit.
   const leftOverview=$('main').hidden||myOpen||editing||diagnosisOutcomeRun||composing||skyBusy||activityKind||$('#learning').open||$('#help').open||$('#activity').open||$('#prescription').open;
   if(diagnosisWelcomeFirstTopic&&(leftOverview||current()!==diagnosisWelcomeFirstTopic))diagnosisWelcomeFirstTopic=null;
@@ -895,28 +889,32 @@ function observeDiagnosisWelcomeVisit(){
   syncDiagnosisArtClock();
 }
 function diagnosisWelcomeProgress(topic){
+  if(completedCloverTopic(topic)||isCleanPassAdvance()&&diagnosisOutcomeRun.target===topic){const total=diagnosisSummary(topic.diagnosticResult).total;return {total,solved:total,percent:100};}
   const answers=topic.diagnosticSession?.answers||[],total=DEMO.length;
   const solved=topic.diagnosis==='active'?DEMO.reduce((n,question,i)=>n+(Number.isInteger(answers[i])&&answers[i]>=0&&answers[i]<question.choices.length?1:0),0):0;
   return {total,solved,percent:Math.round(solved/total*100)};
 }
 function syncDiagnosisWelcome(topic){
+  if(isCleanPassAdvance())topic=diagnosisOutcomeRun.target;
   observeDiagnosisWelcomeVisit();
   const visible=isDiagnosisWelcomeTopic(topic),host=$('#diagnosis-welcome'),button=$('#diagnostic');
   host.hidden=!visible;$('#diagnosis-slot').hidden=visible;
   if(!visible){button.classList.remove('diagnostic-start-button');if(button.getAttribute('aria-describedby')==='diagnosis-welcome-guide')button.removeAttribute('aria-describedby');return;}
-  const active=topic.diagnosis==='active',label=active?'실력알기 이어하기':'실력알기 시작하기';
+  const completing=completedCloverTopic(topic)||isCleanPassAdvance()&&diagnosisOutcomeRun.target===topic;
+  const active=!completing&&topic.diagnosis==='active',label=completing?'실력알기 완료':active?'실력알기 이어하기':'실력알기 시작하기';
   if(!active&&mainResumeOverviewVisible()&&!state.ui?.diagnosisWelcomeSeen){
     diagnosisWelcomeFirstTopic=topic;state.ui??={testControls:false};state.ui.diagnosisWelcomeSeen=true;save();
   }
   const first=!active&&diagnosisWelcomeFirstTopic===topic;
   host.setAttribute('data-welcome-first',String(first));host.setAttribute('data-diagnosis-state',topic.diagnosis);
   const guide=$('#diagnosis-welcome-guide');guide.hidden=true;
-  $('#diagnosis-welcome-title').textContent=active?'풀던 문제부터 이어가요':'나의 실력을 알아볼까요?';
+  $('#diagnosis-welcome-title').textContent=completing?'클로버를 완성했어요!':active?'풀던 문제부터 이어가요':'나의 실력을 알아볼까요?';
   const progress=diagnosisWelcomeProgress(topic),sheet=$('#diagnosis-welcome-progress');sheet.hidden=false;
   syncDiagnosisArtProgress(progress);
   button.classList.add('diagnostic-start-button');button.setAttribute('aria-label',label);
   button.removeAttribute('aria-describedby');
-  const markup=`<span>${active?'이어서 알아보기':'실력 알아보기'}</span>`;
+  button.disabled=completing&&isCleanPassAdvance();
+  const markup=`<span>${completing?(isCleanPassAdvance()?'실력알기 완료':'결과 확인'):active?'이어서 알아보기':'실력 알아보기'}</span>`;
   if(button.innerHTML!==markup)button.innerHTML=markup;
   if(!$('#diagnosis-welcome-action').contains(button))$('#diagnosis-welcome-action').append(button);
   syncWelcomeGuideClock();
@@ -1009,7 +1007,7 @@ function renderComposition(c=composing){
   }
   container.setAttribute('data-compose-step',String(c.step));container.setAttribute('data-compose-paused',document.visibilityState==='hidden'?'true':'false');
   $('#composition-topic-context').textContent=c.context||c.topicName+' · '+(c.step===0?'실력 알기 완료':c.step===1?'실력알기 결과로 준비 중':'더 연습할 학습 '+c.count+'개');
-  $('#composition-title').textContent=c.step===0?'수고했어요!':c.step===1?'맞춤 학습을 찾고 있어요':c.name+'님을 위한 학습이 준비됐어요';
+  $('#composition-title').textContent=c.step===0?(c.summaryTitle||'수고했어요!'):c.step===1?'맞춤 학습을 찾고 있어요':c.name+'님을 위한 학습이 준비됐어요';
   $('#composition-copy').textContent=c.step===0?(c.summaryMessage||'실력알기를 마쳤어요.'):c.step===1?'더 익힐 내용을 모으고 있어요.':c.text||'';
   $('#composition-caret').hidden=c.step!==2;
 }
@@ -1039,7 +1037,8 @@ function beginComposition(n,mode,surface){
 // Diagnosis completion is one resumable run. Its native dialog stays open until
 // the reward ends, including the transparent course-generation stage.
 const DIAGNOSIS_OUTCOME_TIMING={searching:3000,ready:3000,reward:3600,collecting:1800};
-const DIAGNOSIS_OUTCOME_STAGES=['summary','searching','ready','generating','reward','collecting'];
+const CLEAN_PASS_ADVANCE_TIMING={'clover-complete':2200,'clover-glow':1300,'rail-complete':1500,'rail-next':1500,'rail-close':650};
+const DIAGNOSIS_OUTCOME_STAGES=['summary','searching','ready','generating','reward','collecting',...Object.keys(CLEAN_PASS_ADVANCE_TIMING)];
 function isDiagnosisPreparation(stage){return ['summary','searching','ready'].includes(stage);}
 function programOutcome(flow=current().diagnosisOutcome){return flow?.kind==='program';}
 function outcomeResult(target=current()){return programOutcome(target.diagnosisOutcome)?target.diagnosisOutcome.result:target.diagnosticResult;}
@@ -1096,7 +1095,8 @@ function mountDiagnosisPreparation(){
   // so the check → scanning lens → ready cards can crossfade in one full screen.
   const preparation=run.preparation??={topicName:programOutcome()?run.target.programs.find(p=>p.id===run.target.diagnosisOutcome.programId)?.name||run.target.groupName:run.target.groupName,count:run.target.diagnosisOutcome.count,name:state.profile?.name||'재능',text:'여기부터 시작해 볼까요?'};
   preparation.step=stage==='summary'?0:stage==='searching'?1:2;
-  preparation.summaryMessage=programOutcome()?(outcomeResult().status==='passed'?'학습을 통과했어요!':'끝까지 풀어냈어요. 다시 연습할 문항을 확인해요.'):diagnosisSummary(outcomeResult()).deficits?'실력알기를 마쳤어요.':'실력알기를 통과했어요!';
+  preparation.summaryTitle=!programOutcome()&&!diagnosisSummary(outcomeResult()).deficits?'실력알기를 통과했어요!':null;
+  preparation.summaryMessage=programOutcome()?(outcomeResult().status==='passed'?'학습을 통과했어요!':'끝까지 풀어냈어요. 다시 연습할 문항을 확인해요.'):diagnosisSummary(outcomeResult()).deficits?'실력알기를 마쳤어요.':'수고했어요!';
   if(programOutcome())preparation.context=preparation.topicName+' · '+(run.target.diagnosisOutcome.review?'복습 결과':'학습 결과');
   const slot=$('#diagnosis-composition-slot');
   if(!slot.contains(compositionElement))slot.append(compositionElement);
@@ -1166,14 +1166,63 @@ function clearDiagnosisFlight(run){
   if(run)run.flight=null;
 }
 window.addEventListener?.('resize',mountDiagnosisFlight);
-function diagnosisOutcomeValid(run){return diagnosisOutcomeRun===run&&current()===run.target&&run.target.diagnosisOutcome?.attemptId===run.attemptId;}
+function diagnosisOutcomeValid(run){
+  const flow=run.target.diagnosisOutcome,next=flow?.advanceNext;
+  const onTarget=current()===run.target||isCleanPassAdvance(flow)&&next&&state.grade===next.grade&&state.index===next.index;
+  return diagnosisOutcomeRun===run&&onTarget&&flow?.attemptId===run.attemptId;
+}
+// The existing outcome clock also owns the completion-to-next-topic handoff.
+// The source pointer keeps reloads safe after the currently selected topic changes.
+function isCleanPassAdvance(flow=diagnosisOutcomeRun?.target.diagnosisOutcome){return !!flow&&Object.hasOwn(CLEAN_PASS_ADVANCE_TIMING,flow.stage);}
+function finishCleanPassAdvance(run){
+  if(!diagnosisOutcomeValid(run))return;
+  delete run.target.diagnosisOutcome;delete state.diagnosisAdvance;
+  cancelDiagnosisOutcome();editing=null;save();render();
+  softReveal($('#diagnosis-welcome'));$('#diagnosis-welcome-title').setAttribute('tabindex','-1');$('#diagnosis-welcome-title').focus({preventScroll:true});
+}
+function setCleanPassAdvanceStage(run,stage){
+  if(!diagnosisOutcomeValid(run)||programOutcome(run.target.diagnosisOutcome))return;
+  const flow=run.target.diagnosisOutcome,first=!isCleanPassAdvance(flow);
+  flow.stage=stage;run.next=null;run.remaining=CLEAN_PASS_ADVANCE_TIMING[stage];
+  state.diagnosisAdvance??={grade:state.grade,index:state.index,attemptId:run.attemptId};
+  clearDiagnosisFlight(run);releaseDiagnosisPreparation(run);editing=null;
+  document.body.setAttribute('data-diagnosis-advance',stage);
+  document.body.setAttribute('data-diagnosis-advance-paused',String(document.visibilityState==='hidden'));
+  if(first||stage==='clover-complete'){
+    cancelDiagnosisArtPreview();diagnosisSheetSignature=null;
+    $('#diagnosis-welcome-progress').setAttribute('data-fill-level','0');
+    if($('#learning').open)closeSurface('#learning');
+    window.scrollTo({top:0,left:0,behavior:'instant'});
+  }
+  if(stage==='rail-next'&&!flow.advanceRecorded){
+    run.target.diagnosis='done';run.target.programs=[];run.target.cleanPassStage='complete';
+    run.target.recent='실력알기 통과 · 클로버 완성';daily().cleanStreak++;
+    flow.advanceNext=cleanPassInfo().next;flow.advanceRecorded=true;
+  }
+  if(['rail-next','rail-close'].includes(stage)&&flow.advanceNext){
+    state.grade=flow.advanceNext.grade;state.index=flow.advanceNext.index;browseGrade=state.grade;
+  }
+  // Persist the stage and selection together before any visual transition starts.
+  save();render();
+  if(first)softReveal($('#diagnosis-welcome'));
+  if(stage==='rail-complete'||stage==='rail-next'){
+    if(panel!=='groups')openPanel('groups');
+    else{browseGrade=state.grade;renderPanel();alignRailToCurrent(true);}
+    $('#group-panel').inert=true;
+  }
+  if(stage==='rail-close'&&panel==='groups')closePanel();
+  const next={'clover-complete':'clover-glow','clover-glow':'rail-complete','rail-complete':'rail-next','rail-next':'rail-close'}[stage];
+  run.next=next?()=>setDiagnosisOutcomeStage(next):()=>finishCleanPassAdvance(run);
+  scheduleDiagnosisOutcome(run);
+}
 function lockDiagnosisOverview(run){
   run.locks=['#learning-workspace','#group-panel','.groups-trigger','.settings-trigger'].map(selector=>{const element=$(selector),previous=!!element.inert;element.inert=true;return {element,previous};});
 }
 function releaseDiagnosisOverview(run){for(const {element,previous} of run?.locks||[])element.inert=previous;}
 function cancelDiagnosisOutcome(discard=false){
   const run=diagnosisOutcomeRun;diagnosisOutcomeRun=null;clearTimeout(diagnosisOutcomeTimer);diagnosisOutcomeTimer=null;
-  if(run){run.epoch++;clearDiagnosisFlight(run);releaseDiagnosisPreparation(run);releaseDiagnosisOverview(run);if(discard)delete run.target.diagnosisOutcome;}
+  if(run){run.epoch++;clearDiagnosisFlight(run);releaseDiagnosisPreparation(run);releaseDiagnosisOverview(run);if(isCleanPassAdvance(run.target.diagnosisOutcome)&&panel==='groups')closePanel();if(discard){delete run.target.diagnosisOutcome;delete state.diagnosisAdvance;}}
+  document.body.removeAttribute('data-diagnosis-advance');document.body.removeAttribute('data-diagnosis-advance-paused');
   $('#learning').classList.remove('diagnosis-outcome-active','diagnosis-generating','diagnosis-preparing','diagnosis-summary-screen','diagnosis-collecting','program-outcome-screen');$('#learning').removeAttribute('data-outcome-paused');$('#learning').removeAttribute('aria-labelledby');$('#learning').removeAttribute('aria-label');
 }
 function scheduleDiagnosisOutcome(run){
@@ -1197,20 +1246,16 @@ function finishDiagnosisOutcome(run){
   if(!diagnosisOutcomeValid(run))return;
   if(programOutcome(run.target.diagnosisOutcome)){finishProgramOutcome(run);return;}
   const target=run.target,stats=diagnosisSummary(outcomeResult(run.target));
-  if(!stats.deficits){target.diagnosis='done';target.programs=[];target.cleanPassStage='celebrate';daily().cleanStreak++;}
-  else{target.diagnosisResultHintPending=!state.ui.diagnosisResultHintSeen;target.presentationPending=true;}
-  delete target.diagnosisOutcome;cancelDiagnosisOutcome();
-  if(stats.deficits){
-    editing=null;closeSurface('#learning');
-    target.recent='실력알기 완료 · 맞춤 학습 '+target.programs.length+'개 열림';
-    save();render();document.querySelector('#programs [data-action="program"]')?.focus({preventScroll:true});
-  }else{
-    editing={kind:'diagnosis',complete:true,passStage:'celebrate'};target.recent='실력알기 통과 · 별 조각 보상 확인';save();render();refreshDialog();
-  }
+  if(!stats.deficits){setDiagnosisOutcomeStage('clover-complete');return;}
+  target.diagnosisResultHintPending=!state.ui.diagnosisResultHintSeen;target.presentationPending=true;
+  delete target.diagnosisOutcome;cancelDiagnosisOutcome();editing=null;closeSurface('#learning');
+  target.recent='실력알기 완료 · 맞춤 학습 '+target.programs.length+'개 열림';
+  save();render();document.querySelector('#programs [data-action="program"]')?.focus({preventScroll:true});
 }
 function setDiagnosisOutcomeStage(stage){
   const run=diagnosisOutcomeRun;if(!run||!diagnosisOutcomeValid(run))return;
   const target=run.target,flow=target.diagnosisOutcome;
+  if(isCleanPassAdvance({stage})){setCleanPassAdvanceStage(run,stage);return;}
   if(programOutcome(flow)&&!['summary','reward','collecting'].includes(stage))return;
   if(stage==='collecting'&&!run.flight&&flow.stage==='reward')captureDiagnosisFlight(run);
   flow.stage=stage;run.next=null;run.remaining=0;
@@ -1235,7 +1280,8 @@ function setDiagnosisOutcomeStage(stage){
   $('#learning').scrollTop=0;$(isDiagnosisPreparation(stage)?'#composition-title':'#diagnosis-outcome-title')?.focus({preventScroll:true});scheduleDiagnosisOutcome(run);
 }
 function resumeDiagnosisOutcome(background=''){
-  const target=current(),flow=target.diagnosisOutcome;
+  const pending=state.diagnosisAdvance,origin=pending&&state.grades[pending.grade]?.[pending.index];
+  const target=origin&&origin.diagnosisOutcome?.attemptId===pending?.attemptId?origin:current(),flow=target.diagnosisOutcome;
   if(flow?.stage==='acknowledge')flow.stage='summary';
   if(!flow||!DIAGNOSIS_OUTCOME_STAGES.includes(flow.stage)||!outcomeResult(target))return false;
   if(programOutcome(flow)&&!target.programs.some(p=>p.id===flow.programId)){delete target.diagnosisOutcome;return false;}
@@ -1255,7 +1301,7 @@ function beginDiagnosisOutcome(result,{count=M.sourceCount(state.grade,state.ind
 document.addEventListener('visibilitychange',()=>{
   const run=diagnosisOutcomeRun;if(!run)return;const paused=document.visibilityState==='hidden';
   if(paused&&diagnosisOutcomeTimer)run.remaining=Math.max(0,run.remaining-(Date.now()-run.started));
-  $('#learning').setAttribute('data-outcome-paused',String(paused));mountDiagnosisFlight();scheduleDiagnosisOutcome(run);
+  $('#learning').setAttribute('data-outcome-paused',String(paused));document.body.setAttribute('data-diagnosis-advance-paused',String(paused));mountDiagnosisFlight();observeDiagnosisWelcomeVisit();scheduleDiagnosisOutcome(run);
 });
 
 // Keep card widths stable and carry mounted cards quietly into their new grid slots.
@@ -1320,6 +1366,7 @@ let lastPanel='groups',groupPanelPhase='closed',panelMotionTimer=null,panelMotio
 const railScrollBindings=new WeakSet();let railScrollObserver=null;
 let groupRevealTimer=null,groupRevealGeneration=0,groupPanelMarkup='',railPositionKey=null;
 function railCurrentTopicIndex(){
+  if(isCleanPassAdvance()&&browseGrade===state.grade&&diagnosisOutcomeRun.target.diagnosisOutcome.advanceNext)return state.index;
   const topics=state.grades[browseGrade]||[];
   const inProgress=topic=>!!topic&&topic.diagnosis!=='idle'&&(topic.diagnosis!=='done'||topic.programs.some(program=>program.status!=='passed'));
   if(browseGrade===state.grade&&inProgress(topics[state.index]))return state.index;
@@ -1428,13 +1475,35 @@ function bindRailOverflow(){
 }
 window.addEventListener?.('resize',()=>{alignRailToCurrent(true);syncRailOverflow();});
 document.fonts?.ready?.then(()=>{alignRailToCurrent(true);syncRailOverflow();});
+function patchCleanPassRail(topics,progress){
+  const host=$('#group-panel');
+  if(!isCleanPassAdvance()||host.getAttribute('data-rendered-grade')!==String(browseGrade))return false;
+  const rows=Array.from(host.querySelectorAll('.group-item'));
+  if(rows.length!==topics.length)return false;
+  rows.forEach((row,i)=>{
+    const topic=topics[i],selected=browseGrade===state.grade&&i===state.index;
+    const status=selected&&topic.diagnosis==='idle'?'active':M.status(topic,state.policy);
+    row.setAttribute('aria-current',String(selected));row.classList.toggle('selected',selected);
+    if(row.getAttribute('data-state')!==status){
+      row.setAttribute('data-state',status);const icon=row.querySelector('.nav-topic-status');
+      icon.className='nav-topic-status '+status;icon.title=selected?'현재 실력알기':'완료';
+      icon.innerHTML='<span class="sr-only">'+icon.title+'</span>'+navigationStatusIcon(status);softReveal(icon);
+    }
+    row.disabled=!canNavigateTopic(topic);row.setAttribute('aria-disabled',String(row.disabled));
+  });
+  const bar=host.querySelector('.nav-grade-progress progress');
+  host.querySelector('.nav-progress-count').innerHTML=`완료 <b>${progress.completed}</b> / ${progress.total}`;
+  bar.setAttribute('max',progress.total||1);bar.setAttribute('value',progress.completed);
+  bar.setAttribute('aria-valuetext',`전체 ${progress.total}개 중 ${progress.completed}개 완료, ${progress.percent}%`);
+  return true;
+}
 function renderPanel(){
   const gp=$('#group-panel'),tp=$('#test-panel');gp.hidden=panel!=='groups'&&groupPanelPhase!=='closing';tp.hidden=panel!=='test';
   if(panel==='groups'){
     const topics=state.grades[browseGrade],labels={idle:'시작 전',active:'학습 중',clean:'완료',passed:'완료',failed:'복습 필요',locked:'시작 전'};
     const grades=availableRailGrades(),position=grades.indexOf(browseGrade),progress=railGradeProgress();
-    const markup=`<button class="mobile-sheet-handle" data-action="close-panel" aria-label="학습 주제 목록 닫기"></button><div class="panel-head nav-stagger" style="--nav-delay:0ms"><button class="nav-close" data-action="close-panel" aria-label="학습 주제 닫기"><img src="assets/figma-v4-1/close.svg" width="20" height="20" alt=""></button></div><div class="panel-content"><div class="group-nav nav-stagger" style="--nav-delay:20ms" role="group" aria-label="등급 선택">${railGradeArrow('prev',position<=0)}<h2 id="nav-grade-title"><span>${grade(browseGrade)}</span>등급</h2>${railGradeArrow('next',position>=grades.length-1)}</div><div class="nav-list-heading nav-stagger" style="--nav-delay:50ms"><h3 id="nav-topic-heading">학습 주제 <span>${topics.length}개</span></h3><button class="nav-help" data-action="help" aria-label="학습 상태 안내"><img src="assets/figma-v4-1/info.svg" width="20" height="20" alt=""></button></div><div class="nav-list-scroll"><div class="group-list" role="group" aria-labelledby="nav-topic-heading" tabindex="0">${topics.map((topic,i)=>{const status=M.status(topic,state.policy),selected=browseGrade===state.grade&&i===state.index;return `<button data-state="${status}" class="group-item nav-stagger ${selected?'selected':''}" style="--nav-delay:${80+Math.min(i,7)*14}ms" data-action="select-group" data-id="${i}" aria-current="${selected?'true':'false'}" ${canNavigateTopic(topic)?'':'disabled aria-disabled="true"'}><span class="nav-topic-number" aria-hidden="true">${String(i+1).padStart(2,'0')}</span><span class="nav-topic-copy"><strong>${esc(groupName(i,browseGrade))}</strong></span><span class="nav-topic-status ${status}" title="${labels[status]||'시작 전'}"><span class="sr-only">${labels[status]||'시작 전'}</span>${navigationStatusIcon(status)}</span></button>`;}).join('')}</div><span id="rail-scroll-hint" class="sr-only" hidden>아래에 학습 주제가 더 있어요. 스크롤해서 확인해요.</span></div></div><footer class="nav-grade-progress nav-stagger" style="--nav-delay:200ms" aria-labelledby="rail-progress-title"><div class="nav-progress-heading"><span id="rail-progress-title">${grade(browseGrade)}등급 실력알기</span><span class="nav-progress-count">완료 <b>${progress.completed}</b> / ${progress.total}</span></div><progress max="${progress.total||1}" value="${progress.completed}" aria-label="${grade(browseGrade)}등급 실력 알기 진행률" aria-valuetext="전체 ${progress.total}개 중 ${progress.completed}개 완료, ${progress.percent}%"></progress></footer>`;
-    if(markup!==groupPanelMarkup){const scroll=$('#group-panel .group-list')?.scrollTop||0,focused=gp.contains?.(document.activeElement)?document.activeElement?.closest?.('[data-action]')?.dataset:null;gp.innerHTML=markup;groupPanelMarkup=markup;$('#group-panel .group-list').scrollTop=scroll;if(focused&&['close-panel','prev-grade','next-grade','help','select-group'].includes(focused.action))focusNavigationAction(focused.action,focused.id);}
+    const markup=`<button class="mobile-sheet-handle" data-action="close-panel" aria-label="학습 주제 목록 닫기"></button><div class="panel-head nav-stagger" style="--nav-delay:0ms"><button class="nav-close" data-action="close-panel" aria-label="학습 주제 닫기"><img src="assets/figma-v4-1/close.svg" width="20" height="20" alt=""></button></div><div class="panel-content"><div class="group-nav nav-stagger" style="--nav-delay:20ms" role="group" aria-label="등급 선택">${railGradeArrow('prev',position<=0)}<h2 id="nav-grade-title"><span>${grade(browseGrade)}</span>등급</h2>${railGradeArrow('next',position>=grades.length-1)}</div><div class="nav-list-heading nav-stagger" style="--nav-delay:50ms"><h3 id="nav-topic-heading">학습 주제 <span>${topics.length}개</span></h3><button class="nav-help" data-action="help" aria-label="학습 상태 안내"><img src="assets/figma-v4-1/info.svg" width="20" height="20" alt=""></button></div><div class="nav-list-scroll"><div class="group-list" role="group" aria-labelledby="nav-topic-heading" tabindex="0">${topics.map((topic,i)=>{const selected=browseGrade===state.grade&&i===state.index,status=isCleanPassAdvance()&&selected&&topic.diagnosis==='idle'?'active':M.status(topic,state.policy);return `<button data-state="${status}" class="group-item nav-stagger ${selected?'selected':''}" style="--nav-delay:${80+Math.min(i,7)*14}ms" data-action="select-group" data-id="${i}" aria-current="${selected?'true':'false'}" ${canNavigateTopic(topic)?'':'disabled aria-disabled="true"'}><span class="nav-topic-number" aria-hidden="true">${String(i+1).padStart(2,'0')}</span><span class="nav-topic-copy"><strong>${esc(groupName(i,browseGrade))}</strong></span><span class="nav-topic-status ${status}" title="${labels[status]||'시작 전'}"><span class="sr-only">${labels[status]||'시작 전'}</span>${navigationStatusIcon(status)}</span></button>`;}).join('')}</div><span id="rail-scroll-hint" class="sr-only" hidden>아래에 학습 주제가 더 있어요. 스크롤해서 확인해요.</span></div></div><footer class="nav-grade-progress nav-stagger" style="--nav-delay:200ms" aria-labelledby="rail-progress-title"><div class="nav-progress-heading"><span id="rail-progress-title">${grade(browseGrade)}등급 실력알기</span><span class="nav-progress-count">완료 <b>${progress.completed}</b> / ${progress.total}</span></div><progress max="${progress.total||1}" value="${progress.completed}" aria-label="${grade(browseGrade)}등급 실력 알기 진행률" aria-valuetext="전체 ${progress.total}개 중 ${progress.completed}개 완료, ${progress.percent}%"></progress></footer>`;
+    if(markup!==groupPanelMarkup){const scroll=$('#group-panel .group-list')?.scrollTop||0,focused=gp.contains?.(document.activeElement)?document.activeElement?.closest?.('[data-action]')?.dataset:null;if(!patchCleanPassRail(topics,progress))gp.innerHTML=markup;gp.setAttribute('data-rendered-grade',browseGrade);groupPanelMarkup=markup;$('#group-panel .group-list').scrollTop=scroll;if(focused&&['close-panel','prev-grade','next-grade','help','select-group'].includes(focused.action))focusNavigationAction(focused.action,focused.id);}
     bindRailOverflow();alignRailToCurrent();
   }
   if(panel==='test')renderTest();
@@ -1614,10 +1683,10 @@ function diagnosticScreenHTML(s){if(editing.outcome)return diagnosisOutcomeHTML(
 function normalize(p,st){p.status=st;M.setProgress(p,['passed','failed'].includes(st)?100:st==='active'?(p.progress>=100?0:p.progress):0);p.reviewed=false;}
 function count(input){const n=Number(input?.value);return Number.isFinite(n)?Math.max(1,Math.min(52,Math.round(n))):8;}
 function resize(n){const s=current();s.diagnosis='done';s.programs=M.programs(n,state.grade,state.index).map((p,i)=>s.programs[i]||p);}
-function select(g,i){const pendingOutcome=!!diagnosisOutcomeRun;cancelDiagnosisOutcome();if(pendingOutcome){editing=null;closeSurface('#learning');}mentorEntry++;cancelComposition();state.grade=g;state.index=i;presetIndex=null;editing=null;save();render();if(current().diagnosisOutcome)resumeDiagnosisOutcome();}
+function select(g,i){const pendingOutcome=!!diagnosisOutcomeRun;cancelDiagnosisOutcome(isCleanPassAdvance());if(pendingOutcome){editing=null;closeSurface('#learning');}mentorEntry++;cancelComposition();state.grade=g;state.index=i;presetIndex=null;editing=null;save();render();if(current().diagnosisOutcome)resumeDiagnosisOutcome();}
 document.addEventListener('click',e=>{if(skyWasDragged&&e.target.closest('.sky-canvas')){skyWasDragged=false;return;}skyWasDragged=false;const b=e.target.closest('[data-action]');if(!b||b.disabled)return;const act=b.dataset.action,id=Number(b.dataset.id),s=current();if(diagnosisOutcomeRun&&!['diagnosis-outcome-confirm','preset','draft-preset','reset-current','reset-all','replay-first','replay-repeat','replay-clean-pass','replay-composition','replay-program-pass','replay-program-fail','replay-resume-scroll','welcome-preview-first','welcome-preview-compact','welcome-preview-progress'].includes(act))return;if(act==='mentor-repeat'){animateMessage(true);return;}if(act==='mentor-read-back'||act==='mentor-read-next'){moveMentorReading(act==='mentor-read-next'?1:-1);return;}if(act==='pass-next'){continueCleanPass();return;}if(act==='pass-begin'){beginCleanPassNext();return;}if(act==='pass-summary'){if(isCleanPass(current())){current().cleanPassStage='celebrate';editing={kind:'diagnosis',complete:true,passStage:'celebrate'};save();refreshDialog();}return;}if(act==='pass-details'){if(isCleanPass(current())){editing={kind:'diagnosis-result',goal:0,item:0};refreshDialog();}return;}if(act==='failed-card'||act==='completed-card'){openCompletedCard(id);return;}if(act==='study-choice-review'||act==='study-choice-result'){chooseCompletedCard(act==='study-choice-review');return;}if(act==='card-review'){openCardReview(id);return;}if(!['preset','draft-preset','reset-current','reset-all','replay-first','replay-repeat','replay-clean-pass','replay-composition','replay-program-pass','replay-program-fail','replay-resume-scroll','welcome-preview-first','welcome-preview-compact','welcome-preview-progress'].includes(act)&&learningAction(act,b))return;if(draftAction(act,b))return;if(act==='test')openPanel('test');else if(act==='groups'){if(panel==='groups')closePanel();else openPanel('groups');}else if(act==='close-panel')closePanel();else if(act==='prev-grade'||act==='next-grade'){const grades=availableRailGrades(),next=grades[grades.indexOf(browseGrade)+(act==='prev-grade'?-1:1)];if(next!==undefined&&next!==browseGrade){browseGrade=next;renderPanel();alignRailToCurrent(true);syncRailOverflow();revealGroupPanel();focusNavigationAction(act);}}else if(act==='select-group'){if(!canNavigateTopic(state.grades[browseGrade]?.[id]))return;clearGroupPanelReveal();select(browseGrade,id);focusNavigationAction('select-group',id);}else if(act==='help')showHelp();else if(act==='close-help')closeSurface('#help');else if(act==='diagnosis')openLearning('diagnosis');else if(act==='program')openLearning('program',id);else if(act==='close-learning'){closeLearning();}else if(act==='recommend'){if(isCleanPass(current())){continueCleanPass();return;}const r=M.recommend(state);if(r.kind==='today')followRecommendation(M.learningRecommend(state));else if(['goal','answers','wrongnotes','report'].includes(r.kind))openActivity(r.kind);else followRecommendation(r);}else if(act==='preset'){loadValidationScenario(id);}else if(act==='replay-resume-scroll'){replayValidationResumeScroll();}else if(act==='resize'){resize(count($('#prescription-count')));notify('처방 프로그램 수 변경: '+s.programs.length);}else if(act==='all-pass'){if(!s.programs.length)resize(M.sourceCount(state.grade,state.index));s.programs.forEach(p=>{p.status='passed';M.setProgress(p,100);});notify('모든 프로그램 통과');}else if(act==='make-fail'){if(!s.programs.length)resize(M.sourceCount(state.grade,state.index));normalize(s.programs[0],'failed');notify('첫 프로그램 미통과 생성');}else if(act==='review-all'||act==='review-one'){s.programs.filter(p=>p.status==='failed'&&(act==='review-all'||p.id===id)).forEach(p=>{p.status='passed';M.setProgress(p,100);p.reviewed=true;s.reviewHistory=true;});notify('미통과 프로그램 복습 후 통과');}else if(act==='reset-current'){loadValidationScenario(0);}else if(act==='reset-all'){resetValidationSurfaces();state=M.create();browseGrade=state.grade;resetValidationHints(true);if(panel)closePanel();notify('전체 데이터와 정책 초기화');}else if(act==='diag-start'){markLearning();s.attempts=(s.attempts||0)+1;s.diagnosis='active';s.programs=[];notify('실력알기 시작');}else if(act==='diag-prescribe'){beginDiagnosisOutcome(validationDiagnosisResult(false),{count:count($('#diag-count')),preview:true});}else if(act==='diag-clean'){replayValidationCleanPass();}else if(act==='replay-program-pass'||act==='replay-program-fail'){replayValidationProgram(act==='replay-program-pass');}else if(act==='replay-clean-pass'){replayValidationCleanPass();}else if(['replay-composition','replay-first','replay-repeat'].includes(act)){replayValidationPrescription(act==='replay-first'?'first':act==='replay-repeat'?'repeat':undefined);}else if(act.startsWith('program-')){const p=s.programs.find(x=>x.id===editing?.id);if(!p||!M.canStudy(s,p))return;if(act==='program-retry'){if(M.currentProgram(s)?.id!==p.id)return;const k=s.groupId+':'+p.programId+':'+(p.completedFrames||0);daily().frameAttempts[k]=(daily().frameAttempts[k]||0)+1;notify('현재 프레임 반복 시도');return;}if(act==='program-frame'){if(M.currentProgram(s)?.id!==p.id)return;M.setProgress(p,((p.completedFrames||0)+1)/(p.frames.length||1)*100);if(p.progress>=100){daily().timerRunning=false;}notify('프레임 완료: '+p.completedFrames+' / '+p.frames.length);return;}if(act==='program-start'){if(!M.canStart(s,p))return;editing.intro=false;markLearning();s.attempts=(s.attempts||0)+1;editing.reviewing=p.status==='failed'||p.reviewed;normalize(p,'active');M.setProgress(p,0);}if(act==='program-pass'){daily().timerRunning=false;normalize(p,'passed');if(editing.reviewing){p.reviewed=true;s.reviewHistory=true;}}if(act==='program-fail'){daily().timerRunning=false;normalize(p,'failed');}if(act==='program-review'){p.status='passed';M.setProgress(p,100);p.reviewed=true;s.reviewHistory=true;}notify(p.name+' · '+M.labels[p.status]);}else if(act==='export'){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ai-math-test-state.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}});
 document.addEventListener('change',e=>{if(diagnosisOutcomeRun)return;const t=e.target,s=current(),d=daily();if(t.id==='diagnosis-notes'){s.diagnosticSession.notes=t.value;save();}else if(t.id==='test-controls'){state.ui.testControls=t.checked;save();refreshDialog();renderPanel();}else if(t.id==='mentor-member'){state.profile.memberType=t.value==='trial'?'trial':'member';notify('말풍선 회원 유형 변경');}else if(t.id==='mentor-birthday'){state.profile.birthday=t.value;save();}else if(t.id==='learner-name'){state.profile.name=t.value.trim().slice(0,20)||'재능';notify('학습자 이름 변경');}else if(t.id==='daily-target'){d.target=Math.max(0,Math.min(120,Number(t.value)||0))||null;notify('목표시간 변경');}else if(t.id==='daily-minutes'){d.minutes=Math.max(0,Math.min(600,Number(t.value)||0));notify('학습시간 변경');}else if(t.id==='daily-answers'){d.unreadAnswers=Math.max(0,Math.min(99,Number(t.value)||0));notify('미확인 답변 수 변경');}else if(t.id==='group-attempts'){s.mentorDiagnosisEntries=Math.max(0,Number(t.value)||0);notify('실력알기 진입 횟수 변경');}else if(t.id==='clean-streak'){d.cleanStreak=Math.max(0,Number(t.value)||0);notify('연속 처방 없이 통과 횟수 변경');}else if(t.id==='test-grade')select(Number(t.value),0);else if(t.id==='test-group')select(state.grade,Number(t.value));else if(t.id==='diagnosis-state'){s.reviewHistory=false;if(t.value==='prescribed'){resize(s.programs.length||M.sourceCount(state.grade,state.index));}else{s.diagnosis=t.value==='clean'?'done':t.value;s.programs=[];}notify('진단 상태 직접 변경');}else if(t.dataset.programState!==undefined){normalize(s.programs[Number(t.dataset.programState)],t.value);notify('개별 프로그램 상태 변경');}else if(t.dataset.programProgress!==undefined){M.setProgress(s.programs[Number(t.dataset.programProgress)],Number(t.value));notify('개별 프로그램 진행률 변경');}else if(t.id==='learning-progress'){const p=s.programs.find(p=>p.id===editing?.id);if(!p||M.currentProgram(s)?.id!==p.id||p.progress>=100)return;M.setProgress(p,Number(t.value));if(p.progress>=100){d.timerRunning=false;}notify('학습 진행률 변경: '+t.value+'%');}else if(t.id.startsWith('policy-')){state.policy[t.id.slice(7)]=t.value;notify('프로토타입 가정 정책 변경');}});
-$('#overlay').addEventListener('click',()=>{if(panel==='test')closePanel();});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel&&!$('#learning').open&&!$('#help').open&&!$('#activity').open)closePanel();if(e.key==='Tab'&&panel==='test'&&!$('#learning').open&&!$('#help').open&&!$('#activity').open){const items=[...$('#'+(panel==='groups'?'group':'test')+'-panel').querySelectorAll('button:not(:disabled),select,input:not(:disabled),a,summary')];if(e.shiftKey&&document.activeElement===items[0]){e.preventDefault();items.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===items.at(-1)){e.preventDefault();items[0].focus();}}});$('#learning').addEventListener('cancel',e=>{if(editing?.kind==='diagnosis'){e.preventDefault();learningAction('close-learning',{dataset:{}});}});$('#learning').addEventListener('close',()=>{if(!$('#learning').open){if(diagnosisOutcomeRun)cancelDiagnosisOutcome();if(editing?.kind==='program'){const p=current().programs.find(x=>x.id===editing.id);markMentorInterrupted(p);}if(composing?.surface==='learning')cancelComposition();if(!guidanceClosing)holdGuidanceAfterClose();daily().timerRunning=false;recordProgram();save();editing=null;render();}});document.addEventListener('input',e=>{if(e.target.id==='diagnosis-notes'&&current().diagnosticSession){current().diagnosticSession.notes=e.target.value;save();}});const wasVisited=state.everVisited;daily();if(wasVisited&&!state.daily.started)state.daily.entry='today';save();if(current().diagnosisOutcome)resumeDiagnosisOutcome();setInterval(()=>{const d=daily();if(d.timerRunning&&document.visibilityState==='visible'&&(current().diagnosis==='active'||M.currentProgram(current())||activeReview())){d.minutes++;save();render();if(activityKind&&!skyBusy)renderActivity();}},60000);if(speechPolicy)setInterval(()=>{if(mainGuidanceVisible()){observeSpeech();if(bubblePhase==='rest')animateMessage();}},15000);render();
+$('#overlay').addEventListener('click',()=>{if(panel==='test')closePanel();});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel&&!diagnosisOutcomeRun&&!$('#learning').open&&!$('#help').open&&!$('#activity').open)closePanel();if(e.key==='Tab'&&panel==='test'&&!$('#learning').open&&!$('#help').open&&!$('#activity').open){const items=[...$('#'+(panel==='groups'?'group':'test')+'-panel').querySelectorAll('button:not(:disabled),select,input:not(:disabled),a,summary')];if(e.shiftKey&&document.activeElement===items[0]){e.preventDefault();items.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===items.at(-1)){e.preventDefault();items[0].focus();}}});$('#learning').addEventListener('cancel',e=>{if(editing?.kind==='diagnosis'){e.preventDefault();learningAction('close-learning',{dataset:{}});}});$('#learning').addEventListener('close',()=>{if(!$('#learning').open){if(diagnosisOutcomeRun&&!isCleanPassAdvance())cancelDiagnosisOutcome();if(editing?.kind==='program'){const p=current().programs.find(x=>x.id===editing.id);markMentorInterrupted(p);}if(composing?.surface==='learning')cancelComposition();if(!guidanceClosing)holdGuidanceAfterClose();daily().timerRunning=false;recordProgram();save();editing=null;render();}});document.addEventListener('input',e=>{if(e.target.id==='diagnosis-notes'&&current().diagnosticSession){current().diagnosticSession.notes=e.target.value;save();}});const wasVisited=state.everVisited;daily();if(wasVisited&&!state.daily.started)state.daily.entry='today';save();if(current().diagnosisOutcome||state.diagnosisAdvance)resumeDiagnosisOutcome();setInterval(()=>{const d=daily();if(d.timerRunning&&document.visibilityState==='visible'&&(current().diagnosis==='active'||M.currentProgram(current())||activeReview())){d.minutes++;save();render();if(activityKind&&!skyBusy)renderActivity();}},60000);if(speechPolicy)setInterval(()=>{if(mainGuidanceVisible()){observeSpeech();if(bubblePhase==='rest')animateMessage();}},15000);render();
 
 $('#activity').addEventListener('close',()=>{if(!$('#activity').open&&activityKind==='completed-study')dismissCompletedCard();if(activityKind!=='constellation'){activityKind=null;reportDate=null;}});$('#activity').addEventListener('cancel',e=>{if(activityKind==='constellation'){e.preventDefault();skyExit();}});document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.dataset?.action==='sky-detail'){e.preventDefault();skyAction('sky-detail',e.target);}});
 

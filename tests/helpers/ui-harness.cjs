@@ -9,7 +9,7 @@ const {SkyModel}=require('../../dist/working/sky.js');
 const source=()=>fs.readFileSync(path.join(__dirname,'../../dist/working/app.js'),'utf8');
 const STATE_KEY='ai-math-prototype-diagnosis-v1';
 
-function harness(saved,{reducedMotion=true,appSource,rects={},viewportHeight=800,initialScroll=0}={}){
+function harness(saved,{reducedMotion=true,appSource,rects={},viewportHeight=800,initialScroll=0,mentorPolicy=true}={}){
   const nodes=new Map(),events=new Map(),windowEvents=new Map(),timers=[],intervals=[],storage=new Map(),media={matches:reducedMotion},scrollCalls=[];
   if(saved)storage.set(STATE_KEY,JSON.stringify(saved));
   const subscribe=(map,type,fn)=>{if(!map.has(type))map.set(type,[]);map.get(type).push(fn);};
@@ -37,7 +37,7 @@ function harness(saved,{reducedMotion=true,appSource,rects={},viewportHeight=800
     nodes.set(selector,element);return element;
   }
   const document={visibilityState:'visible',querySelector:node,querySelectorAll(){return [];},body:node('body'),addEventListener(type,fn){subscribe(events,type,fn);}};
-  const c=vm.createContext({console,MathModel:M,SkyModel,MentorPolicy,document,
+  const c=vm.createContext({console,MathModel:M,SkyModel,MentorPolicy:mentorPolicy?MentorPolicy:undefined,document,
     localStorage:{getItem(key){return storage.get(key)??null;},setItem(key,value){storage.set(key,String(value));}},
     matchMedia:()=>media,
     setTimeout(fn,ms){const timer={fn,ms,cancelled:false};timers.push(timer);return timer;},

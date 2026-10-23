@@ -11,7 +11,7 @@ vm.runInContext(fs.readFileSync('dist/working/app.js','utf8'),c);
 vm.runInContext(fs.readFileSync('dist/preview-controls.js','utf8'),c);
 function settleDiagnosisOutcome(){
   if(vm.runInContext('current().diagnosisOutcome?.stage',c)==='summary')click('diagnosis-outcome-confirm');
-  for(let i=0;i<5&&vm.runInContext('!!diagnosisOutcomeRun',c);i++){
+  for(let i=0;i<10&&vm.runInContext('!!diagnosisOutcomeRun',c);i++){
     const timer=vm.runInContext('diagnosisOutcomeTimer',c);assert(timer&&!timer.cancelled);timer.fn();
   }
   assert.equal(vm.runInContext('diagnosisOutcomeRun',c),null);
@@ -48,7 +48,7 @@ click('sky-case',10);click('sky-detail',0);for(const t of [...timers])if(!t.canc
 vm.runInContext('state=M.create();editing=null;render()',c);click('diagnosis');assert.equal(vm.runInContext('current().diagnosis',c),'idle');assert(node('#learning').classList.contains('diagnosis-screen'));assert(node('#learning').innerHTML.includes('어디를 더 공부하면'));click('diagnosis-begin');assert.equal(vm.runInContext('current().diagnosis',c),'active');assert(!node('#learning').innerHTML.includes('테스트 전용'));assert(!node('#learning').innerHTML.includes('data-action="diag-start"'));
 click('diagnosis-answer',0);click('diagnosis-next');click('close-learning');assert(node('#learning').innerHTML.includes('지금까지 푼 내용은 저장'));click('diagnosis-stay');assert(node('#learning').innerHTML.includes('문항 2 / 3'));click('close-learning');click('diagnosis-leave');assert.equal(node('#learning').open,false);assert.equal(vm.runInContext('state.daily.timerRunning',c),false);click('diagnosis');assert(node('#learning').innerHTML.includes('문항 2 / 3'));assert(!node('#learning').innerHTML.includes('diagnosis-begin'));click('diagnosis-answer',0);click('diagnosis-next');click('diagnosis-answer',0);click('diagnosis-next');assert.equal(node('#prescription').open||false,false);assert.equal(node('#learning').open,true);assert.equal(node('#composition-title').textContent,'수고했어요!');assert.equal(vm.runInContext('current().diagnosisOutcome.stage',c),'summary');settleDiagnosisOutcome();assert.equal(node('#prescription').open,false);assert.equal(vm.runInContext('current().diagnosticResult.incorrect',c),2);click('diagnosis');assert(node('#learning').innerHTML.includes('실력 확인 결과'));assert(!node('#learning').classList.contains('diagnosis-screen'));assert(node('#learning').innerHTML.includes('결손 학습 목표'));assert(!node('#learning').innerHTML.includes('data-action="diag-prescribe"'));click('close-learning');click('program',0);assert.equal(vm.runInContext('current().programs[0].status',c),'idle');assert.equal(vm.runInContext('editing.intro',c),true);click('program-begin');assert.equal(vm.runInContext('current().programs[0].status',c),'active');assert(!node('#learning').innerHTML.includes('data-action="program-start"'));assert(node('#learning').innerHTML.includes('data-action="learner-next"'));click('learner-answer',0);click('learner-next');assert.equal(vm.runInContext('current().programs[0].completedFrames',c),1);
 vm.runInContext('state.ui.testControls=true;refreshDialog()',c);assert(node('#learning').innerHTML.includes('테스트 전용'));assert(node('#learning').innerHTML.includes('data-action="program-pass"'));
-vm.runInContext('select(3,1);current().diagnosis="idle";current().programs=[];render()',c);click('diagnosis');assert(!node('#learning').innerHTML.includes('diagnosis-begin'));for(const answer of [0,1,1]){click('diagnosis-answer',answer);click('diagnosis-next');}settleDiagnosisOutcome();assert(node('#learning').innerHTML.includes('훌륭해요'));assert(node('#learning').classList.contains('diagnosis-screen'));click('diagnosis-leave');click('diagnosis');assert(node('#learning').innerHTML.includes('실력 확인 결과'));assert(!node('#learning').classList.contains('diagnosis-screen'));
+vm.runInContext('select(3,1);current().diagnosis="idle";current().programs=[];render()',c);click('diagnosis');assert(!node('#learning').innerHTML.includes('diagnosis-begin'));for(const answer of [0,1,1]){click('diagnosis-answer',answer);click('diagnosis-next');}settleDiagnosisOutcome();assert.equal(node('#learning').open,false);assert.equal(vm.runInContext('state.index',c),2);vm.runInContext('select(3,1)',c);click('diagnosis');assert(node('#learning').innerHTML.includes('실력 확인 결과'));assert(!node('#learning').classList.contains('diagnosis-screen'));
 click('close-learning');click('replay-first');assert.equal(vm.runInContext('current().diagnosisOutcome.stage',c),'summary');settleDiagnosisOutcome();assert(!node('#programs').innerHTML.includes('여기부터 시작해요'));assert.equal(vm.runInContext('current().presentationPending',c),true);assert.equal(vm.runInContext('state.ui.prescriptionSeen',c),true);click('replay-repeat');settleDiagnosisOutcome();click('program',0);click('program-begin');assert.equal(vm.runInContext('current().presentationPending',c),false);assert(!node('#programs').innerHTML.includes('여기부터 시작해요'));
 console.log('UI state-flow, diagnosis result and clean learner-view checks passed (DOM substitute)');
 
@@ -60,7 +60,17 @@ click('program',0);assert.equal(node('#learning').open,true);
 click('close-learning');click('mypage');assert.equal(node('main').hidden,true);
 console.log('Direct-view storage adapter and original prototype button interactions passed');
 
-// V3.3: celebrate, introduce the next part, then start only on an explicit click.
+// Preserve the old explicit celebration flow in its immutable V6.3 snapshot.
+{
+const legacy=require('./helpers/ui-harness.cjs').harness(undefined,{appSource:fs.readFileSync('dist/versions/v68/app.js','utf8'),reducedMotion:false,mentorPolicy:false});
+const c=legacy.context,node=legacy.node;
+const click=(action,id=0)=>{
+ const t=legacy.evaluate('recommendationTimer');if(action==='recommend'&&t&&!t.cancelled)t.fn();legacy.click(action,id);
+ const closing=legacy.evaluate('guidanceClosingTimer');if(closing&&!closing.cancelled)closing.fn();
+}
+const prepareOverview=()=>{legacy.evaluate('cancelDiagnosisOutcome(true);editing=null;render()');}
+const settleDiagnosisOutcome=()=>{click('diagnosis-outcome-confirm');for(let i=0;i<5&&legacy.evaluate('!!diagnosisOutcomeRun');i++)legacy.evaluate('diagnosisOutcomeTimer').fn();}
+
 prepareOverview();
 vm.runInContext('state=M.create();editing=null;render()',c);
 click('diagnosis');click('diagnosis-begin');
@@ -142,6 +152,8 @@ assert.equal(vm.runInContext('state.grade',c),9);
 assert(!html.includes('id="ai-state"'));
 assert(/class="groups-trigger"[^>]+aria-label="학습 주제 열기"[^>]*>\s*<img[^>]+rail-tab\.svg/.test(html));
 console.log('V3.3 celebration, preparation, explicit start, grade accuracy, pause/persistence and progress preservation passed');
+
+}
 
 // The decorative morph follows real typing, and stale timers cannot restart it.
 prepareOverview();
@@ -612,15 +624,12 @@ click('close-learning');assert.equal(viewMotions.length,3);
 assert(node('#learning').innerHTML.includes('지금까지 푼 내용은 저장'));
 click('diagnosis-stay');click('diagnosis-answer',1);click('diagnosis-next');settleDiagnosisOutcome();
 assert.equal(viewMotions.length,3);
-assert(node('#learning').innerHTML.includes('진단을 통과했어요!'));
-assert.equal(vm.runInContext('current().diagnosticResult.incorrect',c),0);
-click('diagnosis-leave');assert.equal(node('#learning').open,false);
+assert.equal(node('#learning').open,false);
+assert.equal(vm.runInContext('state.grades[3][0].diagnosticResult.incorrect',c),0);
+assert.equal(vm.runInContext('current().diagnosis',c),'idle');
 c.matchMedia=()=>({matches:false});
-click('diagnosis');click('pass-summary');click('pass-next');
-const beforeNextPart=viewMotions.length;
-click('pass-begin');
-assert.equal(viewMotions.length,beforeNextPart+1);
-assert.equal(viewMotions.at(-1).cancelled,false); // duplicate initialization renders keep the new-screen motion intact
+const beforeNextPart=viewMotions.length;click('diagnosis');
+assert.equal(viewMotions.length,beforeNextPart); // native modal entry stays mounted without a duplicate soft reveal
 assert(node('#learning').innerHTML.includes('문항 1 / 3'));
 click('close-learning');click('diagnosis-leave');
 const pageMotions=[];
