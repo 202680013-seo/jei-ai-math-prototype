@@ -105,3 +105,8 @@ body[data-diagnosis-advance-paused=true] #group-panel *,body[data-diagnosis-adva
 @media(prefers-reduced-motion:reduce){body[data-diagnosis-advance=next-entry] .heading-title-row,body[data-diagnosis-advance=next-entry] #diagnosis-welcome *{animation:none!important;transition:none!important}}
 
 body[data-diagnosis-advance=next-entry] .clover-fill{transition:none!important}
+
+/* Latest Figma Empty leaf outline only; retain the exact prior full-color composition. */
+.clover-scene .clover-complete-base{display:none;position:absolute;left:674.858px;top:45.485px}
+[data-art-kind=clover][data-progress-stage=complete] .clover-base{visibility:hidden}
+[data-art-kind=clover][data-progress-stage=complete] .clover-complete-base{display:block}
