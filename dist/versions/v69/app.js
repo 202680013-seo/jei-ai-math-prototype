@@ -835,7 +835,7 @@ function syncDiagnosisArtProgress(progress){
   const clover=$('#diagnosis-clover-fill'),previous=Number(art.getAttribute('data-fill-level')||0);
   clover.style.setProperty('--clover-fill-start',`${200*(1-previous)}px`);
   clover.style.setProperty('--clover-fill-end',`${200*(1-ratio)}px`);
-  clover.style.clipPath=`inset(${200*(1-ratio)}px 0 84px 0)`;
+  clover.style.clipPath=`inset(${200*(1-ratio)}px 0 0 0)`;
   art.setAttribute('data-fill-level',ratio);
   art.setAttribute('data-fill-arrival',String(ratio>previous&&!matchMedia('(prefers-reduced-motion: reduce)').matches));
   const counter=$('#diagnosis-art-count');counter.textContent=preview?'':progress.solved?`${progress.solved} / ${progress.total}문제 · ${progress.percent}%`:'';

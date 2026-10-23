@@ -14,6 +14,7 @@ for(const [label,kind] of [['V6.3','puzzle'],['V6.4','clover']]){
       for(let i=0;i<4;i++)assert.equal(h.node('#diagnosis-art-piece-'+i).getAttribute('data-piece-state'),i<pieces?'complete':'empty');
       assert(Math.abs(Number(h.node('#diagnosis-clover-fill').style.clipPath.match(/[\d.]+/)[0])-200*(1-solved/3))<.000001);
       assert.equal(h.node('#diagnosis-clover-bubble').hidden,solved>0);
+      if(label==='V6.4')assert.match(h.node('#diagnosis-clover-fill').style.clipPath,/px 0 0 0\)$/,'Filled stem must remain visible with the original leaves');
       const before=h.data('current()');let writes=0;const set=a.setAttribute.bind(a);a.setAttribute=(...args)=>{writes++;set(...args);};
       h.evaluate('render();render();syncGuidanceReminders()');assert.equal(writes,0);assert.deepEqual(h.data('current()'),before);
     }
