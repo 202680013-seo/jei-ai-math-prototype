@@ -54,7 +54,7 @@
     {
       "file": "clover-empty-baseline.svg",
       "nodeId": "44:6863",
-      "description": "Preserved prior Empty underlay, used only at full completion to keep the existing Filled appearance unchanged."
+      "description": "Preserved outline-free Empty underlay, used for partial and complete progress to keep the existing fill and completed appearance unchanged."
     }
   ],
   "export": "Unmodified Figma SVG_STRING exports; root bounds include the component clipping and original transforms.",
@@ -72,6 +72,10 @@
     "updatedAt": "2026-10-23",
     "description": "Original Figma Empty leaf silhouette with pale mint dashed outline; slot bounds unchanged.",
     "sha256": "43dfa56675923451bd985b1c91dd1a8262d0cfeef203bca2b70404a99f1318bc",
-    "completeUnderlay": "clover-empty-baseline.svg"
+    "completeUnderlay": "clover-empty-baseline.svg",
+    "dashedOutlineStages": [
+      "empty"
+    ],
+    "progressUnderlay": "clover-empty-baseline.svg"
   }
 }
