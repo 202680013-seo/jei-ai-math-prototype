@@ -41,9 +41,9 @@ test('passed diagnosis rewards once, collects, completes the clover and returns 
   h.evaluate("setDiagnosisOutcomeStage('reward')");assert.equal(h.evaluate('skyState().totalPieces'),before+3);
   const restored=harness(h.saved());assert.equal(phase(restored),'reward');assert.equal(restored.evaluate('skyState().totalPieces'),before+3);
   advance(restored);assert.equal(phase(restored),'collecting');assert.equal(restored.node('#learning-workspace').inert,true);advance(restored);
-  assert.equal(phase(restored),'clover-complete');assert.equal(restored.node('#learning').open,false);
+  assert.equal(phase(restored),'clover-glow');assert.equal(restored.node('#learning').open,false);
   assert.equal(restored.node('#diagnosis-welcome-progress').getAttribute('aria-valuenow'),'100');
-  for(const stage of ['clover-complete','clover-glow','rail-complete','rail-next','rail-close']){
+  for(const stage of ['clover-glow','rail-open','rail-complete','rail-next','rail-close','next-entry']){
     assert.equal(restored.evaluate('diagnosisOutcomeRun.target.diagnosisOutcome.stage'),stage);advance(restored);
   }
   assert.equal(restored.evaluate('diagnosisOutcomeRun'),null);assert.equal(restored.evaluate('state.index'),1);

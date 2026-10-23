@@ -76,11 +76,32 @@
 /* Completion is an extension of the existing card; the artwork geometry stays intact. */
 body[data-diagnosis-advance] #diagnosis-welcome{transition:box-shadow .8s ease}
 body[data-diagnosis-advance] #diagnosis-welcome .diagnostic-start-button:disabled{opacity:.7;cursor:default}
-body[data-diagnosis-advance=clover-glow] .clover-fill{animation:clover-completion-light 1.3s cubic-bezier(.25,.1,.25,1) both}
-body[data-diagnosis-advance=clover-glow] .clover-scene::after{content:"";position:absolute;left:650px;top:18px;width:246px;height:246px;border-radius:50%;background:radial-gradient(circle,#fffbd277 0%,#9dedd466 38%,#adedd200 70%);mix-blend-mode:screen;pointer-events:none;animation:clover-completion-halo 1.3s ease-in-out both}
+body[data-diagnosis-advance=clover-glow] .clover-fill{animation:clover-completion-light 1.1s cubic-bezier(.25,.1,.25,1) both}
+body[data-diagnosis-advance=clover-glow] .clover-scene::after{content:"";position:absolute;left:650px;top:18px;width:246px;height:246px;border-radius:50%;background:radial-gradient(circle,#fffbd277 0%,#9dedd466 38%,#adedd200 70%);mix-blend-mode:screen;pointer-events:none;animation:clover-completion-halo 1.1s ease-in-out both}
 body[data-diagnosis-advance-paused=true] .clover-scene::after{animation-play-state:paused!important}
 body[data-diagnosis-advance] #group-panel .group-item{transition:background-color .6s ease,color .6s ease,border-color .6s ease}
 body[data-diagnosis-advance] .nav-grade-progress progress::-webkit-progress-value{transition:width .8s cubic-bezier(.25,.1,.25,1)}
 @keyframes clover-completion-light{0%,100%{filter:drop-shadow(0 0 0 #90e1c300)}45%{filter:drop-shadow(0 0 12px #66d8b48c) brightness(1.12)}}
 @keyframes clover-completion-halo{0%,100%{opacity:0;transform:scale(.94)}45%{opacity:.85;transform:scale(1.06)}}
 @media(prefers-reduced-motion:reduce){body[data-diagnosis-advance] #diagnosis-welcome,body[data-diagnosis-advance] #group-panel *{transition:none!important}body[data-diagnosis-advance=clover-glow] .clover-scene::after{animation:none;opacity:.3}}
+
+/* The reward sits over the real, already-complete card. Filling is reserved for saved partial progress. */
+#composition-message[hidden]{display:none!important}
+[data-completion-static=true] .clover-fill{transition:none!important}
+body[data-diagnosis-advance] #group-panel .group-list{position:relative;isolation:isolate}
+.rail-current-highlight{display:none;position:absolute;top:0;left:0;border-radius:16px;background:#f1f9fd;pointer-events:none;z-index:0;will-change:transform}
+body[data-diagnosis-advance] .rail-current-highlight{display:block}
+body[data-diagnosis-advance] #group-panel .group-item{position:relative;z-index:1}
+body[data-diagnosis-advance] #group-panel .group-item.selected{background:transparent}
+body[data-diagnosis-advance] #group-panel .group-item[aria-current=true]{opacity:1}
+/* Context, invitation, then action appear on one clock after the rail handoff finishes. */
+body[data-diagnosis-advance=next-entry] .heading-title-row{animation:next-diagnosis-copy-in .62s cubic-bezier(.22,.61,.36,1) both}
+body[data-diagnosis-advance=next-entry] #diagnosis-welcome-title{animation:next-diagnosis-copy-in .62s .2s cubic-bezier(.22,.61,.36,1) both}
+body[data-diagnosis-advance=next-entry] #diagnosis-welcome-action{animation:next-diagnosis-copy-in .62s .36s cubic-bezier(.22,.61,.36,1) both}
+body[data-diagnosis-advance=next-entry] #diagnosis-welcome .welcome-art{animation:next-diagnosis-art-in .7s .12s ease both}
+body[data-diagnosis-advance-paused=true] #group-panel *,body[data-diagnosis-advance-paused=true] .heading-title-row,body[data-diagnosis-advance-paused=true] #diagnosis-welcome *{animation-play-state:paused!important}
+@keyframes next-diagnosis-copy-in{from{opacity:0;transform:translate3d(0,6px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+@keyframes next-diagnosis-art-in{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){body[data-diagnosis-advance=next-entry] .heading-title-row,body[data-diagnosis-advance=next-entry] #diagnosis-welcome *{animation:none!important;transition:none!important}}
+
+body[data-diagnosis-advance=next-entry] .clover-fill{transition:none!important}
