@@ -52,5 +52,14 @@
       "nodeId": "44:4879"
     }
   ],
-  "export": "Unmodified Figma SVG_STRING exports; root bounds include the component clipping and original transforms."
+  "export": "Unmodified Figma SVG_STRING exports; root bounds include the component clipping and original transforms.",
+  "cloverUpdatedAt": "2026-10-23",
+  "cloverBubble": {
+    "nodeId": "44:7304",
+    "x": 788.3193359375,
+    "y": 54.552978515625,
+    "textColor": "#046a9e",
+    "floatCycleMs": 2800,
+    "floatAmplitudePx": 3
+  }
 }

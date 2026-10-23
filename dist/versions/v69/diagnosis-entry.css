@@ -36,8 +36,8 @@
 .clover-minus{position:absolute;left:981.853px;top:245.582px}
 .clover-divide{position:absolute;left:507.268px;top:240.053px}
 .clover-question{position:absolute;left:566.893px;top:114.651px}
-.clover-bubble{position:absolute;left:773.665px;top:54.461px;width:161px;height:49px;transform-origin:50% 100%;animation:clover-invite 4.6s cubic-bezier(.45,0,.55,1) infinite}
-.clover-bubble>span{position:absolute;top:11.115px;left:14.12px;font-size:15px;font-weight:800;line-height:18px;color:#0c638f;white-space:nowrap}
+.clover-bubble{position:absolute;left:788.319px;top:54.553px;width:161px;height:49px;transform-origin:50% 100%;animation:clover-invite 2.8s ease-in-out infinite;will-change:transform}
+.clover-bubble>span{position:absolute;top:11.115px;left:14.12px;font-size:15px;font-weight:800;line-height:18px;color:#046a9e;white-space:nowrap}
 .clover-drink{position:absolute;left:756px;top:263px;width:20px;height:20px;opacity:0;transition:opacity .5s ease}
 [data-progress-stage=partial] .clover-drink{opacity:1}
 .clover-drink i{position:absolute;left:7px;top:0;width:6px;height:8px;border-radius:50% 50% 60% 60%;background:#7ed1e8;opacity:0;animation:clover-sip 5.8s ease-in-out infinite}
@@ -49,7 +49,7 @@
 #diagnosis-welcome[data-welcome-motion=paused] .clover-fill{transition:none}
 @keyframes puzzle-invite{0%,100%{transform:translateY(0) rotate(0)}45%{transform:translateY(-6px) rotate(-1.8deg)}70%{transform:translateY(-2px) rotate(.8deg)}}
 @keyframes puzzle-fit{from{opacity:0;transform:translate(12px,-20px) rotate(5deg) scale(1.025)}65%{opacity:1}to{opacity:1;transform:none}}
-@keyframes clover-invite{0%,100%{transform:translateY(0) rotate(0)}48%{transform:translateY(-4px) rotate(-.7deg)}72%{transform:translateY(-1px) rotate(.3deg)}}
+@keyframes clover-invite{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-3px,0)}}
 @keyframes clover-sip{0%,12%{opacity:0;transform:translate(0,0) scale(.7)}20%{opacity:.65}45%{opacity:.5;transform:translate(-7px,-64px) scale(.65)}58%,100%{opacity:0;transform:translate(0,-100px) scale(.2)}}
 @container learning-content (max-width:900px){
  #diagnosis-welcome .welcome-copy{left:9%;max-width:46%}
