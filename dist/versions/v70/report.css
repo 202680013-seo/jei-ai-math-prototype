@@ -49,6 +49,12 @@ html[lang=en] #group-panel .group-item{width:100%;min-width:0;max-width:100%}
 html[lang=en] #group-panel .nav-topic-number{flex-shrink:0}
 html[lang=en] #group-panel .nav-topic-copy{overflow:hidden}
 html[lang=en] #group-panel .nav-topic-copy>strong,html[lang=en] #group-panel .group-item[data-state=idle] .nav-topic-copy>strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal;word-break:normal}
+/* Card transforms create stacking contexts during hover/reflow. Lift the hint's
+   owning context, rather than only the nested tooltip, inside a bounded grid
+   layer so sticky guidance, navigation and modal backdrops stay above it. */
+#programs{position:relative;isolation:isolate;z-index:0}
+#programs>.program-card:has(.completed-first-tooltip:not([hidden])){z-index:2;overflow:visible}
+#programs>.program-card:has(.completed-first-tooltip:not([hidden])):is(:hover,:focus-within){z-index:3}
 dialog:has(>#report-dock){padding-bottom:max(100px,var(--report-dock-clearance))}
 @keyframes report-dock-in{from{opacity:0;translate:0 8px}to{opacity:1;translate:0 0}}
 @media(max-width:760px){#report-dock .report-controls{gap:8px}#report-dock button{padding:0 10px}}
