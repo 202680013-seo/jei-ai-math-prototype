@@ -6,7 +6,7 @@ const version=registry.versions.find(v=>v.label==='보고용 V1'),base='dist/'+v
 const read=name=>fs.readFileSync(base+name,'utf8');
 function language(){
  const storage=new Map(),root={localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)}};
- for(const name of ['report-copy.js','report-catalog.js'])vm.runInNewContext(read(name),{window:root,Map,Date});
+ for(const name of ['report-copy.js','report-catalog.js','report-topics.js'])vm.runInNewContext(read(name),{window:root,Map,Date});
  root.MentorCopy=require('../dist/working/mentor-copy.js');vm.runInNewContext(read('report-mentor.js'),{window:root});
  return {I:root.JeiReportI18n,root,storage};
 }
@@ -73,4 +73,39 @@ test('English review hints override the actual important hiding utility in both 
  assert.equal(I.t('테스트 패널'),'Test panel');
  for(const removed of ['report-identity','report-mark','report-state-toggle','report-scenarios','<svg','<small'])assert(!script.includes(removed),removed+' is removed, not just hidden');
  assert(script.includes("dock.setAttribute('aria-label',I.t('보고용 테스트 컨트롤'))"));
+});
+test('concise navigation names cover all topics without losing ranges, conditions or sequence identity',()=>{
+ const {I,root,storage}=language(),T=root.JeiReportTopics,C=require('../dist/versions/v70/catalog.js').MathCatalog;
+ const before=JSON.stringify(C);storage.set('learner-state','unchanged');I.setLanguage('en');
+ const names=[...new Set(C.grades.flatMap(g=>g.groups.map(t=>t.name)))];assert.equal(names.length,200);
+ for(const name of names){
+  const full=I.t(name),short=T.short(name);assert(short.length<=25,name+' stays concise');assert(!/[가-힣]/.test(short),name);
+  assert.equal(T.short(name,'ko'),name);assert.equal(I.t(name),full,'short names do not replace the main title');
+  if(/\d/.test(name))assert.deepEqual(short.match(/\d+/g)||[],name.match(/\d+/g)||[],name+' retains numerical scope');
+  for(const marker of name.match(/[①②③]/g)||[])assert(short.includes(marker),name+' retains sequence');
+ }
+ for(const g of C.grades){const labels=g.groups.map(t=>T.short(t.name));assert.equal(new Set(labels).size,labels.length,g.grade+' topics remain distinguishable');}
+ assert.equal(T.short('모으기와 가르기(10)'),'Compose & Split (10)');
+ assert.equal(T.short('두~세 자리 수의 덧셈'),'2–3-digit addition');assert.equal(T.short('자릿값(다섯 자리 수)'),'5-digit place value');
+ for(const [a,b]of [['받아올림이 없는 덧셈','받아올림이 있는 덧셈'],['받아내림이 없는 뺄셈','받아내림이 있는 뺄셈'],['분모가 같은 분수의 덧셈','분모가 다른 분수의 덧셈'],['분모가 다른 분수의 뺄셈','분모가 다른 대분수의 뺄셈']])assert.notEqual(T.short(a),T.short(b));
+ assert.equal(JSON.stringify(C),before);assert.equal(storage.get('learner-state'),'unchanged');
+});
+test('actual reporting text translation uses short labels only in the rail and restores Korean on repeated switches',()=>{
+ const {I,root}=language(),sources=new WeakMap(),script=read('report.js');
+ const translate=script.slice(script.indexOf(' function textNode(n){'),script.indexOf('\n function element(e){'));
+ const context=vm.createContext({I,window:root,sources,skip:''});vm.runInContext(translate,context);
+ function node(value,rail){const attrs=new Map();return {nodeValue:value,parentElement:{closest:()=>null,matches:s=>rail&&s==='#group-panel .nav-topic-copy>strong',setAttribute:(k,v)=>attrs.set(k,v),removeAttribute:k=>attrs.delete(k),getAttribute:k=>attrs.get(k)}};}
+ const rail=node('모으기와 가르기(10)',true),heading=node('모으기와 가르기(10)',false);
+ const run=n=>{context.n=n;vm.runInContext('textNode(n)',context);};
+ for(let i=0;i<3;i++){
+  I.setLanguage('en');run(rail);run(heading);
+  assert.equal(rail.nodeValue,'Compose & Split (10)');assert.equal(heading.nodeValue,'Making and breaking numbers (10)');
+  assert.equal(rail.parentElement.getAttribute('title'),heading.nodeValue);assert.equal(rail.parentElement.getAttribute('aria-label'),heading.nodeValue);
+  I.setLanguage('ko');run(rail);run(heading);assert.equal(rail.nodeValue,'모으기와 가르기(10)');assert.equal(heading.nodeValue,rail.nodeValue);assert.equal(rail.parentElement.getAttribute('title'),undefined);
+ }
+ // The app can redraw/recycle the label after a grade change; it must not retain
+ // the previous short name or title when the original text changes.
+ rail.nodeValue='모임의 크기 비교(5)';I.setLanguage('en');run(rail);assert.equal(rail.nodeValue,'Group sizes (5)');assert.equal(rail.parentElement.getAttribute('title'),I.t('모임의 크기 비교(5)'));
+ const css=read('report.css');assert(css.includes('overflow-x:hidden;touch-action:pan-y pinch-zoom'));assert(css.includes('white-space:nowrap;overflow:hidden;text-overflow:ellipsis'));
+ assert(read('index.html').includes('src="report-topics.js"'));
 });

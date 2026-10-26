@@ -40,6 +40,13 @@ html[lang=en] .completed-first-tooltip .hint-art{display:none}
 html[lang=en] .completed-first-tooltip .sr-only{position:static!important;width:auto!important;height:auto!important;padding:0!important;margin:0!important;overflow:visible!important;clip:auto!important;white-space:normal!important}
 html[lang=en] .heading{gap:12px}
 html[lang=en] #group-panel .group-nav>h2{flex-direction:row-reverse;gap:5px}
+/* Short labels are restricted to English navigation; main headings stay full.
+   Clip only the label track, leaving each number, status and shared highlight intact. */
+html[lang=en] #group-panel .group-list{overflow-x:hidden;touch-action:pan-y pinch-zoom}
+html[lang=en] #group-panel .group-item{width:100%;min-width:0;max-width:100%}
+html[lang=en] #group-panel .nav-topic-number{flex-shrink:0}
+html[lang=en] #group-panel .nav-topic-copy{overflow:hidden}
+html[lang=en] #group-panel .nav-topic-copy>strong,html[lang=en] #group-panel .group-item[data-state=idle] .nav-topic-copy>strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal;word-break:normal}
 dialog:has(>#report-dock){padding-bottom:max(100px,var(--report-dock-clearance))}
 @keyframes report-dock-in{from{opacity:0;translate:0 8px}to{opacity:1;translate:0 0}}
 @media(max-width:760px){#report-dock .report-controls{gap:8px}#report-dock button{padding:0 10px}}

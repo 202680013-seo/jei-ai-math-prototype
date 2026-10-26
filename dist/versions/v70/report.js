@@ -25,7 +25,12 @@
   const previous=sources.get(n),value=n.nodeValue;
   const original=previous&&previous.rendered===value?previous.original:I.original(value);
   const weekdays={일:'Sun',월:'Mon',화:'Tue',수:'Wed',목:'Thu',금:'Fri',토:'Sat'};
-  const translated=I.language==='en'&&n.parentElement.matches('.calendar-grid>small')?(weekdays[original.trim()]||I.t(original)):I.t(original);
+  const topic=n.parentElement.matches('#group-panel .nav-topic-copy>strong');
+  const translated=topic?window.JeiReportTopics.short(original):I.language==='en'&&n.parentElement.matches('.calendar-grid>small')?(weekdays[original.trim()]||I.t(original)):I.t(original);
+  if(topic){
+   if(I.language==='en'){n.parentElement.setAttribute('title',I.t(original));n.parentElement.setAttribute('aria-label',I.t(original));}
+   else{n.parentElement.removeAttribute('title');n.parentElement.removeAttribute('aria-label');}
+  }
   sources.set(n,{original,rendered:translated});if(value!==translated)n.nodeValue=translated;
  }
  function element(e){
