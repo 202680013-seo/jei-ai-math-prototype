@@ -42,6 +42,7 @@ html[lang=en] .completed-first-tooltip .hint-art{display:none}
 html[lang=en] .completed-first-tooltip .sr-only{position:static!important;width:auto!important;height:auto!important;padding:0!important;margin:0!important;overflow:visible!important;clip:auto!important;white-space:normal!important}
 html[lang=en] .heading{gap:12px}
 html[lang=en] #group-panel .group-nav>h2{flex-direction:row-reverse;gap:5px}
+html[lang=en] #grade-badge.grade-label>span:not(.grade-topic-number){order:-1;margin-right:5px}
 /* Short labels are restricted to English navigation; main headings stay full.
    Clip only the label track, leaving each number, status and shared highlight intact. */
 html[lang=en] #group-panel .group-list{overflow-x:hidden;touch-action:pan-y pinch-zoom}
