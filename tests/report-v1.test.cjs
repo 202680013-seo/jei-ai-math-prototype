@@ -56,3 +56,19 @@ test('Theme 2 uses original white Figma exports in their native-sized slots',()=
  const css=read('report.css');assert(css.includes('background:#0ec7ae'));assert(css.includes('background:#0cad98'));assert(css.includes('background:#f1fcfa'));
  assert(!css.includes('width:100%;height:100%'));assert(read('report.js').includes("dialogs.at(-1)||document.body"));
 });
+test('English review hints override the actual important hiding utility in both themes',()=>{
+ const {I}=language();I.setLanguage('en');assert.equal(I.t('카드를 눌러 복습해보세요!'),'Tap a card to practice again!');
+ const hidden=read('theme.css').match(/\.sr-only\{([^}]+)\}/)[1];
+ const visible=read('report.css').match(/html\[lang=en\] \.completed-first-tooltip \.sr-only\{([^}]+)\}/)[1];
+ // An ordinary declaration loses to the inherited important utility even with
+ // greater specificity: this is the regression behind the empty dark tooltip.
+ const declarations=body=>Object.fromEntries(body.split(';').filter(Boolean).map(part=>{const i=part.indexOf(':');return [part.slice(0,i).trim(),part.slice(i+1).trim()];}));
+ const from=declarations(hidden),to=declarations(visible);
+ for(const [property,value]of Object.entries({position:'static',width:'auto',height:'auto',padding:'0',margin:'0',overflow:'visible',clip:'auto','white-space':'normal'})){
+  assert(from[property].endsWith('!important'),property+' really is important upstream');assert.equal(to[property],value+'!important',property+' must restore visible English copy');
+ }
+ const script=read('report.js'),markup=script.match(/dock\.innerHTML=`([^`]+)`;/)[1];
+ assert.equal((markup.match(/<button\b/g)||[]).length,4);
+ for(const removed of ['report-identity','report-mark','report-state-toggle','report-scenarios','<svg','<small'])assert(!script.includes(removed),removed+' is removed, not just hidden');
+ assert(script.includes("dock.setAttribute('aria-label',I.t('보고용 테스트 컨트롤'))"));
+});
