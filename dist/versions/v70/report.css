@@ -15,6 +15,7 @@ body{padding-bottom:var(--report-dock-clearance)}
    selected palette; touch devices must not retain a simulated hover tint. */
 @media(hover:hover) and (pointer:fine){#report-dock button[aria-pressed=false]:hover:not(:disabled){background:#e5ebee;color:#414f62;transform:translateY(-1px)}}
 #report-dock button[aria-pressed=true]{background:#fff;color:#263b4b;box-shadow:0 1px 4px #263b4b16}
+#report-dock .report-language button{font-size:16px}
 #report-dock button:focus-visible{outline:2px solid #84b5ff;outline-offset:3px}
 #report-dock .report-swatch{display:block;width:12px;height:12px;border-radius:50%;border:1px solid #d9e2e7;background:#fff}
 #report-dock [data-report-theme="2"] .report-swatch{background:#0ec7ae;border-color:#0ec7ae}

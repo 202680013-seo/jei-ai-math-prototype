@@ -130,3 +130,5 @@
 - The next v70-only request keeps the reporting operator panel in Korean independently of the learner UI locale. “테스트 패널”, “테마1”, “테마2” and panel/group accessibility labels stay Korean; preserve the existing 한/EN language-choice labels and selection state, Pretendard, themes, learner translations and learning state. Keep #report-dock excluded from the translation observer and mark its own language Korean. Refresh v70 integrity/registry/generated entries in place.
 
 - The next v70-only correction orders the English main grade badge as “Level D | 01”, matching rail “Level D”. Reorder only the Level word using scoped English flex order, with a small word gap; keep the topic number after the grade, Korean “D등급”, all typography/geometry/colors/state and other snapshots. Refresh report CSS integrity and generated entries in place.
+
+- The next v70-only request enlarges just the dock's 한/EN language-button text from 13px to 16px across devices. Preserve Pretendard, existing button height/colors, other panel text, learner UI and other versions; refresh report integrity/caches in place.
