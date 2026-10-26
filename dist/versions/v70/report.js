@@ -2,12 +2,12 @@
  'use strict';
  const I=window.JeiReportI18n,root=document.documentElement;
  let theme='1';try{if(localStorage.getItem('report-theme')==='2')theme='2';}catch{}
- const dock=document.createElement('nav');dock.id='report-dock';dock.setAttribute('aria-label','보고용 테스트 컨트롤');
- dock.innerHTML=`<strong class="report-label" data-report-label="테스트 패널"></strong><div class="report-controls"><div class="report-segment report-language" role="group" aria-label="Language"><button type="button" data-report-language="ko" lang="ko" aria-label="한국어">한</button><button type="button" data-report-language="en" lang="en" aria-label="English">EN</button></div><span class="report-divider"></span><div class="report-segment report-theme" role="group" aria-label="Theme"><button type="button" data-report-theme="1"><i class="report-swatch" aria-hidden="true"></i><span data-report-label="테마1"></span></button><button type="button" data-report-theme="2"><i class="report-swatch" aria-hidden="true"></i><span data-report-label="테마2"></span></button></div></div>`;
+ const dock=document.createElement('nav');dock.id='report-dock';dock.lang='ko';dock.setAttribute('aria-label','보고용 테스트 컨트롤');
+ dock.innerHTML=`<strong class="report-label" data-report-label="테스트 패널"></strong><div class="report-controls"><div class="report-segment report-language" role="group" aria-label="언어"><button type="button" data-report-language="ko" lang="ko" aria-label="한국어">한</button><button type="button" data-report-language="en" lang="en" aria-label="English">EN</button></div><span class="report-divider"></span><div class="report-segment report-theme" role="group" aria-label="테마"><button type="button" data-report-theme="1"><i class="report-swatch" aria-hidden="true"></i><span data-report-label="테마1"></span></button><button type="button" data-report-theme="2"><i class="report-swatch" aria-hidden="true"></i><span data-report-label="테마2"></span></button></div></div>`;
  document.body.append(dock);
  function labels(){
-  for(const e of dock.querySelectorAll('[data-report-label]'))e.textContent=I.t(e.dataset.reportLabel);
-  dock.setAttribute('aria-label',I.t('보고용 테스트 컨트롤'));
+  // The operator panel has its own fixed Korean locale, separate from the UI.
+  for(const e of dock.querySelectorAll('[data-report-label]'))e.textContent=e.dataset.reportLabel;
   for(const b of dock.querySelectorAll('[data-report-language]'))b.setAttribute('aria-pressed',String(b.dataset.reportLanguage===I.language));
   for(const b of dock.querySelectorAll('[data-report-theme]'))b.setAttribute('aria-pressed',String(b.dataset.reportTheme===theme));
  }

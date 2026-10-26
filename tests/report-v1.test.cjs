@@ -72,7 +72,22 @@ test('English review hints override the actual important hiding utility in both 
  assert(markup.startsWith('<strong class="report-label" data-report-label="테스트 패널"></strong>'));
  assert.equal(I.t('테스트 패널'),'Test panel');
  for(const removed of ['report-identity','report-mark','report-state-toggle','report-scenarios','<svg','<small'])assert(!script.includes(removed),removed+' is removed, not just hidden');
- assert(script.includes("dock.setAttribute('aria-label',I.t('보고용 테스트 컨트롤'))"));
+ assert(script.includes("dock.setAttribute('aria-label','보고용 테스트 컨트롤')"));
+ // The actual labels function keeps the operator copy Korean while the screen
+ // locale and each segmented control's pressed state can still change.
+ const node=(key,value)=>({dataset:{[key]:value},attrs:{},setAttribute(k,v){this.attrs[k]=v;}});
+ const texts=['테스트 패널','테마1','테마2'].map(v=>node('reportLabel',v));
+ const languages=['ko','en'].map(v=>node('reportLanguage',v)),themes=['1','2'].map(v=>node('reportTheme',v));
+ const dock={querySelectorAll:s=>s==='[data-report-label]'?texts:s==='[data-report-language]'?languages:themes};
+ const context=vm.createContext({I,dock,theme:'1'});
+ vm.runInContext(script.slice(script.indexOf(' function labels(){'),script.indexOf(' const themeImages=')),context);
+ for(const locale of ['ko','en','ko','en'])for(const theme of ['1','2']){
+  I.setLanguage(locale);context.theme=theme;vm.runInContext('labels()',context);
+  assert.deepEqual(texts.map(n=>n.textContent),['테스트 패널','테마1','테마2']);
+  for(const n of languages)assert.equal(n.attrs['aria-pressed'],String(n.dataset.reportLanguage===locale));
+  for(const n of themes)assert.equal(n.attrs['aria-pressed'],String(n.dataset.reportTheme===theme));
+ }
+ assert(script.includes("dock.lang='ko'"));
 });
 test('concise navigation names cover all topics without losing ranges, conditions or sequence identity',()=>{
  const {I,root,storage}=language(),T=root.JeiReportTopics,C=require('../dist/versions/v70/catalog.js').MathCatalog;
