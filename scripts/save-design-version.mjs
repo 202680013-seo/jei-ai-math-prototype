@@ -20,7 +20,7 @@ if(!title||!changes.length)throw new Error('제목과 변경 내용을 입력하
 const registryPath=join(dist,'versions.json'),registry=Review.validate(JSON.parse(readFileSync(registryPath,'utf8')));
 const familyVersion=family&&registry.versions.find(v=>v.id===family);
 if(family&&!familyVersion)throw new Error('수정 이력을 이어갈 디자인 버전이 없습니다.');
-if(labelOverride&&(!/^V\d+(?:\.\d+)*$/.test(labelOverride)||registry.versions.some(v=>v.label===labelOverride)||(family&&!labelOverride.startsWith(familyVersion.label+'.'))))throw new Error('사용할 수 없거나 이미 존재하는 버전 이름입니다.');
+if(labelOverride&&(!/^(?:보고용 )?V\d+(?:\.\d+)*$/.test(labelOverride)||registry.versions.some(v=>v.label===labelOverride)||(family&&!labelOverride.startsWith(familyVersion.label+'.'))))throw new Error('사용할 수 없거나 이미 존재하는 버전 이름입니다.');
 const revision=family?1+Math.max(0,...registry.versions.filter(v=>v.family===family).map(v=>v.revision||0)):0;
 function inventory(dir){
   const result={};

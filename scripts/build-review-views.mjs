@@ -42,6 +42,8 @@ export function buildReviewViews(root=defaultRoot){
   // Named, native learner-only links keep the V6 concepts independently reviewable on iPad.
   for(const version of registry.versions.filter(version=>/^V6\.(?:2\.[123]|[34])$/.test(version.label)))
     nativeEntries.push({family:'V6',version,file:version.label.toLowerCase().replaceAll('.','-')+'.html'});
+  for(const version of registry.versions.filter(version=>/^보고용 V\d+(?:\.\d+)*$/.test(version.label)))
+    nativeEntries.push({family:'V6',version,file:'report-'+version.label.replace('보고용 ','').toLowerCase().replaceAll('.','-')+'.html'});
   for(const {family,version,file} of nativeEntries){
     let html=readFileSync(join(out,version.id+'.html'),'utf8');
     html=html.replace(/<html([^>]*)>/i,`<html$1 data-${family.toLowerCase()}-standalone="true">`);

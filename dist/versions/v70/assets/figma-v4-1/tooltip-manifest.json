@@ -1,0 +1,43 @@
+{
+  "fileKey": "QmDlOvkNKFdZJHCY89h0vY",
+  "source": "3:223",
+  "font": "JRound Bold",
+  "fontSize": 14,
+  "lineHeight": 1.4,
+  "padding": [
+    8,
+    12,
+    7,
+    12
+  ],
+  "exportMethod": "Current original Figma SVG export with outlined text",
+  "assets": [
+    {
+      "name": "review-hint-body",
+      "file": "review-hint-body.svg",
+      "nodeId": "3:225",
+      "width": "176",
+      "height": "35",
+      "viewBox": "0 0 176 35",
+      "sha256": "555e763245a6a3ab6520a253fa61474ab13f2f1ab0ad9b01bcefbe84e6247bd7"
+    },
+    {
+      "name": "tooltip-tail-v45",
+      "file": "tooltip-tail-v45.svg",
+      "nodeId": "3:228",
+      "width": "16",
+      "height": "16",
+      "viewBox": "0 0 16 16",
+      "sha256": "87d877f64e1fb3e70df675dcb091884a620771b99d03725249044863e6f9fa0e"
+    },
+    {
+      "name": "result-hint-tail-v45",
+      "file": "result-hint-tail-v45.svg",
+      "nodeId": "3:232",
+      "width": "19",
+      "height": "19",
+      "viewBox": "0 0 19 19",
+      "sha256": "28b0161c5c82be18e28668686af7db5596a2c52ce144fb7b0ef6e837df14e4e9"
+    }
+  ]
+}
