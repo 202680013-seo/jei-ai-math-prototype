@@ -118,3 +118,5 @@
 - The reporting follow-up on 2026-10-26 authorizes updating 보고용 V1 (v70) in place only: restore visible English review-tooltip text against the inherited important screen-reader-only rules, and remove the dock's visible identity copy, document icon and scenario dropdown. Keep only language/theme controls, preserve the accessible test-panel label, all learner flows/state and the original V6.4/working/other snapshots. Refresh v70 integrity and generated entries without adding a design version.
 
 - The immediate clarification restores only the visible “테스트 패널” label at the dock's far left in v70, translated to “Test panel” in English. Keep the removed version subtitle, document icon and dropdown absent; preserve every other version, flow and theme.
+
+- The next request authorizes Pretendard for all text inside v70's reporting test dock only. Reuse the existing locally hosted variable font and scope its family override to #report-dock and descendants, including buttons. Preserve NanumSquareRound on the learner screen, all other design/state/flows, and update report integrity/generated entries in place.

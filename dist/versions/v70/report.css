@@ -1,4 +1,6 @@
 /* Reporting-only dock and Figma Theme 02. Original V6.4 is immutable. */
+@font-face{font-family:Pretendard;src:url('/versions/v60/fonts/PretendardVariable.woff2') format('woff2');font-style:normal;font-weight:100 900;font-display:swap}
+#report-dock,#report-dock *{font-family:Pretendard,-apple-system,BlinkMacSystemFont,sans-serif!important}
 :root{--report-dock-clearance:108px}
 .settings-trigger{display:none!important}
 body{padding-bottom:var(--report-dock-clearance)}
