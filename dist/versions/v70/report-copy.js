@@ -299,7 +299,18 @@ AI 멘토 안내 보기|Show mentor guidance
 학습자 설정|Learner settings
 오늘의 학습 리포트|Today's learning report
 재능|Jaeneung
-학습 주제 닫기|Close learning topics`;
+학습 주제 닫기|Close learning topics
+실력 알기 완료|Skill check complete
+실력알기 결과로 준비 중|Preparing from your results
+더 익힐 내용을 모으고 있어요.|Finding the skills you can practice.
+복습 결과|Review results
+내 힘으로|On my own
+혼자 힘으로|On my own
+스스로 풀어요|Try it yourself
+잠깐 나가도|Take a break
+이어서 풀어요|Continue anytime
+마치면|When you finish
+맞춤 학습을 만나요|Find lessons that fit you`;
   const exact=Object.fromEntries(pairs.split('\n').filter(Boolean).map(line=>{const i=line.indexOf('|');return [line.slice(0,i),line.slice(i+1)];}));
   const mathPairs=`모임의 크기 비교|Comparing groups
 수와 숫자|Numbers and numerals
@@ -933,6 +944,8 @@ AI 멘토 안내 보기|Show mentor guidance
         [/^(.+)를 완성했어요\. 학습하며 모은 별 조각이 하늘의 별이 되었어요\. \(이야기 샘플\)$/,(_,s)=>'You completed '+translate(s,'en')+'! Your learning has turned star pieces into stars. (Sample story)'],
         [/^(\d+)번째 별$/,(_,n)=>'Star '+n],
         [/^학습 기록 시작 (.+)$/,(_,s)=>'Learning since '+s],
+        [/^(.+)님을 위한 학습이 준비됐어요$/,(_,s)=>translate(s,'en')+', your lessons are ready!'],
+        [/^더 연습할 학습 (\d+)개$/,(_,n)=>n+' lessons to practice'],
         [/^복습 문항 (\d+) \/ (\d+)$/,(_,a,b)=>'Review '+a+' / '+b],
         [/^맞춤 학습 · (\d+)문항$/,(_,n)=>'Personalized learning · '+n+' questions'],
         [/^(\d+)문항 중 (\d+)문항을 마쳤어요\.$/,(_,a,b)=>"You've finished "+b+' of '+a+' questions.'],
@@ -941,6 +954,7 @@ AI 멘토 안내 보기|Show mentor guidance
       ];
       for(const [re,fn] of transforms)if(re.test(copy)){out=copy.replace(re,fn);break;}
     }
+    if(!out&&copy.includes(' · ')){const parts=copy.split(' · ').map(part=>translate(part,locale));if(parts.join(' · ')!==copy)out=parts.join(' · ');}
     if(!out&&root.JeiReportMentor)out=root.JeiReportMentor.translate(copy);
     if(!out){
       // Translate mixed metric/heading nodes without touching numbers or IDs.
