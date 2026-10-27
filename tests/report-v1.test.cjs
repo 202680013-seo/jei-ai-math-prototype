@@ -76,7 +76,7 @@ test('English review hints override the actual important hiding utility in both 
   assert(from[property].endsWith('!important'),property+' really is important upstream');assert.equal(to[property],value+'!important',property+' must restore visible English copy');
  }
  const script=read('report.js'),markup=script.match(/dock\.innerHTML=`([^`]+)`;/)[1];
- assert.equal((markup.match(/<button\b/g)||[]).length,5);
+ assert.equal((markup.match(/<button\b/g)||[]).length,6);
  assert(markup.startsWith('<strong class="report-label" data-report-label="테스트 패널"></strong>'));
  assert.equal(I.t('테스트 패널'),'Test panel');
  for(const removed of ['report-identity','report-mark','report-state-toggle','report-scenarios','<svg','<small'])assert(!script.includes(removed),removed+' is removed, not just hidden');
@@ -335,9 +335,9 @@ test('the independent 처음으로 action resets only report progress and exits 
   const reset=JSON.parse(store.get(key));assert.equal(reset.grade,3);assert.equal(reset.index,0);assert.equal(reset.grades[3][0].programs[7].status,'idle');assert.equal(reset.grades[3][0].programs.filter(p=>p.status==='passed').length,7);
   assert.equal(reloads,1);assert.equal(updated,'/report-v1.html?demo=1');assert.equal(store.get('report-language'),'en');assert.equal(store.get('report-theme'),'2');
  }
- const script=read('report.js'),markup=script.match(/dock\.innerHTML=`([^`]+)`;/)[1];assert(markup.includes('data-report-label="컬러1"'));assert(markup.includes('data-report-label="컬러2"'));assert(!markup.includes('테마'));assert(markup.endsWith('>처음으로</button>'));
+ const script=read('report.js'),markup=script.match(/dock\.innerHTML=`([^`]+)`;/)[1];assert(markup.includes('data-report-label="컬러1"'));assert(markup.includes('data-report-label="컬러2"'));assert(!markup.includes('테마'));assert(markup.includes('>처음으로</button>'));assert(markup.includes('data-report-toggle'));
  const handler=script.slice(script.indexOf(" dock.addEventListener('click'"),script.indexOf(" window.addEventListener('message'"));let restarted=0;
- vm.runInNewContext(handler,{dock:{addEventListener:(_type,fn)=>fn({target:{closest:s=>s==='[data-report-restart]'?{}:null}})},window:{JeiReportEntry:{restart:()=>restarted++}}});assert.equal(restarted,1);
+ vm.runInNewContext(handler,{collapsed:false,dock:{addEventListener:(_type,fn)=>fn({target:{closest:s=>s==='[data-report-restart]'?{}:null}})},window:{JeiReportEntry:{restart:()=>restarted++}}});assert.equal(restarted,1);
 });
 
 function reportColorsHarness(initial='1',{deferred=false,reducedMotion=false}={}){
@@ -412,4 +412,54 @@ test('review recovery advances only when it closes the last gap, and its saved o
    assert.equal(h.evaluate('state.index'),1);assert.equal(h.evaluate('skyState().totalPieces'),4);assert.equal(h.evaluate('Object.keys(state.programRewards).length'),3);
   }
  }
+});
+
+test('all assessment, lesson and review scores use the last editable choice, including corrected answers and next-set recovery',()=>{
+ for(const mode of ['diagnosis','normal','review'])for(const wrong of [[false,false],[false,true],[true,false],[true,true]]){
+  const h=reportHarness(mode==='diagnosis'?undefined:reportFinalCard());
+  if(mode==='diagnosis')h.click('diagnosis');
+  else if(mode==='normal')h.click('program',7);
+  else{h.evaluate("current().programs[7].status='failed';M.setProgress(current().programs[7],100);current().programs[7].wrongFrames=[1];render()");h.click('failed-card',7);h.click('study-choice-review');}
+  const answers=[];
+  for(let i=0;i<2;i++){
+   const correct=i===0?0:1,final=wrong[i]?(correct+1)%4:correct,other=final===correct?(correct+1)%4:correct,action=mode==='diagnosis'?'diagnosis-answer':'learner-answer';answers.push(final);
+   for(const choice of [other,final,other,final]){
+    h.click(action,choice);const html=h.node('#learning').innerHTML,board=html.match(/<div class="question-choices">([\s\S]*?)<\/div>/)[1];
+    assert(!board.includes('disabled'));assert.equal((board.match(/aria-pressed="true"/g)||[]).length,1);assert.equal((board.match(/answer-selected/g)||[]).length,1);assert(!board.includes('answer-correct'));assert(!board.includes('<small>정답'));
+    assert(!html.includes('class="answer-feedback"'),'do not reveal answers while the selection is editable');
+    const value=h.evaluate(mode==='diagnosis'?'current().diagnosticSession.answers['+i+']':mode==='review'?'current().programs[7].reviewSession.answers['+i+']':'current().programs[7].demoChoice');assert.equal(value,choice);
+   }
+   h.click(action,99);h.click(action,-1);
+   if(mode!=='diagnosis')assert(!h.evaluate(mode==='review'?'current().programs[7].reviewSession.wrongFrames':'current().programs[7].wrongFrames').includes(i),'grading waits for Next');
+   h.click(mode==='diagnosis'?'diagnosis-next':'learner-next');
+  }
+  const incorrect=wrong.filter(Boolean).length;assert.equal(h.evaluate('outcomeResult().incorrect'),incorrect,mode+' '+wrong);
+  if(mode==='diagnosis')assert.deepEqual(h.data('current().diagnosticResult.goals.map(g=>g.questions[0].chosen)'),answers);
+  else{assert.deepEqual(h.data(mode==='review'?'current().programs[7].reviewSession.wrongFrames':'current().programs[7].wrongFrames'),wrong.flatMap((v,i)=>v?[i]:[]));if(mode==='review')assert.equal(h.evaluate('current().programs[7].initialResult.status'),'failed');}
+  finishReportOutcome(h);assert.equal(h.evaluate('skyState().totalPieces'),2-incorrect);assert.equal(h.evaluate('state.index'),incorrect?0:1,mode+' final outcome follows the final choices');
+ }
+});
+test('selected answers survive in-session exits, remain editable on return, and completed result choices stay read-only',()=>{
+ const h=reportHarness(reportFinalCard());h.click('program',7);h.click('learner-answer',1);h.click('close-learning');h.click('program',7);assert.equal(h.evaluate('current().programs[7].demoChoice'),1);
+ h.click('learner-answer',0);h.click('learner-next');h.click('learner-answer',1);h.click('learner-next');assert.equal(h.evaluate('outcomeResult().incorrect'),0);
+ const resultBefore=h.data('current().diagnosisOutcome.result');h.click('learner-answer',0);assert.deepEqual(h.data('current().diagnosisOutcome.result'),resultBefore);
+ const board=h.evaluate('choiceBoard(DEMO[0],1,null,true)');assert.equal((board.match(/disabled/g)||[]).length,4);assert(board.includes('answer-correct'));assert(board.includes('answer-wrong'));assert(!board.includes('data-action="learner-answer"'));
+});
+test('the independent test panel collapses to an accessible handle and reopens during any learner screen',async()=>{
+ const script=read('report.js'),css=read('report.css');
+ for(const reduced of [false,true]){
+  const attrs=new Map(),toggleAttrs=new Map(),motions=[],controls={hidden:false},restart={hidden:false},toggle={setAttribute:(k,v)=>toggleAttrs.set(k,v)};
+  const dock={setAttribute:(k,v)=>attrs.set(k,v),removeAttribute:k=>attrs.delete(k),getBoundingClientRect:()=>({width:controls.hidden?170:600,height:controls.hidden?44:72}),querySelector:s=>s==='.report-controls'?controls:s==='.report-restart'?restart:toggle,animate(frames,options){const m={frames,options,finished:Promise.resolve(),cancel(){this.cancelled=true;}};motions.push(m);return m;},addEventListener(_t,f){this.click=f;}};
+  const context=vm.createContext({dock,window:{matchMedia:()=>({matches:reduced})}});
+  vm.runInContext(script.slice(script.indexOf(' let collapsed='),script.indexOf(' function labels(){')),context);
+  assert.equal(controls.hidden,false);assert.equal(toggleAttrs.get('aria-expanded'),'true');
+  const handler=script.slice(script.indexOf(" dock.addEventListener('click'"),script.indexOf(" window.addEventListener('message'"));vm.runInContext(handler,context);
+  dock.click({target:{closest:s=>s==='[data-report-toggle]'?{}:null}});assert.equal(controls.hidden,true);assert.equal(restart.hidden,true);assert.equal(toggleAttrs.get('aria-expanded'),'false');assert.equal(toggleAttrs.get('aria-label'),'테스트 패널 펼치기');
+  // The whole compact label area can reopen the panel, as well as its chevron.
+  dock.click({target:{closest:()=>null}});assert.equal(controls.hidden,false);assert.equal(restart.hidden,false);assert.equal(toggleAttrs.get('aria-expanded'),'true');
+  await Promise.resolve();assert.equal(attrs.get('data-collapsed'),'false');assert.equal(attrs.has('data-panel-moving'),false);
+  if(reduced)assert.equal(motions.length,0);else{assert.equal(motions.length,2);assert.equal(motions[0].cancelled,true);assert(motions.every(m=>m.options.duration===200&&!m.frames.some(f=>'transform' in f)));}
+ }
+ assert(css.includes('#report-dock [hidden]{display:none!important}'));assert(css.includes('#report-dock[data-collapsed=true]{display:flex'));
+ assert(script.includes('aria-controls="report-controls report-restart"'));assert(script.includes('document.body.append(dock)'));
 });

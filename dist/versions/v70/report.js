@@ -3,8 +3,21 @@
  const I=window.JeiReportI18n,root=document.documentElement;
  let theme=window.JeiReportColors.current;
  const dock=document.createElement('nav');dock.id='report-dock';dock.lang='ko';dock.setAttribute('aria-label','보고용 테스트 컨트롤');
- dock.innerHTML=`<strong class="report-label" data-report-label="테스트 패널"></strong><div class="report-controls"><div class="report-segment report-language" role="group" aria-label="언어"><button type="button" data-report-language="ko" lang="ko" aria-label="한국어">한</button><button type="button" data-report-language="en" lang="en" aria-label="English">EN</button></div><span class="report-divider"></span><div class="report-segment report-theme" role="group" aria-label="컬러"><button type="button" data-report-theme="1"><i class="report-swatch" aria-hidden="true"></i><span data-report-label="컬러1"></span></button><button type="button" data-report-theme="2"><i class="report-swatch" aria-hidden="true"></i><span data-report-label="컬러2"></span></button></div></div><button type="button" class="report-restart" data-report-restart title="D등급 01의 첫 시연 상태로 돌아가기" aria-label="D등급 01의 첫 시연 상태로 돌아가기">처음으로</button>`;
+ dock.innerHTML=`<strong class="report-label" data-report-label="테스트 패널"></strong><div class="report-controls" id="report-controls"><div class="report-segment report-language" role="group" aria-label="언어"><button type="button" data-report-language="ko" lang="ko" aria-label="한국어">한</button><button type="button" data-report-language="en" lang="en" aria-label="English">EN</button></div><span class="report-divider"></span><div class="report-segment report-theme" role="group" aria-label="컬러"><button type="button" data-report-theme="1"><i class="report-swatch" aria-hidden="true"></i><span data-report-label="컬러1"></span></button><button type="button" data-report-theme="2"><i class="report-swatch" aria-hidden="true"></i><span data-report-label="컬러2"></span></button></div></div><button type="button" class="report-restart" id="report-restart" data-report-restart title="D등급 01의 첫 시연 상태로 돌아가기" aria-label="D등급 01의 첫 시연 상태로 돌아가기">처음으로</button><button type="button" class="report-toggle" data-report-toggle aria-expanded="true" aria-controls="report-controls report-restart" aria-label="테스트 패널 접기" title="테스트 패널 접기"><i aria-hidden="true"></i></button>`;
  document.body.append(dock);
+ let collapsed=false,panelMotion=null;
+ function setPanelCollapsed(value,animate=true){
+  const before=dock.getBoundingClientRect();panelMotion?.cancel?.();panelMotion=null;dock.removeAttribute('data-panel-moving');
+  collapsed=!!value;dock.setAttribute('data-collapsed',String(collapsed));
+  dock.querySelector('.report-controls').hidden=collapsed;dock.querySelector('.report-restart').hidden=collapsed;
+  const toggle=dock.querySelector('[data-report-toggle]'),label=collapsed?'테스트 패널 펼치기':'테스트 패널 접기';
+  toggle.setAttribute('aria-expanded',String(!collapsed));toggle.setAttribute('aria-label',label);toggle.setAttribute('title',label);
+  if(animate&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches&&dock.animate){
+   const after=dock.getBoundingClientRect(),motion=dock.animate([{width:before.width+'px',height:before.height+'px',opacity:.9},{width:after.width+'px',height:after.height+'px',opacity:1}],{duration:200,easing:'cubic-bezier(.25,.1,.25,1)'});
+   if(motion){panelMotion=motion;dock.setAttribute('data-panel-moving','true');const finish=()=>{if(panelMotion===motion){panelMotion=null;dock.removeAttribute('data-panel-moving');}};motion.finished?.then(finish,finish);}
+  }
+ }
+ setPanelCollapsed(false,false);
  function labels(){
   // The operator panel has its own fixed Korean locale, separate from the UI.
   for(const e of dock.querySelectorAll('[data-report-label]'))e.textContent=e.dataset.reportLabel;
@@ -54,6 +67,7 @@
   if(!queued){queued=true;queueMicrotask(flush);}
  });
  dock.addEventListener('click',event=>{
+  if(event.target.closest('[data-report-toggle]')||collapsed){setPanelCollapsed(!collapsed);return;}
   if(event.target.closest('[data-report-restart]')){window.JeiReportEntry.restart();return;}
   const language=event.target.closest('[data-report-language]'),button=event.target.closest('[data-report-theme]');
   if(language){I.setLanguage(language.dataset.reportLanguage);translateAll();document.querySelector('[data-action="mentor-repeat"]')?.click();return;}
