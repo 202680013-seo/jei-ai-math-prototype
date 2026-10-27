@@ -34,10 +34,10 @@ test('all mentor event templates have English copy, and the app measures full En
  h.evaluate("const reportRun={fullText:'오늘은 무엇부터 시작해 볼까요?',index:0};prepareMentorPages(reportRun)");
  assert.equal(h.evaluate('reportRun.fullText'),'What would you like to start with today?');assert(h.evaluate('reportRun.pages.length')>0);
 });
-test('the report applies the seven-passed/eighth-ready demo once and preserves later progress and explicit scenarios',()=>{
+test('normal report entries restart the seven-passed/eighth-ready demo and preserve display preferences and explicit scenarios',()=>{
  const key='ai-math-prototype-diagnosis-v1';
  for(const [existing,scenario,seeded]of [[null,'keep',true],['saved-progress','keep',true],[null,'0',false]]){
-  const store=new Map(existing?[[key,existing]]:[]);
+  const store=new Map([['report-language','en'],['report-theme','2'],...(existing?[[key,existing]]:[])]);
   const run=()=>vm.runInNewContext(read('report-seed.js'),{MathModel:M,window:{__JEI_REVIEW__:{scenario}},localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)}});
   run();const value=store.get(key);
   if(seeded){
@@ -45,8 +45,7 @@ test('the report applies the seven-passed/eighth-ready demo once and preserves l
    assert.deepEqual(p.map(p=>p.status),['passed','passed','passed','passed','passed','passed','passed','idle']);
    assert.deepEqual(p.map(p=>p.progress),[100,100,100,100,100,100,100,0]);assert(M.canStart(topic,p[7]));
    assert.deepEqual(p.map(p=>p.programId),M.programs(8,3,0).map(p=>p.programId),'original curriculum order');
-   if(existing)assert.equal(store.get(key+'-before-report-start-v2'),existing);
-   state.index=1;store.set(key,JSON.stringify(state));const advanced=store.get(key);run();assert.equal(store.get(key),advanced,'reopening keeps progress');
+   state.index=1;state.grades[3][0].programs[7].status='passed';store.set(key,JSON.stringify(state));run();const reopened=JSON.parse(store.get(key));assert.equal(reopened.index,0);assert.equal(reopened.grades[3][0].programs[7].status,'idle','each new entry restarts');assert.equal(store.get('report-language'),'en');assert.equal(store.get('report-theme'),'2');
   }else assert.equal(value,existing||undefined);
  }
 });
@@ -281,7 +280,7 @@ test('a failed or unfinished report course, a preview, and completed-card review
   finishReportOutcome(h);assert.equal(h.evaluate('state.index'),origin,mode);assert.equal(h.evaluate('panel'),null,mode);assert.equal(h.node('#learning-workspace').inert,false,mode);
  }
 });
-test('report set handoff resumes at every stage, pauses when hidden and keeps reward receipts idempotent',()=>{
+test('the internal report outcome restore remains idempotent and pauses when hidden',()=>{
  let h=reportHarness(reportFinalCard(),{reducedMotion:false});solveReportLast(h);h.click('diagnosis-outcome-confirm');reportStep(h);reportStep(h);
  for(const phase of ['rail-open','rail-complete','rail-next','rail-close','next-entry']){
   assert.equal(reportStage(h),phase);h=reportHarness(h.saved(),{reducedMotion:false});assert.equal(reportStage(h),phase);
@@ -290,4 +289,25 @@ test('report set handoff resumes at every stage, pauses when hidden and keeps re
   h.document.visibilityState='visible';h.emitDocument('visibilitychange');const old=h.evaluate('diagnosisOutcomeTimer');reportStep(h);const after=reportStage(h);old.fn();assert.equal(reportStage(h),after,'stale timer cannot advance twice');
  }
  assert.equal(h.evaluate('diagnosisOutcomeRun'),null);assert.equal(h.evaluate('state.index'),1);assert.equal(h.evaluate('skyState().totalPieces'),2);assert.equal(h.evaluate('Object.keys(state.programRewards).length'),1);
+});
+
+test('standalone foreground and cached-page returns request one new report entry without resetting active in-app navigation',()=>{
+ for(const standalone of [false,true]){
+  const events=new Map(),pageEvents=new Map(),store=new Map(),key='ai-math-prototype-diagnosis-v1';let reloads=0;
+  const document={visibilityState:'visible',addEventListener:(t,f)=>events.set(t,f)};
+  const root={__JEI_REVIEW__:{scenario:'keep'},matchMedia:()=>({matches:standalone}),addEventListener:(t,f)=>pageEvents.set(t,f),location:{reload:()=>reloads++}};
+  const env={MathModel:M,window:root,document,localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)}};
+  vm.runInNewContext(read('report-seed.js'),env);
+  const active=JSON.parse(store.get(key));active.index=1;store.set(key,JSON.stringify(active));
+  // Learner routes and ordinary re-renders do not run the entry initializer.
+  assert.equal(JSON.parse(store.get(key)).index,1);pageEvents.get('pageshow')({persisted:false});assert.equal(reloads,0);
+  if(standalone){events.get('visibilitychange')();assert.equal(reloads,0);document.visibilityState='hidden';events.get('visibilitychange')();assert.equal(reloads,0);document.visibilityState='visible';events.get('visibilitychange')();assert.equal(reloads,1);}
+  else assert.equal(events.has('visibilitychange'),false,'desktop tab changes do not reset an ongoing demo');
+  pageEvents.get('pageshow')({persisted:true});assert.equal(reloads,1,'cached return and foreground cannot request duplicate reloads');
+  vm.runInNewContext(read('report-seed.js'),env);const fresh=JSON.parse(store.get(key));assert.equal(fresh.index,0);assert.equal(fresh.grades[3][0].programs[7].progress,0);assert.equal(fresh.diagnosisAdvance,undefined);assert.equal(fresh.programRewards,undefined);
+ }
+ // A deliberately restored checkpoint still takes priority in the external review workspace.
+ let changed=false,registered=false;
+ vm.runInNewContext(read('report-seed.js'),{MathModel:M,window:{__JEI_REVIEW__:{scenario:'keep',restored:{}},addEventListener:()=>registered=true},localStorage:{setItem:()=>changed=true}});
+ assert.equal(changed,false);assert.equal(registered,false);
 });
