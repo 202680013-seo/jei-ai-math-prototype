@@ -268,7 +268,7 @@ test('passing the eighth report lesson preserves all cards and introduces D02 th
  assert.equal(h.evaluate('Object.keys(state.programRewards).length'),1);assert.equal(h.evaluate('skyState().totalPieces'),2);
  const {I}=language();I.setLanguage('en');for(const s of ['이번 세트의 학습을 모두 마쳤어요!','보상을 모은 뒤 다음 세트로 이어갈게요.'])assert(!/[가-힣]/.test(I.t(s)));
 });
-test('a failed or unfinished report course, a preview, and completed-card review never trigger automatic set navigation',()=>{
+test('a failed or unfinished report course, a preview, and already-passed-card review never trigger automatic set navigation',()=>{
  for(const mode of ['failed','unfinished','preview','review','final-grade']){
   const fixture=reportFinalCard();
   if(mode==='unfinished'){fixture.grades[3][0].programs[0].status='failed';fixture.grades[3][0].programs[0].wrongFrames=[0];}
@@ -364,4 +364,35 @@ test('Color 2 follows the green Figma frame, swaps all seven checks, and restore
  assert(read('report.css').includes('html[data-report-theme="2"]{--status-pass-fill:#0ec7ae}'));
  assert(read('report.css').includes('#diagnostic-result-slot>.diagnostic-summary-trigger:hover'));
  assert(!script.includes('https://www.figma.com/api/mcp/asset/'));
+});
+
+function reviewReportLast(h,wrong=false){h.click('failed-card',7);h.click('study-choice-review');h.click('learner-answer',0);h.click('learner-next');h.click('learner-answer',wrong?0:1);h.click('learner-next');}
+test('recovering the failed final report program through review completes the set and advances after rewards',()=>{
+ const h=reportHarness(reportFinalCard(),{reducedMotion:false});solveReportLast(h,true);finishReportOutcome(h);
+ assert.equal(h.evaluate('state.index'),0);assert.equal(h.evaluate('current().programs[7].status'),'failed');assert.equal(h.evaluate('skyState().totalPieces'),1);
+ reviewReportLast(h);assert.equal(h.evaluate('current().diagnosisOutcome.recoveredPass'),true);assert.equal(h.evaluate('current().diagnosisOutcome.result.status'),'passed');
+ assert.equal(h.node('#composition-copy').textContent,'이번 세트의 학습을 모두 마쳤어요!');
+ finishReportOutcome(h);assert.equal(h.evaluate('state.index'),1);assert.equal(h.evaluate('current().diagnosis'),'idle');assert.equal(h.node('#diagnosis-welcome-title').textContent,'나의 실력을 알아볼까요?');
+ assert(h.evaluate('state.grades[3][0].programs.every(p=>p.status==="passed")'));
+ assert.equal(h.evaluate('state.grades[3][0].programs[7].initialResult.status'),'failed','retain the original attempt');
+ assert.deepEqual(h.data('state.grades[3][0].programs[7].initialResult.wrongFrames'),[1]);
+ assert.equal(h.evaluate('state.grades[3][0].programs[7].reviewSession.result.status'),'passed');
+ assert.equal(h.evaluate('skyState().totalPieces'),3);assert.equal(h.evaluate('Object.keys(state.programRewards).length'),2);assert.equal(h.node('#learning').open,false);
+});
+test('review recovery advances only when it closes the last gap, and its saved outcome marker is idempotent',()=>{
+ for(const anotherFailed of [false,true]){
+  let h=reportHarness(reportFinalCard());solveReportLast(h,true);finishReportOutcome(h);
+  reviewReportLast(h,true);assert.equal(h.evaluate('current().diagnosisOutcome.recoveredPass'),false);finishReportOutcome(h);assert.equal(h.evaluate('state.index'),0);
+  if(anotherFailed)h.evaluate("current().programs[0].status='failed';current().programs[0].wrongFrames=[1];render()");
+  reviewReportLast(h);assert.equal(h.evaluate('current().diagnosisOutcome.recoveredPass'),true);
+  if(anotherFailed){finishReportOutcome(h);assert.equal(h.evaluate('state.index'),0);assert.equal(h.evaluate('current().programs[7].status'),'passed');}
+  else{
+   h.click('diagnosis-outcome-confirm');reportStep(h);reportStep(h);assert.equal(reportStage(h),'rail-open');
+   for(const phase of ['rail-open','rail-complete','rail-next','rail-close','next-entry']){
+    h=reportHarness(h.saved(),{reducedMotion:false});assert.equal(reportStage(h),phase);assert.equal(h.evaluate('diagnosisOutcomeRun.target.diagnosisOutcome.recoveredPass'),true);
+    const old=h.evaluate('diagnosisOutcomeTimer');reportStep(h);const after=reportStage(h);old.fn();assert.equal(reportStage(h),after);
+   }
+   assert.equal(h.evaluate('state.index'),1);assert.equal(h.evaluate('skyState().totalPieces'),4);assert.equal(h.evaluate('Object.keys(state.programRewards).length'),3);
+  }
+ }
 });
