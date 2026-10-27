@@ -110,7 +110,7 @@ AI 멘토 안내 보기|Show mentor guidance
 나에게 맞는 학습 만나기|Find learning that fits you
 어디를 더 공부하면 좋을지 알아볼까요?|Let's find out what to practice next.
 혼자 힘으로 풀어 보세요.|Try solving the questions on your own.
-3문항 · 예시 진단|3 questions · Sample skill check
+2문항 · 예시 진단|2 questions · Sample skill check
 잠시 쉬었다 할까요?|Ready for a short break?
 지금까지 푼 내용은 저장돼요.|Your progress will be saved.
 다시 누르면 이어서 할 수 있어요.|Come back anytime to continue.
@@ -917,7 +917,7 @@ AI 멘토 안내 보기|Show mentor guidance
   }
   const reverse=new Map(Object.entries(exact).map(([ko,en])=>[en,ko]));
   let language='ko';try{if(root.localStorage?.getItem('report-language')==='en')language='en';}catch{}
-  function original(s){return reverse.get(String(s))||String(s);}
+  function original(s){const value=String(s);return /^[\d\s.,+\-−×÷=<>≤≥%/()①②③]+$/.test(value)?value:reverse.get(value)||value;}
   function translate(value,locale=language){
     const raw=original(String(value)),copy=raw.trim();if(locale!=='en'||!/[가-힣]/.test(copy))return raw;
     let out=exact[copy]||root.JeiReportCatalog?.[copy];

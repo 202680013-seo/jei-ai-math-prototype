@@ -1,6 +1,6 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),crypto=require('node:crypto');
 const {harness}=require('./helpers/ui-harness.cjs');
-const {MathModel:M}=require('../dist/working/model.js');
+const {MathModel:M}=require('../dist/versions/v70/model.js');
 const registry=JSON.parse(fs.readFileSync('dist/versions.json'));
 const version=registry.versions.find(v=>v.label==='보고용 V1'),base='dist/'+version.path;
 const read=name=>fs.readFileSync(base+name,'utf8');
@@ -30,7 +30,7 @@ test('language switching translates main flows, dynamic metrics and all curricul
 test('all mentor event templates have English copy, and the app measures full English sentences before paging',()=>{
  const {I,root}=language();I.setLanguage('en');
  for(const r of root.MentorCopy.rules)for(const template of r.messages){const ko=template.replace(/\[이름\]/g,'재능').replace(/\[X\]/g,'D').replace(/\[[^\]]+\]/g,'3');assert(!/[가-힣]/.test(I.t(ko)),r.id+' '+I.t(ko));}
- const h=harness(undefined,{appSource:read('app.js')});h.context.JeiReportI18n=I;
+ const h=harness(undefined,{appSource:read('app.js'),mathModel:M});h.context.JeiReportI18n=I;
  h.evaluate("const reportRun={fullText:'오늘은 무엇부터 시작해 볼까요?',index:0};prepareMentorPages(reportRun)");
  assert.equal(h.evaluate('reportRun.fullText'),'What would you like to start with today?');assert(h.evaluate('reportRun.pages.length')>0);
 });
@@ -41,14 +41,14 @@ test('the report starts with its own representative fixture and never overwrites
   const value=store.get('ai-math-prototype-diagnosis-v1');if(seeded){const p=JSON.parse(value).grades[3][0].programs;assert.equal(p.length,8);assert.deepEqual(p.slice(0,3).map(p=>p.status),['passed','failed','active']);assert.equal(p[2].progress,50);}else assert.equal(value,existing||undefined);
  }
 });
-test('report diagnosis retains the two-answer resume and clean-pass reward/rail handoff',()=>{
- const h=harness(undefined,{appSource:read('app.js')});h.click('diagnosis');h.click('diagnosis-begin');
- for(let i=0;i<2;i++){h.click('diagnosis-answer',h.evaluate('DEMO['+i+'].correct'));h.click('diagnosis-next');}
- h.click('close-learning');h.click('diagnosis-leave');assert.equal(h.node('#diagnosis-welcome-progress').getAttribute('aria-valuenow'),'67');
- const restored=harness(h.saved(),{appSource:read('app.js')});assert.equal(restored.node('#diagnosis-welcome-progress').getAttribute('data-progress-stage'),'partial');
- restored.click('diagnosis');restored.click('diagnosis-answer',restored.evaluate('DEMO[2].correct'));restored.click('diagnosis-next');restored.click('diagnosis-outcome-confirm');
+test('report diagnosis retains the one-answer resume and clean-pass reward/rail handoff',()=>{
+ const h=harness(undefined,{appSource:read('app.js'),mathModel:M});h.click('diagnosis');h.click('diagnosis-begin');
+ for(let i=0;i<1;i++){h.click('diagnosis-answer',h.evaluate('DEMO['+i+'].correct'));h.click('diagnosis-next');}
+ h.click('close-learning');h.click('diagnosis-leave');assert.equal(h.node('#diagnosis-welcome-progress').getAttribute('aria-valuenow'),'50');
+ const restored=harness(h.saved(),{appSource:read('app.js'),mathModel:M});assert.equal(restored.node('#diagnosis-welcome-progress').getAttribute('data-progress-stage'),'partial');
+ restored.click('diagnosis');restored.click('diagnosis-answer',restored.evaluate('DEMO[1].correct'));restored.click('diagnosis-next');restored.click('diagnosis-outcome-confirm');
  for(let i=0;restored.evaluate('!!diagnosisOutcomeRun')&&i<12;i++){const timer=restored.evaluate('diagnosisOutcomeTimer');assert(timer&&!timer.cancelled);timer.fn();}
- assert.equal(restored.evaluate('diagnosisOutcomeRun'),null);assert.equal(restored.evaluate('state.index'),1);assert.equal(restored.evaluate('skyState().totalPieces'),3);
+ assert.equal(restored.evaluate('diagnosisOutcomeRun'),null);assert.equal(restored.evaluate('state.index'),1);assert.equal(restored.evaluate('skyState().totalPieces'),2);
 });
 test('Theme 2 uses original white Figma exports in their native-sized slots',()=>{
  const manifest=JSON.parse(read('assets/report-theme2/manifest.json'));assert.equal(manifest.frame,'74:719');
@@ -150,4 +150,54 @@ test('report dialog adapter leaves the dock at body level through review, result
  learning.addEventListener('cancel',e=>e.preventDefault());const escape={key:'Escape',preventDefault(){},stopImmediatePropagation(){}};events.get('keydown')(escape);assert.equal(learning.open,true,'diagnosis cancel can retain its pause confirmation');learning.close();
  assert.equal(plane.inert,false);assert.equal(locked.inert,true);assert.equal(dock.parentElement,body);
  assert(!read('report.js').includes('function mount()'));assert(!read('report.css').includes('dialog:has(>#report-dock)'));
+});
+test('report questions have two unambiguous answers and numeric choices survive translation count collisions',()=>{
+ const {I}=language(),Q=M.ReportQuestions;assert.equal(Q.items.length,2);
+ assert.equal(Q.items[0].choices[Q.items[0].correct].shape,'circle');
+ const numbers=Q.items[1].choices.map(c=>Number(c.label));assert.equal(numbers[Q.items[1].correct],Math.max(...numbers));
+ for(const q of Q.items){assert.equal(new Set(q.choices.map(c=>c.label)).size,4);assert(q.correct>=0&&q.correct<4);}
+ const {root}=language();const script=read('report.js'),context=vm.createContext({I,window:root,sources:new WeakMap(),skip:''});
+ vm.runInContext(script.slice(script.indexOf(' function textNode(n){'),script.indexOf('\n function element(e){')),context);
+ const nodes=numbers.map(number=>({nodeValue:String(number),parentElement:{closest:()=>null,matches:()=>false}}));
+ for(const locale of ['en','ko','en','ko']){I.setLanguage('en');for(const n of numbers)I.t(n+'개');I.setLanguage(locale);for(const n of nodes){context.n=n;vm.runInContext('textNode(n)',context);}assert.deepEqual(nodes.map(n=>n.nodeValue),['3','8','2','5']);}
+});
+function reportHarness(saved){return harness(saved,{appSource:read('app.js'),mathModel:M});}
+function finishReportOutcome(h){h.click('diagnosis-outcome-confirm');for(let i=0;h.evaluate('!!diagnosisOutcomeRun')&&i<20;i++){const timer=h.evaluate('diagnosisOutcomeTimer');assert(timer&&!timer.cancelled);timer.fn();}assert.equal(h.evaluate('diagnosisOutcomeRun'),null);}
+test('all four two-question diagnosis outcomes have matching results, prescriptions and exact rewards',()=>{
+ for(const answers of [[0,1],[0,0],[1,1],[1,0]]){
+  const h=reportHarness();h.click('diagnosis');h.click('diagnosis-begin');h.click('diagnosis-next');assert.equal(h.evaluate('current().diagnosticSession.index'),0);
+  h.click('diagnosis-answer',99);assert.equal(h.evaluate('current().diagnosticSession.answers.length'),0);
+  answers.forEach((a,i)=>{assert.equal(h.evaluate('current().diagnosticSession.index'),i);h.click('diagnosis-answer',a);h.click('diagnosis-next');});
+  const wrong=Number(answers[0]!==0)+Number(answers[1]!==1);assert.equal(h.evaluate('diagnosisSummary(outcomeResult()).total'),2);assert.equal(h.evaluate('diagnosisSummary(outcomeResult()).wrong'),wrong);
+  finishReportOutcome(h);assert.equal(h.evaluate('skyState().totalPieces'),2-wrong);assert.equal(h.evaluate('state.grades[3][0].diagnosticResult.questionCount'),2);
+  if(wrong)assert(h.evaluate('current().programs.every(p=>p.frames.length===2)'));else assert.equal(h.evaluate('state.index'),1);
+ }
+});
+test('normal learning and completed-card review finish after two answers, preserve next progress and credit once',()=>{
+ for(const review of [false,true])for(const failed of [false,true]){
+  let h=reportHarness();
+  if(review){h.seed('passed',true);h.click('completed-card',0);h.click('study-choice-review');}
+  else{h.evaluate("current().diagnosis='done';current().programs=M.programs(2);render()");h.click('program',0);h.click('program-begin');}
+  assert.equal(h.evaluate('current().programs[0].frames.length'),2);
+  h.click('learner-answer',0);h.click('learner-next');
+  if(review)assert.equal(h.evaluate('current().programs[0].reviewSession.index'),1);else assert.equal(h.evaluate('current().programs[0].progress'),50);
+  // Exit/reload on the second question exercises the report's actual model,
+  // saved state and completed-card resume route rather than a fresh replay.
+  h.click('close-learning');h=reportHarness(h.saved());
+  if(review){h.click('completed-card',0);h.click('study-choice-review');}else{h.click('program',0);h.click('program-begin');}
+  h.click('learner-answer',failed?0:1);h.click('learner-next');
+  assert.equal(h.evaluate('diagnosisSummary(outcomeResult()).total'),2);assert.equal(h.evaluate('diagnosisSummary(outcomeResult()).wrong'),failed?1:0);
+  finishReportOutcome(h);assert.equal(h.evaluate('skyState().totalPieces'),failed?1:2);
+  if(review){assert.equal(h.evaluate('current().programs[1].progress'),50);assert.equal(h.evaluate('current().programs[0].initialResult.status'),'passed');}
+  const reward=h.evaluate('skyState().totalPieces');h.click('program',0);assert.equal(h.evaluate('skyState().totalPieces'),reward,'saved result does not replay rewards');
+ }
+});
+test('every prescribed report program has two questions and legacy sessions migrate without deleting their originals',()=>{
+ const catalog=JSON.stringify(M.Catalog);
+ for(let g=0;g<10;g++)for(let i=0;i<M.COUNTS[g];i++)for(const p of M.programs(M.sourceCount(g,i),g,i)){assert.equal(p.frames.length,2);M.setProgress(p,50);assert.equal(p.completedFrames,1);}
+ assert.equal(JSON.stringify(M.Catalog),catalog,'the real curriculum remains unchanged');
+ const saved=M.create(),t=saved.grades[3][0];t.diagnosis='active';t.diagnosticSession={index:2,answers:[0,1],started:1};
+ t.programs=[{id:0,status:'active',progress:70,completedFrames:7,frames:Array.from({length:10},(_,i)=>({frameId:'original'+i})),demoChoice:1,wrongFrames:[0,5],reviewSession:{index:5,answers:[0,1,2,3,0],wrongFrames:[2],complete:false}}];
+ M.ReportQuestions.prepare(saved);assert.equal(t.diagnosticSession.index,1);assert.equal(t.reportOriginalDiagnosticSession.index,2);assert.equal(t.programs[0].frames.length,2);assert.equal(t.programs[0].progress,50);assert.equal(t.programs[0].demoChoice,undefined);assert.equal(t.programs[0].reportOriginalQuestionState.frames.length,10);assert.equal(t.programs[0].reviewSession.index,1);
+ const stable=JSON.stringify(saved);M.ReportQuestions.prepare(saved);assert.equal(JSON.stringify(saved),stable,'migration is idempotent');
 });
