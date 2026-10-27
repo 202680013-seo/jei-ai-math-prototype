@@ -59,8 +59,8 @@ test('report diagnosis retains the one-answer resume and clean-pass reward/rail 
  assert.equal(restored.evaluate('diagnosisOutcomeRun'),null);assert.equal(restored.evaluate('state.index'),1);assert.equal(restored.evaluate('skyState().totalPieces'),2);
 });
 test('Theme 2 uses original white Figma exports in their native-sized slots',()=>{
- const manifest=JSON.parse(read('assets/report-theme2/manifest.json'));assert.equal(manifest.frame,'74:719');
- for(const file of manifest.assets){const data=fs.readFileSync(base+'assets/report-theme2/'+file.file);assert(data.length>100);assert.equal(crypto.createHash('sha256').update(data).digest('hex'),file.sha256);assert(data.toString().startsWith('<svg'));}
+ const manifest=JSON.parse(read('assets/report-theme2-green/manifest.json'));assert.equal(manifest.frame,'95:1009');
+ for(const file of manifest.assets){const data=fs.readFileSync(base+'assets/report-theme2-green/'+file.file);assert(data.length>100);assert.equal(crypto.createHash('sha256').update(data).digest('hex'),file.sha256);assert(data.toString().startsWith('<svg'));}
  const css=read('report.css');assert(css.includes('background:#0ec7ae'));assert(css.includes('background:#0cad98'));assert(css.includes('background:#f1fcfa'));
  assert(!css.includes('width:100%;height:100%'));assert(!read('report.js').includes("host.append(dock)"));
 });
@@ -338,4 +338,30 @@ test('the independent 처음으로 action resets only report progress and exits 
  const script=read('report.js'),markup=script.match(/dock\.innerHTML=`([^`]+)`;/)[1];assert(markup.includes('data-report-label="컬러1"'));assert(markup.includes('data-report-label="컬러2"'));assert(!markup.includes('테마'));assert(markup.endsWith('>처음으로</button>'));
  const handler=script.slice(script.indexOf(" dock.addEventListener('click'"),script.indexOf(" window.addEventListener('message'"));let restarted=0;
  vm.runInNewContext(handler,{dock:{addEventListener:(_type,fn)=>fn({target:{closest:s=>s==='[data-report-restart]'?{}:null}})},window:{JeiReportEntry:{restart:()=>restarted++}}});assert.equal(restarted,1);
+});
+
+test('Color 2 follows the green Figma frame, swaps all seven checks, and restores Color 1 without changing learner state',()=>{
+ const script=read('report.js'),manifest=JSON.parse(read('assets/report-theme2-green/manifest.json'));
+ const root={attrs:new Map(),style:{values:{},setProperty(k,v){this.values[k]=v;}},setAttribute(k,v){this.attrs.set(k,v);},getAttribute(k){return this.attrs.get(k);}};
+ const selectors=['.recommend-arrow','.shortcut-profile-art','.shortcut-report-art','.constellation-art>img','.active-card-art','.passed-card .figma-status-icon','.side-tab-surface','.result-icon>img'];
+ const images=new Map(selectors.map(s=>[s,Array.from({length:s.includes('passed-card')?7:1},()=>({src:'',setAttribute(_k,v){this.src=v;}}))]));
+ const saved=new Map();const context=vm.createContext({root,window:{JeiTheme:{presetPalette:()=>({'--theme-completed':'#e5f5fd'})}},document:{querySelectorAll:s=>images.get(s)||[]},localStorage:{setItem:(k,v)=>saved.set(k,v)},labels:()=>{},theme:'1'});
+ vm.runInContext(script.slice(script.indexOf(' const themeImages='),script.indexOf(' const sources=')),context);
+ const h=reportHarness(reportFinalCard());h.document.documentElement=root;const sourceBefore=h.data('state');
+ for(const theme of ['2','1','2','1']){
+  context.theme=theme;vm.runInContext('applyTheme()',context);
+  assert.equal(root.style.values['--theme-completed'],theme==='2'?'#e5f6f4':'#e5f5fd');
+  for(const [selector,list]of images)for(const img of list){assert(img.src.startsWith(theme==='2'?'assets/report-theme2-green/':'assets/figma-v4-1/'),selector);assert(fs.existsSync(base+img.src));}
+  h.evaluate('render()');const markup=h.node('#programs').innerHTML;
+  assert.equal((markup.match(new RegExp('src="assets/'+(theme==='2'?'report-theme2-green':'figma-v4-1')+'/passed.svg"','g'))||[]).length,7);
+  assert(markup.includes('src="assets/'+(theme==='2'?'report-theme2-green':'figma-v4-1')+'/active-card-art.svg"'));
+  assert(h.node('#diagnostic').innerHTML.includes('src="assets/'+(theme==='2'?'report-theme2-green':'figma-v4-1')+'/result-report.svg"'));
+ }
+ assert.deepEqual(h.data('state'),sourceBefore,'theme is presentation-only');
+ const expected={'active-card-art.svg':[141,159],'recommend-arrow.svg':[18,18],'my-profile.svg':[25,25],'my-report.svg':[17,19],'constellation.svg':[33,27],'rail-tab.svg':[72,144],'rail-report.svg':[25,30],'result-report.svg':[14,18],'passed.svg':[44,44]};
+ assert.equal(manifest.assets.length,9);
+ for(const a of manifest.assets){const name=a.file.split('/').pop(),rootTag=read('assets/report-theme2-green/'+a.file).split('>')[0]+'>';assert.equal(rootTag,a.root);assert.deepEqual([Number(rootTag.match(/width="([\d.]+)"/)[1]),Number(rootTag.match(/height="([\d.]+)"/)[1])],expected[name],name);}
+ assert(read('report.css').includes('html[data-report-theme="2"]{--status-pass-fill:#0ec7ae}'));
+ assert(read('report.css').includes('#diagnostic-result-slot>.diagnostic-summary-trigger:hover'));
+ assert(!script.includes('https://www.figma.com/api/mcp/asset/'));
 });

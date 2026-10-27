@@ -2,7 +2,7 @@
   "id": "v70",
   "date": "2026-10-26",
   "files": {
-    "app.js": "bf12094894aca90a6fe1e60a9971d0ac2a87cc218f14b9ab75e28c572474bfe3",
+    "app.js": "3dbefadad71b07f51e013c03d4bd3585d2a9dbd0c5e6a7544f471dcad950d101",
     "assets/active-card-art.svg": "db896082a62eeeff84e4fc46ad01dc1443872423cb15172700722ecd4b63d88d",
     "assets/figma-v4-1/active-card-art.svg": "8571151b8c4436cea38a513d5bbe7ea0eb82850551f7fc647e38b7595bc414c9",
     "assets/figma-v4-1/close.svg": "0d458db2351ecd3772ee6dff1a9f8b3b6e5137d5e9857f0ec745fa03cd453458",
@@ -59,8 +59,8 @@
     "report-copy.js": "f1f60398ff1ee1726b98b1e3175bb7e2fe9a51d380200ac962f7ee0e44940101",
     "report-mentor.js": "9d906928fd2da3872554abb8fd74298bd09644d7c59def3c64d20338ba51ac9b",
     "report-seed.js": "2cc5e0b9dd1a9c9de45d58fa66562fe767a713e4b09cffc370a04151664b108e",
-    "report.css": "0d9fd9decf9ec3edaf0865418cfb5619408503d4d9f3ca968134df9f5add68b8",
-    "report.js": "2f6f943da072e49f0f4534959a825058a8b2713d90f7e3d0140d9c289f137290",
+    "report.css": "89ca440a2647ea565a3ffa16f2dc78d6cab13758d6f8a5ade6ef712cf0716ab2",
+    "report.js": "8ff095b3c5ea639db5f23bc5af56ce0baf38ddef603aa5878e4c7f2eb6a8ce04",
     "sky.js": "0839e3db0daf10e9ce3dcac4220419aa401ba8b578d1bd5c2c7b07ee02aa180b",
     "style.css": "b3744d2102d6fb6f9ce40fff7bfb7b21b5bc39bd51b7a84d6eec64099725642e",
     "theme.css": "2bd2d29a9bc01a44d15475df7a25ec48f6480b91ccfd736de0e238fe683cd16f",
@@ -72,6 +72,15 @@
     "report-topics.js": "90d247b26a2efc89a366f3ae6679449fb7f36789cfea643b70bca31ef8a985a2",
     "report-dialogs.js": "0f845982f4a5f6377199ce819fa02e4959763d2d580e68c7a39734e4785503e4",
     "report-questions.js": "bc212d0aa7d43b5110be095f7167ff35d3f26098be36ff3f962b1833d5b5a60b",
-    "report-rail-icons.js": "a6f43030bb7885f46c58bccccd0a13ee860d107bb7f1ddda19613b0e3cda7aa2"
+    "report-rail-icons.js": "a6f43030bb7885f46c58bccccd0a13ee860d107bb7f1ddda19613b0e3cda7aa2",
+    "assets/report-theme2-green/recommend-arrow.svg": "04aa26ac0f2874eb7f388c73fe670b4a205327f4e9b4396049309e5f68d05679",
+    "assets/report-theme2-green/my-profile.svg": "8b041adb0a13cae0297e078cd318d24899ec8f99c682fe4d3774c4f6cea6d057",
+    "assets/report-theme2-green/constellation.svg": "2f088c84254d96416bc8b8c140927d54a63e07ec3462ba38ca2c222229691b22",
+    "assets/report-theme2-green/manifest.json": "c6f340f2652efef2d262efca21b139498669acb25840117a8ce668b4c1d2469e",
+    "assets/report-theme2-green/result-report.svg": "1e1242ad5fd8e7dcd529b3d750067d0fcd36cdb37ef177a8b7bddc8874bbaad6",
+    "assets/report-theme2-green/my-report.svg": "3f3ddd453ee6af2daf64058fb15814334bccbee67621bb34529bd59e892cad5b",
+    "assets/report-theme2-green/passed.svg": "f9241fd42360b6a4bdd53a96b881b3d521ddebcde48f5654302b940f15ae9460",
+    "assets/report-theme2-green/rail-tab.svg": "2eb58ade02b5020068f06d6d0aea393bd342c5d1503a0108709d4d8ea70882dd",
+    "assets/report-theme2-green/active-card-art.svg": "6b032ad0bd167e8c2d0e59cf3ce6edcfd9ad508477838847670097f531c9e210"
   }
 }

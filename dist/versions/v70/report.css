@@ -93,3 +93,7 @@ body[data-report-set-advance=true][data-diagnosis-advance-paused=true] #programs
  #report-dock .report-controls{grid-column:1/-1;grid-row:2;justify-content:center}
  #report-dock .report-restart{grid-column:2;grid-row:1;justify-self:end;margin-left:0;height:28px;min-height:28px;padding:0 8px}
 }
+
+/* Figma 95:1009 / 테마02_초록: semantic completion color; card geometry stays shared. */
+html[data-report-theme="2"]{--status-pass-fill:#0ec7ae}
+html[data-report-theme="2"] #learning-context #diagnostic-result-slot>.diagnostic-summary-trigger:hover:not(:disabled){background:color-mix(in srgb,#e5f6f4 80%,#cdf1ee)}

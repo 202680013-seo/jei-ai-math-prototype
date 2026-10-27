@@ -11,11 +11,12 @@
   for(const b of dock.querySelectorAll('[data-report-language]'))b.setAttribute('aria-pressed',String(b.dataset.reportLanguage===I.language));
   for(const b of dock.querySelectorAll('[data-report-theme]'))b.setAttribute('aria-pressed',String(b.dataset.reportTheme===theme));
  }
- const themeImages=[['.recommend-arrow','recommend-arrow.svg','assets/figma-v4-1/recommend-arrow.svg'],['.shortcut-profile-art','my-profile.svg','assets/figma-v4-1/my-profile.svg'],['.shortcut-report-art','my-report.svg','assets/figma-v4-1/my-report.svg'],['.constellation-art>img','constellation.svg','assets/figma-v4-1/constellation.svg']];
+ const themeImages=[['.recommend-arrow','recommend-arrow.svg','assets/figma-v4-1/recommend-arrow.svg'],['.shortcut-profile-art','my-profile.svg','assets/figma-v4-1/my-profile.svg'],['.shortcut-report-art','my-report.svg','assets/figma-v4-1/my-report.svg'],['.constellation-art>img','constellation.svg','assets/figma-v4-1/constellation.svg'],['.active-card-art','active-card-art.svg','assets/figma-v4-1/active-card-art.svg'],['.passed-card .figma-status-icon','passed.svg','assets/figma-v4-1/passed.svg'],['.side-tab-surface','rail-tab.svg','assets/figma-v4-1/rail-tab.svg'],['.result-icon>img','result-report.svg','assets/figma-v4-1/result-report.svg']];
  function applyTheme(){
   root.setAttribute('data-report-theme',theme);
   for(const [key,value]of Object.entries(window.JeiTheme.presetPalette('current')))root.style.setProperty(key,value);
-  for(const [selector,name,original]of themeImages){const img=document.querySelector(selector);if(img)img.setAttribute('src',theme==='2'?'assets/report-theme2/'+name:original);}
+  if(theme==='2')root.style.setProperty('--theme-completed','#e5f6f4');
+  for(const [selector,name,original]of themeImages)for(const img of document.querySelectorAll(selector))img.setAttribute('src',theme==='2'?'assets/report-theme2-green/'+name:original);
   try{localStorage.setItem('report-theme',theme);}catch{}labels();window.JeiReportDialogs?.sync();
  }
  const sources=new WeakMap(),attrs=new WeakMap();let observer,pending=new Set(),queued=false;
