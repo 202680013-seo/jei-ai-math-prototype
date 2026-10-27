@@ -120,7 +120,7 @@ html[data-report-theme] .mentor-cluster .recommend[data-recommend-state=loading]
 #report-dock [hidden]{display:none!important}
 #report-dock .report-toggle{width:34px;min-width:34px;height:32px;min-height:32px;padding:0;margin-left:0;background:#f1f4f6;color:#758391}
 #report-dock .report-toggle i{display:block;width:7px;height:7px;border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .2s ease}
-#report-dock[data-collapsed=true]{display:flex;gap:0;width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:50%;background:transparent;box-shadow:none;backdrop-filter:none;opacity:.35;cursor:pointer;transition:opacity .18s ease}
+#report-dock[data-collapsed=true]{display:flex;gap:0;left:calc(12px + env(safe-area-inset-left,0px));transform:none;width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:50%;background:transparent;box-shadow:none;backdrop-filter:none;opacity:.22;cursor:pointer;transition:opacity .18s ease}
 #report-dock[data-collapsed=true] .report-label{display:none}
 #report-dock[data-collapsed=true] .report-toggle{width:44px;min-width:44px;height:44px;min-height:44px;margin-left:0;padding:0;border-radius:50%;background:transparent}
 #report-dock[data-collapsed=true] .report-toggle i{width:10px;height:10px;transform:translateY(2px) rotate(-135deg)}
@@ -131,3 +131,5 @@ html[data-report-theme] .mentor-cluster .recommend[data-recommend-state=loading]
 @media(prefers-reduced-motion:reduce){#report-dock[data-collapsed=true],#report-dock .report-toggle i{transition:none}}
 
 #report-dock[data-panel-interacted=true]{animation:none}
+
+@media(max-width:650px){#report-dock[data-collapsed=true]{left:calc(20px + env(safe-area-inset-left,0px));bottom:calc(84px + env(safe-area-inset-bottom,0px))}}
