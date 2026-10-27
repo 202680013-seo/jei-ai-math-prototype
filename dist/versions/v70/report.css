@@ -4,7 +4,7 @@
 :root{--report-dock-clearance:108px}
 .settings-trigger{display:none!important}
 body{padding-bottom:var(--report-dock-clearance)}
-#report-dock{position:fixed;z-index:2147483000;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;align-items:center;width:max-content;max-width:calc(100vw - 32px);min-height:72px;padding:10px 12px;border:1px solid #e3e8ec;border-radius:24px;background:#fffffff5;color:#414f62;box-shadow:0 8px 32px #25374721,0 2px 6px #2537470a;font-size:14px;line-height:1.3;backdrop-filter:blur(18px);isolation:isolate;animation:report-dock-in .45s cubic-bezier(.22,.61,.36,1) both;white-space:nowrap}
+#report-dock{position:fixed;z-index:2147483000;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;align-items:center;width:max-content;max-width:calc(100vw - 32px);min-height:72px;padding:10px 12px;border:1px solid #e3e8ec;border-radius:24px;background:#fffffff5;color:#414f62;box-shadow:0 8px 32px #25374721,0 2px 6px #2537470a;font-size:14px;line-height:1.3;backdrop-filter:blur(18px);isolation:isolate;opacity:1;animation:report-dock-in .45s cubic-bezier(.22,.61,.36,1) both;white-space:nowrap}
 #report-dock[hidden]{display:none}
 #report-dock .report-label{flex:none;margin:0 18px 0 8px;color:#414f62;font-size:14px;font-weight:800}
 #report-dock .report-controls{display:flex;align-items:center;gap:14px}
@@ -116,17 +116,15 @@ html[data-report-theme] .mentor-cluster .recommend-loader small{transition:color
 @media(prefers-reduced-motion:reduce){html[data-report-theme] .mentor-cluster>.recommend,html[data-report-theme] .mentor-cluster .recommend button,html[data-report-theme] .top-shortcuts .compact-shortcut,html[data-report-theme] .mentor-cluster .recommend-label,html[data-report-theme] .mentor-cluster #recommend-copy,html[data-report-theme] .mentor-cluster .recommend-content>.recommend-loader,html[data-report-theme] .mentor-cluster .recommend-loader small{transition:none}}
 html[data-report-theme] .mentor-cluster .recommend[data-recommend-state=loading] .recommend-loader{transition-delay:0s}
 
-/* Collapse the independent test dock to one small labelled handle. */
+/* Keep translucency on the collapsed glyph, never on the independent dock. */
 #report-dock [hidden]{display:none!important}
 #report-dock .report-toggle{width:34px;min-width:34px;height:32px;min-height:32px;padding:0;margin-left:0;background:#f1f4f6;color:#758391}
-#report-dock .report-toggle i{display:block;width:7px;height:7px;border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .2s ease}
-#report-dock[data-collapsed=true]{display:flex;gap:0;left:calc(12px + env(safe-area-inset-left,0px));transform:none;width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:50%;background:transparent;box-shadow:none;backdrop-filter:none;opacity:.22;cursor:pointer;transition:opacity .18s ease}
+#report-dock .report-toggle i{display:block;width:7px;height:7px;border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;transform:translateY(-2px) rotate(45deg);opacity:1;transition:transform .2s ease,opacity .18s ease}
+#report-dock[data-collapsed=true]{display:flex;gap:0;left:calc(12px + env(safe-area-inset-left,0px));transform:none;width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:50%;background:transparent;box-shadow:none;backdrop-filter:none;cursor:pointer}
 #report-dock[data-collapsed=true] .report-label{display:none}
 #report-dock[data-collapsed=true] .report-toggle{width:44px;min-width:44px;height:44px;min-height:44px;margin-left:0;padding:0;border-radius:50%;background:transparent}
-#report-dock[data-collapsed=true] .report-toggle i{width:10px;height:10px;transform:translateY(2px) rotate(-135deg)}
-@media(hover:hover) and (pointer:fine){#report-dock[data-collapsed=true]:hover{opacity:.85}}
-#report-dock[data-collapsed=true]:has(.report-toggle:focus-visible),#report-dock[data-collapsed=true]:active{opacity:1}
-#report-dock[data-panel-moving=true]{overflow:hidden;transition:none}
+#report-dock[data-collapsed=true] .report-toggle i{width:10px;height:10px;opacity:.22;transform:translateY(2px) rotate(-135deg)}
+#report-dock[data-panel-moving=true]{overflow:hidden}
 @media(max-width:650px){#report-dock{grid-template-columns:auto 1fr auto}#report-dock .report-toggle{grid-column:1;grid-row:1;margin-left:0}#report-dock .report-label{grid-column:2}#report-dock .report-restart{grid-column:3}}
 @media(prefers-reduced-motion:reduce){#report-dock[data-collapsed=true],#report-dock .report-toggle i{transition:none}}
 

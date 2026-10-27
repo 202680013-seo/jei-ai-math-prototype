@@ -449,17 +449,33 @@ test('the independent test panel collapses to an accessible handle and reopens d
  const script=read('report.js'),css=read('report.css');
  for(const reduced of [false,true]){
   const attrs=new Map(),toggleAttrs=new Map(),motions=[],controls={hidden:false},restart={hidden:false},toggle={setAttribute:(k,v)=>toggleAttrs.set(k,v)};
-  const dock={setAttribute:(k,v)=>attrs.set(k,v),removeAttribute:k=>attrs.delete(k),getBoundingClientRect:()=>({left:controls.hidden?12:400,top:controls.hidden?608:600,width:controls.hidden?44:600,height:controls.hidden?44:72}),querySelector:s=>s==='.report-controls'?controls:s==='.report-restart'?restart:toggle,animate(frames,options){const m={frames,options,finished:Promise.resolve(),cancel(){this.cancelled=true;}};motions.push(m);return m;},addEventListener(_t,f){this.click=f;}};
-  const context=vm.createContext({dock,window:{matchMedia:()=>({matches:reduced})}});
+  const dock={setAttribute:(k,v)=>attrs.set(k,v),removeAttribute:k=>attrs.delete(k),getBoundingClientRect:()=>({left:controls.hidden?12:400,top:controls.hidden?608:600,width:controls.hidden?44:600,height:controls.hidden?44:72}),querySelector:s=>s==='.report-controls'?controls:s==='.report-restart'?restart:toggle,animate(frames,options){let finish;const m={frames,options,finished:new Promise(resolve=>{finish=resolve;}),finish(){finish();},cancel(){this.cancelled=true;finish();}};motions.push(m);return m;},addEventListener(_t,f){this.click=f;}};
+  const context=vm.createContext({dock,window:{matchMedia:()=>({matches:reduced}),getComputedStyle(){throw Error('Dock translucency must not be sampled into a motion');}}});
   vm.runInContext(script.slice(script.indexOf(' let collapsed='),script.indexOf(' function labels(){')),context);
   assert.equal(controls.hidden,false);assert.equal(toggleAttrs.get('aria-expanded'),'true');
   const handler=script.slice(script.indexOf(" dock.addEventListener('click'"),script.indexOf(" window.addEventListener('message'"));vm.runInContext(handler,context);
+  // Finish several full fold/unfold cycles, including the touch-active/hover
+  // window. Geometry motion must never copy a transient opacity to the dock.
+  for(let cycle=0;cycle<3;cycle++)for(const folded of [true,false]){
+   dock.click({target:{closest:s=>s==='[data-report-toggle]'?{}:null}});
+   assert.equal(controls.hidden,folded);assert.equal(restart.hidden,folded);
+   assert.equal(attrs.get('data-collapsed'),String(folded));
+   if(!reduced){const m=motions.at(-1);assert(m.frames.every(f=>!('opacity' in f)));m.finish();}
+   await Promise.resolve();assert.equal(attrs.has('data-panel-moving'),false);
+  }
+  const interruptedStart=motions.length;
   dock.click({target:{closest:s=>s==='[data-report-toggle]'?{}:null}});assert.equal(controls.hidden,true);assert.equal(restart.hidden,true);assert.equal(toggleAttrs.get('aria-expanded'),'false');assert.equal(toggleAttrs.get('aria-label'),'테스트 패널 펼치기');
   // The compact hit area can reopen the panel, as well as its chevron.
   dock.click({target:{closest:()=>null}});assert.equal(controls.hidden,false);assert.equal(restart.hidden,false);assert.equal(toggleAttrs.get('aria-expanded'),'true');
+  if(!reduced){await Promise.resolve();assert.equal(attrs.has('data-panel-moving'),true,'cancelled motion cannot finish a newer unfold');motions.at(-1).finish();}
   await Promise.resolve();assert.equal(attrs.get('data-collapsed'),'false');assert.equal(attrs.has('data-panel-moving'),false);
-  if(reduced)assert.equal(motions.length,0);else{assert.equal(motions.length,2);assert.equal(motions[0].cancelled,true);assert(motions.every(m=>m.options.duration===240&&m.frames.every(f=>f.transform==='none'&&f.bottom==='auto')));assert.equal(motions[0].frames[1].left,'12px');assert.equal(motions[0].frames[1].opacity,.22);}
+  if(reduced)assert.equal(motions.length,0);else{assert.equal(motions.length,8);assert.equal(motions[interruptedStart].cancelled,true);assert(motions.every(m=>m.options.duration===240&&m.frames.every(f=>f.transform==='none'&&f.bottom==='auto'&&!('opacity' in f))));assert.equal(motions[0].frames[1].left,'12px');}
  }
+ const dockStyle=css.match(/#report-dock\{([^}]+)\}/)[1],foldedStyle=css.match(/#report-dock\[data-collapsed=true\]\{([^}]+)\}/)[1];
+ assert(dockStyle.includes('opacity:1;'));assert(!foldedStyle.includes('opacity:'));
+ assert(css.match(/#report-dock \.report-toggle i\{([^}]+)\}/)[1].includes('opacity:1;'));
+ assert(css.match(/#report-dock\[data-collapsed=true\] \.report-toggle i\{([^}]+)\}/)[1].includes('opacity:.22;'));
+ assert(!/#report-dock\[data-collapsed=true\][^{}]*:(hover|active|has)\{[^}]*opacity:/.test(css),'pointer/focus state cannot leave the handle opaque');
  assert(css.includes('#report-dock [hidden]{display:none!important}'));assert(css.includes('#report-dock[data-collapsed=true]{display:flex'));
  assert(script.includes('aria-controls="report-controls report-restart"'));assert(script.includes('document.body.append(dock)'));
 });

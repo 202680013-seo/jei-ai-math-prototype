@@ -7,7 +7,7 @@
  document.body.append(dock);
  let collapsed=false,panelMotion=null;
  function setPanelCollapsed(value,animate=true){
-  const before=dock.getBoundingClientRect(),fromOpacity=Number(window.getComputedStyle?.(dock)?.opacity??(collapsed ? .22 : 1));panelMotion?.cancel?.();panelMotion=null;dock.removeAttribute('data-panel-moving');
+  const before=dock.getBoundingClientRect();panelMotion?.cancel?.();panelMotion=null;dock.removeAttribute('data-panel-moving');
   if(animate)dock.setAttribute('data-panel-interacted','true');
   collapsed=!!value;dock.setAttribute('data-collapsed',String(collapsed));
   dock.querySelector('.report-controls').hidden=collapsed;dock.querySelector('.report-restart').hidden=collapsed;
@@ -15,8 +15,8 @@
   toggle.setAttribute('aria-expanded',String(!collapsed));toggle.setAttribute('aria-label',label);toggle.setAttribute('title',label);
   if(animate&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches&&dock.animate){
    dock.setAttribute('data-panel-moving','true');
-   const after=dock.getBoundingClientRect(),toOpacity=Number(window.getComputedStyle?.(dock)?.opacity??(collapsed ? .22 : 1)),motion=dock.animate([{left:before.left+'px',top:before.top+'px',bottom:'auto',transform:'none',width:before.width+'px',height:before.height+'px',opacity:fromOpacity},{left:after.left+'px',top:after.top+'px',bottom:'auto',transform:'none',width:after.width+'px',height:after.height+'px',opacity:toOpacity}],{duration:240,easing:'cubic-bezier(.25,.1,.25,1)'});
-   if(motion){panelMotion=motion;const finish=()=>{if(panelMotion===motion){panelMotion=null;dock.removeAttribute('data-panel-moving');}};motion.finished?.then(finish,finish);}
+   const after=dock.getBoundingClientRect(),motion=dock.animate([{left:before.left+'px',top:before.top+'px',bottom:'auto',transform:'none',width:before.width+'px',height:before.height+'px'},{left:after.left+'px',top:after.top+'px',bottom:'auto',transform:'none',width:after.width+'px',height:after.height+'px'}],{duration:240,easing:'cubic-bezier(.25,.1,.25,1)'});
+   if(motion){panelMotion=motion;const finish=()=>{if(panelMotion===motion){panelMotion=null;dock.removeAttribute('data-panel-moving');}};motion.finished?.then(finish,finish);}else dock.removeAttribute('data-panel-moving');
   }
  }
  setPanelCollapsed(false,false);
