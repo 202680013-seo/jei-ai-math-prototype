@@ -20,7 +20,7 @@ test('the report is a distinct native version and does not replace V6.4 or worki
 });
 test('language switching translates main flows, dynamic metrics and all curriculum labels without changing learning storage',()=>{
  const {I,root,storage}=language();const saved=JSON.stringify(M.create());storage.set('ai-math-prototype-diagnosis-v1',saved);I.setLanguage('en');
- for(const copy of ['비교와 분류','나의 실력을 알아볼까요?','실력알기 결과 확인','모임의 크기 비교(<,>)','활동을 고르고 있어요','저장하고 나가기','계속 풀기','실력알기를 통과했어요!','카드를 눌러 복습해보세요!','정답 2개 · 오답 1개','2 / 3문제 · 67%','비교와 분류 · 실력 알기 완료','더 익힐 내용을 모으고 있어요.','재능님을 위한 학습이 준비됐어요','비교와 분류 · 더 연습할 학습 8개']){
+ for(const copy of ['완성한 별자리 확인하기','틀린 문제 다시 풀기','새로운 학습 시작하기','오늘의 학습 이어가기','내 학습 현황 보기','내 실력 이어서 알아보기','첫 실력 알기 시작하기','실력 알기 진행하기','다음 실력 알아보기','추천 활동 준비 중','비교와 분류','나의 실력을 알아볼까요?','실력알기 결과 확인','모임의 크기 비교(<,>)','활동을 고르고 있어요','저장하고 나가기','계속 풀기','실력알기를 통과했어요!','카드를 눌러 복습해보세요!','정답 2개 · 오답 1개','2 / 3문제 · 67%','비교와 분류 · 실력 알기 완료','더 익힐 내용을 모으고 있어요.','재능님을 위한 학습이 준비됐어요','비교와 분류 · 더 연습할 학습 8개']){
   const en=I.t(copy);assert.notEqual(en,copy,copy);assert(!/[가-힣]/.test(en),en);I.setLanguage('ko');assert.equal(I.t(en),copy);I.setLanguage('en');
  }
  assert.equal(I.t('3 다음에 오는 수를 골라요.'),'Which number comes after 3?');

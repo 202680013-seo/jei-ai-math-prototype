@@ -49,6 +49,16 @@ AI 멘토 안내 보기|Show mentor guidance
 추천 활동을 다시 살펴보고 있어요|Refreshing your recommendations
 오늘의 학습 문제 풀기|Today's practice questions
 오늘의 학습 기록 확인하기|Today's learning record
+완성한 별자리 확인하기|View your constellation
+틀린 문제 다시 풀기|Practice missed questions
+새로운 학습 시작하기|Start a new lesson
+오늘의 학습 이어가기|Continue today's learning
+내 학습 현황 보기|View learning progress
+내 실력 이어서 알아보기|Resume your skill check
+첫 실력 알기 시작하기|Start your first skill check
+실력 알기 진행하기|Take a skill check
+다음 실력 알아보기|Try the next skill check
+추천 활동 준비 중|Preparing your activity
 학습으로 완성해 가는 하늘|A sky that grows with your learning
 오늘의 목표 학습 시간 정하기|Set today's learning goal
 오답노트 속 문제 풀기|Practice your missed questions
