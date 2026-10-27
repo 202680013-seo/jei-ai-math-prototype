@@ -14,8 +14,9 @@
   const toggle=dock.querySelector('[data-report-toggle]'),label=collapsed?'테스트 패널 펼치기':'테스트 패널 접기';
   toggle.setAttribute('aria-expanded',String(!collapsed));toggle.setAttribute('aria-label',label);toggle.setAttribute('title',label);
   if(animate&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches&&dock.animate){
+   dock.setAttribute('data-panel-moving','true');
    const after=dock.getBoundingClientRect(),toOpacity=Number(window.getComputedStyle?.(dock)?.opacity??(collapsed ? .22 : 1)),motion=dock.animate([{left:before.left+'px',top:before.top+'px',bottom:'auto',transform:'none',width:before.width+'px',height:before.height+'px',opacity:fromOpacity},{left:after.left+'px',top:after.top+'px',bottom:'auto',transform:'none',width:after.width+'px',height:after.height+'px',opacity:toOpacity}],{duration:240,easing:'cubic-bezier(.25,.1,.25,1)'});
-   if(motion){panelMotion=motion;dock.setAttribute('data-panel-moving','true');const finish=()=>{if(panelMotion===motion){panelMotion=null;dock.removeAttribute('data-panel-moving');}};motion.finished?.then(finish,finish);}
+   if(motion){panelMotion=motion;const finish=()=>{if(panelMotion===motion){panelMotion=null;dock.removeAttribute('data-panel-moving');}};motion.finished?.then(finish,finish);}
   }
  }
  setPanelCollapsed(false,false);

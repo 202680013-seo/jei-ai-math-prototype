@@ -126,7 +126,7 @@ html[data-report-theme] .mentor-cluster .recommend[data-recommend-state=loading]
 #report-dock[data-collapsed=true] .report-toggle i{width:10px;height:10px;transform:translateY(2px) rotate(-135deg)}
 @media(hover:hover) and (pointer:fine){#report-dock[data-collapsed=true]:hover{opacity:.85}}
 #report-dock[data-collapsed=true]:has(.report-toggle:focus-visible),#report-dock[data-collapsed=true]:active{opacity:1}
-#report-dock[data-panel-moving=true]{overflow:hidden}
+#report-dock[data-panel-moving=true]{overflow:hidden;transition:none}
 @media(max-width:650px){#report-dock{grid-template-columns:auto 1fr auto}#report-dock .report-toggle{grid-column:1;grid-row:1;margin-left:0}#report-dock .report-label{grid-column:2}#report-dock .report-restart{grid-column:3}}
 @media(prefers-reduced-motion:reduce){#report-dock[data-collapsed=true],#report-dock .report-toggle i{transition:none}}
 
