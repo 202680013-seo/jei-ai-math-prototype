@@ -34,11 +34,20 @@ test('all mentor event templates have English copy, and the app measures full En
  h.evaluate("const reportRun={fullText:'오늘은 무엇부터 시작해 볼까요?',index:0};prepareMentorPages(reportRun)");
  assert.equal(h.evaluate('reportRun.fullText'),'What would you like to start with today?');assert(h.evaluate('reportRun.pages.length')>0);
 });
-test('the report starts with its own representative fixture and never overwrites saved or explicit validation state',()=>{
- for(const [existing,scenario,seeded]of [[null,'keep',true],['saved-progress','keep',false],[null,'0',false]]){
-  const store=new Map(existing?[['ai-math-prototype-diagnosis-v1',existing]]:[]);
-  vm.runInNewContext(read('report-seed.js'),{MathModel:M,window:{__JEI_REVIEW__:{scenario}},localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)}});
-  const value=store.get('ai-math-prototype-diagnosis-v1');if(seeded){const p=JSON.parse(value).grades[3][0].programs;assert.equal(p.length,8);assert.deepEqual(p.slice(0,3).map(p=>p.status),['passed','failed','active']);assert.equal(p[2].progress,50);}else assert.equal(value,existing||undefined);
+test('the report applies the seven-passed/eighth-ready demo once and preserves later progress and explicit scenarios',()=>{
+ const key='ai-math-prototype-diagnosis-v1';
+ for(const [existing,scenario,seeded]of [[null,'keep',true],['saved-progress','keep',true],[null,'0',false]]){
+  const store=new Map(existing?[[key,existing]]:[]);
+  const run=()=>vm.runInNewContext(read('report-seed.js'),{MathModel:M,window:{__JEI_REVIEW__:{scenario}},localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)}});
+  run();const value=store.get(key);
+  if(seeded){
+   const state=JSON.parse(value),topic=state.grades[3][0],p=topic.programs;assert.equal(state.grade,3);assert.equal(state.index,0);assert.equal(p.length,8);
+   assert.deepEqual(p.map(p=>p.status),['passed','passed','passed','passed','passed','passed','passed','idle']);
+   assert.deepEqual(p.map(p=>p.progress),[100,100,100,100,100,100,100,0]);assert(M.canStart(topic,p[7]));
+   assert.deepEqual(p.map(p=>p.programId),M.programs(8,3,0).map(p=>p.programId),'original curriculum order');
+   if(existing)assert.equal(store.get(key+'-before-report-start-v2'),existing);
+   state.index=1;store.set(key,JSON.stringify(state));const advanced=store.get(key);run();assert.equal(store.get(key),advanced,'reopening keeps progress');
+  }else assert.equal(value,existing||undefined);
  }
 });
 test('report diagnosis retains the one-answer resume and clean-pass reward/rail handoff',()=>{
@@ -161,7 +170,7 @@ test('report questions have two unambiguous answers and numeric choices survive 
  const nodes=numbers.map(number=>({nodeValue:String(number),parentElement:{closest:()=>null,matches:()=>false}}));
  for(const locale of ['en','ko','en','ko']){I.setLanguage('en');for(const n of numbers)I.t(n+'개');I.setLanguage(locale);for(const n of nodes){context.n=n;vm.runInContext('textNode(n)',context);}assert.deepEqual(nodes.map(n=>n.nodeValue),['3','8','2','5']);}
 });
-function reportHarness(saved){return harness(saved,{appSource:read('app.js'),mathModel:M});}
+function reportHarness(saved,options={}){return harness(saved,{...options,appSource:read('app.js'),mathModel:M});}
 function finishReportOutcome(h){h.click('diagnosis-outcome-confirm');for(let i=0;h.evaluate('!!diagnosisOutcomeRun')&&i<20;i++){const timer=h.evaluate('diagnosisOutcomeTimer');assert(timer&&!timer.cancelled);timer.fn();}assert.equal(h.evaluate('diagnosisOutcomeRun'),null);}
 test('all four two-question diagnosis outcomes have matching results, prescriptions and exact rewards',()=>{
  for(const answers of [[0,1],[0,0],[1,1],[1,0]]){
@@ -225,4 +234,60 @@ test('rail icons use exact original bytes without on-open image requests and lat
  }
  for(const status of ['failed','passed','clean','idle','locked','active'])assert(h.evaluate('navigationStatusIcon('+JSON.stringify(status)+')').includes('data:image/svg+xml;base64,'));
  const css=read('report.css');assert(css.includes('animation:report-topic-arrive .2s'));assert(css.includes('@media(prefers-reduced-motion:reduce){#group-panel[data-panel-phase=open][data-reveal=true] .group-item.nav-stagger{animation:none!important}}'));
+});
+
+function reportFinalCard(){
+ const store=new Map(),key='ai-math-prototype-diagnosis-v1';
+ vm.runInNewContext(read('report-seed.js'),{MathModel:M,window:{__JEI_REVIEW__:{scenario:'keep'}},localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)}});
+ return JSON.parse(store.get(key));
+}
+function solveReportLast(h,wrong=false){h.click('program',7);h.click('program-begin');h.click('learner-answer',0);h.click('learner-next');h.click('learner-answer',wrong?0:1);h.click('learner-next');}
+function reportStep(h){const t=h.evaluate('diagnosisOutcomeTimer');assert(t&&!t.cancelled);t.fn();}
+const reportStage=h=>h.evaluate('diagnosisOutcomeRun?.target.diagnosisOutcome?.stage');
+test('passing the eighth report lesson preserves all cards and introduces D02 through the shared rail handoff',()=>{
+ const h=reportHarness(reportFinalCard(),{reducedMotion:false});
+ assert.equal((h.node('#programs').innerHTML.match(/completed-card-heading/g)||[]).length,7);
+ assert(h.node('#programs').innerHTML.includes('data-action="program" data-id="7"'));
+ h.evaluate('current().diagnosticResult=validationDiagnosisResult(false)');const diagnosis=h.data('current().diagnosticResult');solveReportLast(h);
+ assert.equal(h.node('#composition-copy').textContent,'이번 세트의 학습을 모두 마쳤어요!');
+ assert(h.node('#diagnosis-inline-summary').innerHTML.includes('보상을 모은 뒤 다음 세트로 이어갈게요.'));
+ assert.equal(h.evaluate('state.index'),0);h.click('diagnosis-outcome-confirm');
+ assert.equal(reportStage(h),'reward');assert.equal(h.evaluate('skyState().totalPieces'),2);
+ reportStep(h);assert.equal(reportStage(h),'collecting');reportStep(h);
+ assert.equal(reportStage(h),'rail-open');assert.equal(h.evaluate('panel'),'groups');assert.equal(h.node('#learning').open,false);
+ assert.equal(h.evaluate('navigationTopicStatus(state.grades[3][0],true)'),'active');
+ assert.equal((h.node('#programs').innerHTML.match(/completed-card-heading/g)||[]).length,8,'completed cards stay visible, not temporarily locked');
+ reportStep(h);assert.equal(reportStage(h),'rail-complete');assert.equal(h.evaluate('navigationTopicStatus(state.grades[3][0],true)'),'passed');
+ reportStep(h);assert.equal(reportStage(h),'rail-next');assert.equal(h.evaluate('state.index'),1);assert.equal(h.node('#group-title').textContent,'비교와 분류');
+ assert.equal((h.node('#programs').innerHTML.match(/completed-card-heading/g)||[]).length,8,'source cards remain mounted until the new entry');
+ reportStep(h);assert.equal(reportStage(h),'rail-close');reportStep(h);assert.equal(reportStage(h),'next-entry');
+ assert.equal(h.node('#group-title').textContent,'모으기와 가르기(10)');assert.equal(h.node('#diagnosis-welcome-title').textContent,'나의 실력을 알아볼까요?');
+ reportStep(h);assert.equal(reportStage(h),undefined);assert.equal(h.node('#learning').open,false);assert.equal(h.node('#learning-workspace').inert,false);
+ assert.equal(h.evaluate('current().diagnosis'),'idle');assert.equal(h.evaluate('current().diagnosticSession'),undefined);
+ assert.equal(h.evaluate('state.grades[3][0].programs.length'),8);assert(h.evaluate('state.grades[3][0].programs.every(p=>p.status==="passed"&&p.progress===100)'));
+ assert.deepEqual(h.data('state.grades[3][0].diagnosticResult'),diagnosis);assert.equal(h.evaluate('daily().cleanStreak'),0);
+ assert.equal(h.evaluate('Object.keys(state.programRewards).length'),1);assert.equal(h.evaluate('skyState().totalPieces'),2);
+ const {I}=language();I.setLanguage('en');for(const s of ['이번 세트의 학습을 모두 마쳤어요!','보상을 모은 뒤 다음 세트로 이어갈게요.'])assert(!/[가-힣]/.test(I.t(s)));
+});
+test('a failed or unfinished report course, a preview, and completed-card review never trigger automatic set navigation',()=>{
+ for(const mode of ['failed','unfinished','preview','review','final-grade']){
+  const fixture=reportFinalCard();
+  if(mode==='unfinished'){fixture.grades[3][0].programs[0].status='failed';fixture.grades[3][0].programs[0].wrongFrames=[0];}
+  if(mode==='final-grade'){const source=fixture.grades[3][0];fixture.grade=9;fixture.index=M.COUNTS[9]-1;fixture.grades[9].forEach(t=>t.diagnosis='done');fixture.grades[9][fixture.index]=({...fixture.grades[9][fixture.index],diagnosis:'done',programs:source.programs});}
+  const h=reportHarness(fixture),origin=h.evaluate('state.index');
+  if(mode==='review'){
+   h.evaluate("current().programs[7].status='passed';M.setProgress(current().programs[7],100);render()");h.click('completed-card',7);h.click('study-choice-review');h.click('learner-answer',0);h.click('learner-next');h.click('learner-answer',1);h.click('learner-next');
+  }else{solveReportLast(h,mode==='failed');if(mode==='preview')h.evaluate('current().diagnosisOutcome.preview=true');}
+  finishReportOutcome(h);assert.equal(h.evaluate('state.index'),origin,mode);assert.equal(h.evaluate('panel'),null,mode);assert.equal(h.node('#learning-workspace').inert,false,mode);
+ }
+});
+test('report set handoff resumes at every stage, pauses when hidden and keeps reward receipts idempotent',()=>{
+ let h=reportHarness(reportFinalCard(),{reducedMotion:false});solveReportLast(h);h.click('diagnosis-outcome-confirm');reportStep(h);reportStep(h);
+ for(const phase of ['rail-open','rail-complete','rail-next','rail-close','next-entry']){
+  assert.equal(reportStage(h),phase);h=reportHarness(h.saved(),{reducedMotion:false});assert.equal(reportStage(h),phase);
+  assert.equal(h.evaluate('state.grades[3][0].programs.length'),8);assert.equal(h.evaluate('skyState().totalPieces'),2);
+  const stale=h.evaluate('diagnosisOutcomeTimer');h.document.visibilityState='hidden';h.emitDocument('visibilitychange');assert.equal(h.evaluate('diagnosisOutcomeTimer'),null);stale.fn();assert.equal(reportStage(h),phase);
+  h.document.visibilityState='visible';h.emitDocument('visibilitychange');const old=h.evaluate('diagnosisOutcomeTimer');reportStep(h);const after=reportStage(h);old.fn();assert.equal(reportStage(h),after,'stale timer cannot advance twice');
+ }
+ assert.equal(h.evaluate('diagnosisOutcomeRun'),null);assert.equal(h.evaluate('state.index'),1);assert.equal(h.evaluate('skyState().totalPieces'),2);assert.equal(h.evaluate('Object.keys(state.programRewards).length'),1);
 });

@@ -103,6 +103,8 @@ AI 멘토 안내 보기|Show mentor guidance
 학습 완료|Lesson complete
 학습을 마쳤어요!|You finished the lesson!
 학습을 통과했어요!|You passed the lesson!
+이번 세트의 학습을 모두 마쳤어요!|You completed every lesson in this set!
+보상을 모은 뒤 다음 세트로 이어갈게요.|Collect your reward, then move on to the next set.
 복습으로 통과했어요.|You passed after practicing again.
 다시 연습하고 싶다면 복습을 시작해요.|Start a review whenever you'd like more practice.
 첫 학습 결과|Original results

@@ -75,3 +75,10 @@ dialog[data-report-dialog]:not(.diagnosis-screen):not(.program-screen):not(.sky-
 #group-panel[data-panel-phase=open][data-reveal=true] .group-item.nav-stagger{animation:report-topic-arrive .2s cubic-bezier(.22,.61,.36,1) both;animation-delay:var(--nav-delay,0ms)}
 @keyframes report-topic-arrive{from{opacity:.6;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){#group-panel[data-panel-phase=open][data-reveal=true] .group-item.nav-stagger{animation:none!important}}
+
+/* A completed course hands off through the existing rail clock, with no layout jump. */
+.report-set-complete-note{font-size:15px;line-height:1.5;color:#586b85;margin:16px 0 0}
+body[data-report-set-advance=true] #programs{transition:opacity .3s ease}
+body[data-report-set-advance=true][data-diagnosis-advance=rail-close] #programs{opacity:0}
+body[data-report-set-advance=true][data-diagnosis-advance-paused=true] #programs{transition:none}
+@media(prefers-reduced-motion:reduce){body[data-report-set-advance=true] #programs{transition:none}}
