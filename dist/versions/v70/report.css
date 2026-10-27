@@ -120,10 +120,14 @@ html[data-report-theme] .mentor-cluster .recommend[data-recommend-state=loading]
 #report-dock [hidden]{display:none!important}
 #report-dock .report-toggle{width:34px;min-width:34px;height:32px;min-height:32px;padding:0;margin-left:4px;background:#f1f4f6;color:#758391}
 #report-dock .report-toggle i{display:block;width:7px;height:7px;border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .2s ease}
-#report-dock[data-collapsed=true]{display:flex;gap:0;width:max-content;min-height:44px;padding:6px 10px;border-radius:22px;cursor:pointer}
-#report-dock[data-collapsed=true] .report-label{flex-basis:auto;margin:0 8px;font-size:13px}
-#report-dock[data-collapsed=true] .report-toggle{margin-left:0;background:transparent}
-#report-dock[data-collapsed=true] .report-toggle i{transform:translateY(2px) rotate(-135deg)}
+#report-dock[data-collapsed=true]{display:flex;gap:0;width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:50%;background:transparent;box-shadow:none;backdrop-filter:none;opacity:.35;cursor:pointer;transition:opacity .18s ease}
+#report-dock[data-collapsed=true] .report-label{display:none}
+#report-dock[data-collapsed=true] .report-toggle{width:44px;min-width:44px;height:44px;min-height:44px;margin-left:0;padding:0;border-radius:50%;background:transparent}
+#report-dock[data-collapsed=true] .report-toggle i{width:10px;height:10px;transform:translateY(2px) rotate(-135deg)}
+@media(hover:hover) and (pointer:fine){#report-dock[data-collapsed=true]:hover{opacity:.85}}
+#report-dock[data-collapsed=true]:has(.report-toggle:focus-visible),#report-dock[data-collapsed=true]:active{opacity:1}
 #report-dock[data-panel-moving=true]{overflow:hidden}
 @media(max-width:650px){#report-dock{grid-template-columns:1fr auto auto}#report-dock .report-toggle{grid-column:3;grid-row:1;margin-left:0}#report-dock .report-restart{grid-column:2}}
-@media(prefers-reduced-motion:reduce){#report-dock .report-toggle i{transition:none}}
+@media(prefers-reduced-motion:reduce){#report-dock[data-collapsed=true],#report-dock .report-toggle i{transition:none}}
+
+#report-dock[data-panel-interacted=true]{animation:none}

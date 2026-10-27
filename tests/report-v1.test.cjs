@@ -449,13 +449,13 @@ test('the independent test panel collapses to an accessible handle and reopens d
  const script=read('report.js'),css=read('report.css');
  for(const reduced of [false,true]){
   const attrs=new Map(),toggleAttrs=new Map(),motions=[],controls={hidden:false},restart={hidden:false},toggle={setAttribute:(k,v)=>toggleAttrs.set(k,v)};
-  const dock={setAttribute:(k,v)=>attrs.set(k,v),removeAttribute:k=>attrs.delete(k),getBoundingClientRect:()=>({width:controls.hidden?170:600,height:controls.hidden?44:72}),querySelector:s=>s==='.report-controls'?controls:s==='.report-restart'?restart:toggle,animate(frames,options){const m={frames,options,finished:Promise.resolve(),cancel(){this.cancelled=true;}};motions.push(m);return m;},addEventListener(_t,f){this.click=f;}};
+  const dock={setAttribute:(k,v)=>attrs.set(k,v),removeAttribute:k=>attrs.delete(k),getBoundingClientRect:()=>({width:controls.hidden?44:600,height:controls.hidden?44:72}),querySelector:s=>s==='.report-controls'?controls:s==='.report-restart'?restart:toggle,animate(frames,options){const m={frames,options,finished:Promise.resolve(),cancel(){this.cancelled=true;}};motions.push(m);return m;},addEventListener(_t,f){this.click=f;}};
   const context=vm.createContext({dock,window:{matchMedia:()=>({matches:reduced})}});
   vm.runInContext(script.slice(script.indexOf(' let collapsed='),script.indexOf(' function labels(){')),context);
   assert.equal(controls.hidden,false);assert.equal(toggleAttrs.get('aria-expanded'),'true');
   const handler=script.slice(script.indexOf(" dock.addEventListener('click'"),script.indexOf(" window.addEventListener('message'"));vm.runInContext(handler,context);
   dock.click({target:{closest:s=>s==='[data-report-toggle]'?{}:null}});assert.equal(controls.hidden,true);assert.equal(restart.hidden,true);assert.equal(toggleAttrs.get('aria-expanded'),'false');assert.equal(toggleAttrs.get('aria-label'),'테스트 패널 펼치기');
-  // The whole compact label area can reopen the panel, as well as its chevron.
+  // The compact hit area can reopen the panel, as well as its chevron.
   dock.click({target:{closest:()=>null}});assert.equal(controls.hidden,false);assert.equal(restart.hidden,false);assert.equal(toggleAttrs.get('aria-expanded'),'true');
   await Promise.resolve();assert.equal(attrs.get('data-collapsed'),'false');assert.equal(attrs.has('data-panel-moving'),false);
   if(reduced)assert.equal(motions.length,0);else{assert.equal(motions.length,2);assert.equal(motions[0].cancelled,true);assert(motions.every(m=>m.options.duration===200&&!m.frames.some(f=>'transform' in f)));}
