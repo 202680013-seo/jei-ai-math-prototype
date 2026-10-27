@@ -201,3 +201,28 @@ test('every prescribed report program has two questions and legacy sessions migr
  M.ReportQuestions.prepare(saved);assert.equal(t.diagnosticSession.index,1);assert.equal(t.reportOriginalDiagnosticSession.index,2);assert.equal(t.programs[0].frames.length,2);assert.equal(t.programs[0].progress,50);assert.equal(t.programs[0].demoChoice,undefined);assert.equal(t.programs[0].reportOriginalQuestionState.frames.length,10);assert.equal(t.programs[0].reviewSession.index,1);
  const stable=JSON.stringify(saved);M.ReportQuestions.prepare(saved);assert.equal(JSON.stringify(saved),stable,'migration is idempotent');
 });
+
+test('rail icons use exact original bytes without on-open image requests and late topics have no inherited long delay',()=>{
+ const root={};vm.runInNewContext(read('report-rail-icons.js'),{window:root});
+ const icons=root.JeiReportRailIcons;assert(Object.isFrozen(icons));
+ for(const [name,uri] of Object.entries(icons)){
+  assert(uri.startsWith('data:image/svg+xml;base64,'));
+  assert.deepEqual(Buffer.from(uri.split(',')[1],'base64'),fs.readFileSync(base+'assets/figma-v4-1/'+name+'.svg'));
+ }
+ assert.equal(Object.keys(icons).length,7);
+ const html=read('index.html');assert(html.indexOf('report-rail-icons.js')<html.indexOf('src="app.js"'));
+ const h=harness(undefined,{appSource:read('app.js'),mathModel:M});h.context.JeiReportRailIcons=icons;
+ h.evaluate("state.grade=6;state.index=13;state.grades[6][13].diagnosis='active'");
+ for(let opening=0;opening<2;opening++){
+  h.click('groups');const markup=h.node('#group-panel').innerHTML;
+  const sources=Array.from(markup.matchAll(/<img[^>]+src="([^"]+)"/g),m=>m[1]);
+  assert(sources.length>5);for(const src of sources)assert(src.startsWith('data:image/svg+xml;base64,'));
+  const current=markup.match(/<button[^>]*data-action="select-group"[^>]*data-id="13"[^>]*>/)[0];
+  assert(current.includes('--nav-delay:0ms'));assert(current.includes('aria-current="true"'));
+  const delays=Array.from(markup.matchAll(/class="group-item[^>]+--nav-delay:(\d+)ms/g),m=>Number(m[1]));
+  assert(delays.length>13);assert(Math.max(...delays)<=56);
+  h.click('close-panel');assert.equal(h.node('#group-panel').getAttribute('data-reveal'),'false');
+ }
+ for(const status of ['failed','passed','clean','idle','locked','active'])assert(h.evaluate('navigationStatusIcon('+JSON.stringify(status)+')').includes('data:image/svg+xml;base64,'));
+ const css=read('report.css');assert(css.includes('animation:report-topic-arrive .2s'));assert(css.includes('@media(prefers-reduced-motion:reduce){#group-panel[data-panel-phase=open][data-reveal=true] .group-item.nav-stagger{animation:none!important}}'));
+});

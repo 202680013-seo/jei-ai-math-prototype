@@ -70,3 +70,8 @@ dialog[data-report-dialog]:not(.diagnosis-screen):not(.program-screen):not(.sky-
 @media(prefers-reduced-motion:reduce){#report-dock{animation:none}#report-dock button{transition:none}}
 @media(max-width:430px){:root{--report-dock-clearance:132px}#report-dock{flex-wrap:wrap;justify-content:center;gap:8px}#report-dock .report-label{flex-basis:100%;margin:0 4px;font-size:12px}}
 @media print{#report-dock{display:none!important}body{padding-bottom:0}}
+
+/* Rail rows arrive with their icons, measured from the first visible topic. */
+#group-panel[data-panel-phase=open][data-reveal=true] .group-item.nav-stagger{animation:report-topic-arrive .2s cubic-bezier(.22,.61,.36,1) both;animation-delay:var(--nav-delay,0ms)}
+@keyframes report-topic-arrive{from{opacity:.6;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){#group-panel[data-panel-phase=open][data-reveal=true] .group-item.nav-stagger{animation:none!important}}
