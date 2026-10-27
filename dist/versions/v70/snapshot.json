@@ -50,7 +50,7 @@
     "catalog.js": "742f16551eb158b5651a65391ec595cbffa1e1fb3912266c3588f52a1d26c517",
     "diagnosis-entry.css": "4ff28ac71f47cc5f5247c63be1617c9cac9e101cc7b017ecd24cfcbbe5688c62",
     "fonts/OFL.txt": "82e9c8a4b203261f10ddba1296422d64914ff3d4b7bd8a12896d03f0f088d70a",
-    "index.html": "9624a54aaf2eb3cbbcb01fe02ddc7f1f8ffda6e7b1bc9f10c5c38496de524e1e",
+    "index.html": "58947f8d0e3de1fddd3df2782a95f3c431cfcbf5cd58592ea2b350ffa7b24c92",
     "mentor-copy.js": "b87e40882ae9a1407d910a91815f9cb233b83d0e361ce53d4984ac0ad76f58e2",
     "mentor-policy.js": "905517e380a4c4377ae5d141b4e1b4b2ba8fd4c87fc33f339bb841f0e4efd845",
     "mobile.css": "8b49be1a5f3965d4c9064ee551305fcdb0f3babc6092b7ba08c66747af464306",
@@ -59,8 +59,8 @@
     "report-copy.js": "344aaba3542c23b232a3da71928d0ed4c3547b3bf38955600e775b10a4d458ef",
     "report-mentor.js": "9d906928fd2da3872554abb8fd74298bd09644d7c59def3c64d20338ba51ac9b",
     "report-seed.js": "feb13315036a024e7b8518d7eff6d5a924f6eb00b192b15035367c584de03959",
-    "report.css": "c4967b6d7b59bc1c6848d448d1e137ccb5a0f90fa4b65ca68b6e8cc818e603fd",
-    "report.js": "f637806179c021f6d99c4b8cb53e2b9ed1bd79e67622767d36906e6c659044af",
+    "report.css": "6ea97b9b91e9ac814a40f035aca5ef947bb5eeb17db5fe8e97c6dc328ef47231",
+    "report.js": "5913f15f7e251206a0d942088b83e2b9c57899c9183c9ce2ff2f8308f0ccc385",
     "sky.js": "0839e3db0daf10e9ce3dcac4220419aa401ba8b578d1bd5c2c7b07ee02aa180b",
     "style.css": "b3744d2102d6fb6f9ce40fff7bfb7b21b5bc39bd51b7a84d6eec64099725642e",
     "theme.css": "2bd2d29a9bc01a44d15475df7a25ec48f6480b91ccfd736de0e238fe683cd16f",
@@ -69,6 +69,7 @@
     "v4.css": "8fa66ad2b0a89724ffdddbbb89a7acb33163d413e2d62930cb6a987ecc93bb9e",
     "v5.css": "5d21738b13631ba6f2cc1d20c82399abc2c23169775da2a6eb960d88eed4ccf1",
     "v6.css": "328588afe43519726ef26b6b727023a33d1115abe1e70df39666a5a32424969e",
-    "report-topics.js": "90d247b26a2efc89a366f3ae6679449fb7f36789cfea643b70bca31ef8a985a2"
+    "report-topics.js": "90d247b26a2efc89a366f3ae6679449fb7f36789cfea643b70bca31ef8a985a2",
+    "report-dialogs.js": "0f845982f4a5f6377199ce819fa02e4959763d2d580e68c7a39734e4785503e4"
   }
 }

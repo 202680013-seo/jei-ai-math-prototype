@@ -54,7 +54,7 @@ test('Theme 2 uses original white Figma exports in their native-sized slots',()=
  const manifest=JSON.parse(read('assets/report-theme2/manifest.json'));assert.equal(manifest.frame,'74:719');
  for(const file of manifest.assets){const data=fs.readFileSync(base+'assets/report-theme2/'+file.file);assert(data.length>100);assert.equal(crypto.createHash('sha256').update(data).digest('hex'),file.sha256);assert(data.toString().startsWith('<svg'));}
  const css=read('report.css');assert(css.includes('background:#0ec7ae'));assert(css.includes('background:#0cad98'));assert(css.includes('background:#f1fcfa'));
- assert(!css.includes('width:100%;height:100%'));assert(read('report.js').includes("dialogs.at(-1)||document.body"));
+ assert(!css.includes('width:100%;height:100%'));assert(!read('report.js').includes("host.append(dock)"));
 });
 test('English review hints override the actual important hiding utility in both themes',()=>{
  const {I}=language();I.setLanguage('en');assert.equal(I.t('카드를 눌러 복습해보세요!'),'Tap a card to practice again!');
@@ -123,4 +123,31 @@ test('actual reporting text translation uses short labels only in the rail and r
  rail.nodeValue='모임의 크기 비교(5)';I.setLanguage('en');run(rail);assert.equal(rail.nodeValue,'Group sizes (5)');assert.equal(rail.parentElement.getAttribute('title'),I.t('모임의 크기 비교(5)'));
  const css=read('report.css');assert(css.includes('overflow-x:hidden;touch-action:pan-y pinch-zoom'));assert(css.includes('white-space:nowrap;overflow:hidden;text-overflow:ellipsis'));
  assert(read('index.html').includes('src="report-topics.js"'));
+});
+test('report dialog adapter leaves the dock at body level through review, results, nested help and cancellation',()=>{
+ const events=new Map();let document;
+ function node(tag,id){const n={tagName:tag,id,children:[],inert:false,hidden:false,open:false,isConnected:true,attrs:{},handlers:{},style:{setProperty(k,v){this[k]=v;}},
+  append(c){if(c.parentElement)c.parentElement.children=c.parentElement.children.filter(x=>x!==c);this.children.push(c);c.parentElement=this;},
+  prepend(c){this.append(c);this.children.unshift(this.children.pop());},setAttribute(k,v){this.attrs[k]=v;},
+  addEventListener(k,fn){(this.handlers[k]??=[]).push(fn);},dispatchEvent(e){for(const fn of this.handlers[e.type]||[])fn(e);return !e.defaultPrevented;},
+  closest(){for(let p=this;p;p=p.parentElement)if(p.inert||p.hidden)return p;return null;},getClientRects:()=>[{}],
+  querySelectorAll(){return this.children.filter(c=>c.tagName==='BUTTON');},focus(){document.activeElement=this;},
+  show(){this.open=true;this.children[0]?.focus();},close(value){this.open=false;this.returnValue=value;this.dispatchEvent({type:'close'});}};return n;}
+ const body=node('BODY'),workspace=node('MAIN','learning-workspace'),launcher=node('BUTTON'),dock=node('NAV','report-dock');
+ const languageButton=node('BUTTON'),locked=node('ASIDE');locked.inert=true;dock.append(languageButton);workspace.append(launcher);
+ const dialogs=['learning','activity','help','prescription'].map(id=>{const d=node('DIALOG',id);d.append(node('BUTTON'));return d;});
+ body.append(workspace);body.append(locked);dialogs.forEach(d=>body.append(d));body.append(dock);
+ document={body,activeElement:launcher,createElement:tag=>node(tag.toUpperCase()),querySelectorAll:()=>dialogs,querySelector:()=>dock,addEventListener:(type,fn)=>events.set(type,fn)};
+ class CancelEvent{constructor(type){this.type=type;this.defaultPrevented=false;}preventDefault(){this.defaultPrevented=true;}}
+ vm.runInNewContext(read('report-dialogs.js'),{document,window:{},Event:CancelEvent,MutationObserver:class{observe(){}},getComputedStyle:()=>({background:'#0004',backdropFilter:'blur(3px)'})});
+ const plane=body.children.find(n=>n.id==='report-ui-plane');assert.equal(workspace.parentElement,plane);assert.equal(locked.inert,true,'learner-owned lock is untouched');
+ for(const dialog of dialogs){
+  launcher.focus();dialog.showModal();assert.equal(dialog.open,true);assert.equal(plane.inert,true);assert.equal(dock.parentElement,body);assert(!dialog.children.includes(dock));assert.equal(dock.inert,false);
+  document.activeElement=languageButton;const tab={key:'Tab',preventDefault(){this.prevented=true;}};events.get('keydown')(tab);assert.equal(tab.prevented,true);assert.equal(document.activeElement,dialog.children[0]);
+  dialog.close('done');assert.equal(dialog.returnValue,'done');assert.equal(plane.inert,false);assert.equal(document.activeElement,launcher);assert.equal(dock.parentElement,body);
+ }
+ const [learning,activity,help]=dialogs;learning.showModal();activity.showModal();help.showModal();assert.equal(learning.inert,true);assert.equal(activity.inert,true);help.close();assert.equal(activity.inert,false);assert.equal(plane.inert,true);activity.close();assert.equal(learning.inert,false);
+ learning.addEventListener('cancel',e=>e.preventDefault());const escape={key:'Escape',preventDefault(){},stopImmediatePropagation(){}};events.get('keydown')(escape);assert.equal(learning.open,true,'diagnosis cancel can retain its pause confirmation');learning.close();
+ assert.equal(plane.inert,false);assert.equal(locked.inert,true);assert.equal(dock.parentElement,body);
+ assert(!read('report.js').includes('function mount()'));assert(!read('report.css').includes('dialog:has(>#report-dock)'));
 });

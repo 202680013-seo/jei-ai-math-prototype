@@ -16,7 +16,7 @@
   root.setAttribute('data-report-theme',theme);
   for(const [key,value]of Object.entries(window.JeiTheme.presetPalette('current')))root.style.setProperty(key,value);
   for(const [selector,name,original]of themeImages){const img=document.querySelector(selector);if(img)img.setAttribute('src',theme==='2'?'assets/report-theme2/'+name:original);}
-  try{localStorage.setItem('report-theme',theme);}catch{}labels();
+  try{localStorage.setItem('report-theme',theme);}catch{}labels();window.JeiReportDialogs?.sync();
  }
  const sources=new WeakMap(),attrs=new WeakMap();let observer,pending=new Set(),queued=false;
  const skip='script,style,textarea,input,[contenteditable=true],#report-dock,#ai-message,#mentor-measure';
@@ -46,13 +46,9 @@
   const walk=document.createTreeWalker(node,NodeFilter.SHOW_ELEMENT|NodeFilter.SHOW_TEXT);let next;
   while((next=walk.nextNode())){if(next.nodeType===3)textNode(next);else element(next);}
  }
- function mount(){
-  const dialogs=[...document.querySelectorAll('dialog[open]')].filter(d=>!d.hidden);const host=dialogs.at(-1)||document.body;
-  if(dock.parentElement!==host)host.append(dock);
- }
  const observed={subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['aria-label','aria-valuetext','title','placeholder','alt','open','hidden']};
  function flush(){
-  queued=false;observer?.disconnect();for(const node of pending)visit(node);pending.clear();mount();observer?.observe(document.body,observed);
+  queued=false;observer?.disconnect();for(const node of pending)visit(node);pending.clear();observer?.observe(document.body,observed);
  }
  function translateAll(){pending.add(document.body);flush();labels();}
  observer=new MutationObserver(records=>{
