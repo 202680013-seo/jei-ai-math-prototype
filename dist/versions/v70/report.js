@@ -1,7 +1,7 @@
 (function(){
  'use strict';
  const I=window.JeiReportI18n,root=document.documentElement;
- let theme='1';try{if(localStorage.getItem('report-theme')==='2')theme='2';}catch{}
+ let theme=window.JeiReportColors.current;
  const dock=document.createElement('nav');dock.id='report-dock';dock.lang='ko';dock.setAttribute('aria-label','보고용 테스트 컨트롤');
  dock.innerHTML=`<strong class="report-label" data-report-label="테스트 패널"></strong><div class="report-controls"><div class="report-segment report-language" role="group" aria-label="언어"><button type="button" data-report-language="ko" lang="ko" aria-label="한국어">한</button><button type="button" data-report-language="en" lang="en" aria-label="English">EN</button></div><span class="report-divider"></span><div class="report-segment report-theme" role="group" aria-label="컬러"><button type="button" data-report-theme="1"><i class="report-swatch" aria-hidden="true"></i><span data-report-label="컬러1"></span></button><button type="button" data-report-theme="2"><i class="report-swatch" aria-hidden="true"></i><span data-report-label="컬러2"></span></button></div></div><button type="button" class="report-restart" data-report-restart title="D등급 01의 첫 시연 상태로 돌아가기" aria-label="D등급 01의 첫 시연 상태로 돌아가기">처음으로</button>`;
  document.body.append(dock);
@@ -11,13 +11,10 @@
   for(const b of dock.querySelectorAll('[data-report-language]'))b.setAttribute('aria-pressed',String(b.dataset.reportLanguage===I.language));
   for(const b of dock.querySelectorAll('[data-report-theme]'))b.setAttribute('aria-pressed',String(b.dataset.reportTheme===theme));
  }
- const themeImages=[['.recommend-arrow','recommend-arrow.svg','assets/figma-v4-1/recommend-arrow.svg'],['.shortcut-profile-art','my-profile.svg','assets/figma-v4-1/my-profile.svg'],['.shortcut-report-art','my-report.svg','assets/figma-v4-1/my-report.svg'],['.constellation-art>img','constellation.svg','assets/figma-v4-1/constellation.svg'],['.active-card-art','active-card-art.svg','assets/figma-v4-1/active-card-art.svg'],['.passed-card .figma-status-icon','passed.svg','assets/figma-v4-1/passed.svg'],['.side-tab-surface','rail-tab.svg','assets/figma-v4-1/rail-tab.svg'],['.result-icon>img','result-report.svg','assets/figma-v4-1/result-report.svg']];
- function applyTheme(){
-  root.setAttribute('data-report-theme',theme);
-  for(const [key,value]of Object.entries(window.JeiTheme.presetPalette('current')))root.style.setProperty(key,value);
-  if(theme==='2')root.style.setProperty('--theme-completed','#e5f6f4');
-  for(const [selector,name,original]of themeImages)for(const img of document.querySelectorAll(selector))img.setAttribute('src',theme==='2'?'assets/report-theme2-green/'+name:original);
-  try{localStorage.setItem('report-theme',theme);}catch{}labels();window.JeiReportDialogs?.sync();
+ function applyTheme(next=theme,animate=false){
+  const pending=window.JeiReportColors.select(next,{animate});
+  const sync=()=>{theme=window.JeiReportColors.current;labels();window.JeiReportDialogs?.sync();};
+  sync();return pending.then(sync);
  }
  const sources=new WeakMap(),attrs=new WeakMap();let observer,pending=new Set(),queued=false;
  const skip='script,style,textarea,input,[contenteditable=true],#report-dock,#ai-message,#mentor-measure';
@@ -60,7 +57,7 @@
   if(event.target.closest('[data-report-restart]')){window.JeiReportEntry.restart();return;}
   const language=event.target.closest('[data-report-language]'),button=event.target.closest('[data-report-theme]');
   if(language){I.setLanguage(language.dataset.reportLanguage);translateAll();document.querySelector('[data-action="mentor-repeat"]')?.click();return;}
-  if(button){theme=button.dataset.reportTheme;applyTheme();return;}
+  if(button){applyTheme(button.dataset.reportTheme,true);return;}
  },false);
  window.addEventListener('message',event=>{if(event.origin===location.origin&&event.data?.type==='jei-theme-preview')applyTheme();});
  applyTheme();translateAll();

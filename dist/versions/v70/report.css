@@ -97,3 +97,21 @@ body[data-report-set-advance=true][data-diagnosis-advance-paused=true] #programs
 /* Figma 95:1009 / 테마02_초록: semantic completion color; card geometry stays shared. */
 html[data-report-theme="2"]{--status-pass-fill:#0ec7ae}
 html[data-report-theme="2"] #learning-context #diagnostic-result-slot>.diagnostic-summary-trigger:hover:not(:disabled){background:color-mix(in srgb,#e5f6f4 80%,#cdf1ee)}
+
+/* One stable header paint layer lets either palette ease into the other. */
+html[data-report-theme] .ai{isolation:isolate;transition:padding-bottom .24s ease,background-color .24s ease}
+html[data-report-theme] .ai::before{content:'';position:absolute;z-index:-1;inset:0 0 auto;height:129px;background:var(--report-header-color);box-shadow:0 0 0 100vmax var(--report-header-color);clip-path:inset(0 -100vmax);pointer-events:none;transition:background-color .24s ease,box-shadow .24s ease}
+html[data-report-theme] body.has-long-learning-list .ai::before{content:'';box-shadow:0 0 0 100vmax var(--report-header-color)}
+html[data-report-theme] .ai::after{display:block;transition:opacity .24s ease}
+html[data-report-theme="2"] .ai::after{opacity:0}
+html[data-report-theme="1"] .ai::after{opacity:1}
+@media(max-width:650px){html[data-report-theme] .ai::before{height:calc(100% - 28px)}}
+@media(prefers-reduced-motion:reduce){html[data-report-theme] .ai,html[data-report-theme] .ai::before,html[data-report-theme] .ai::after{transition:none}}
+html[data-report-theme] .mentor-cluster>.recommend{transition:background-color .24s ease,border-color .24s ease}
+html[data-report-theme] .mentor-cluster .recommend button,html[data-report-theme] .top-shortcuts .compact-shortcut{transition:background-color .24s ease,border-color .24s ease,color .24s ease,box-shadow .16s,transform .16s}
+html[data-report-theme] .mentor-cluster .recommend-label{transition:color .24s ease,border-color .24s ease}
+html[data-report-theme] .mentor-cluster #recommend-copy{transition:opacity .3s ease,transform .35s ease,color .24s ease}
+html[data-report-theme] .mentor-cluster .recommend-content>.recommend-loader{transition:opacity .3s ease,visibility 0s .3s,color .24s ease}
+html[data-report-theme] .mentor-cluster .recommend-loader small{transition:color .24s ease}
+@media(prefers-reduced-motion:reduce){html[data-report-theme] .mentor-cluster>.recommend,html[data-report-theme] .mentor-cluster .recommend button,html[data-report-theme] .top-shortcuts .compact-shortcut,html[data-report-theme] .mentor-cluster .recommend-label,html[data-report-theme] .mentor-cluster #recommend-copy,html[data-report-theme] .mentor-cluster .recommend-content>.recommend-loader,html[data-report-theme] .mentor-cluster .recommend-loader small{transition:none}}
+html[data-report-theme] .mentor-cluster .recommend[data-recommend-state=loading] .recommend-loader{transition-delay:0s}

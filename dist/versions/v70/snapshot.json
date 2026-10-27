@@ -2,7 +2,7 @@
   "id": "v70",
   "date": "2026-10-26",
   "files": {
-    "app.js": "2982c1510d95891572540f1a3ad5ea37887539398cda2dfa6157e71d7779ebd6",
+    "app.js": "26d3c7c44a7765f9a7407272dd06f36fa77f617fcc994c5fac95dc20a4bea2ae",
     "assets/active-card-art.svg": "db896082a62eeeff84e4fc46ad01dc1443872423cb15172700722ecd4b63d88d",
     "assets/figma-v4-1/active-card-art.svg": "8571151b8c4436cea38a513d5bbe7ea0eb82850551f7fc647e38b7595bc414c9",
     "assets/figma-v4-1/close.svg": "0d458db2351ecd3772ee6dff1a9f8b3b6e5137d5e9857f0ec745fa03cd453458",
@@ -50,7 +50,7 @@
     "catalog.js": "742f16551eb158b5651a65391ec595cbffa1e1fb3912266c3588f52a1d26c517",
     "diagnosis-entry.css": "4ff28ac71f47cc5f5247c63be1617c9cac9e101cc7b017ecd24cfcbbe5688c62",
     "fonts/OFL.txt": "82e9c8a4b203261f10ddba1296422d64914ff3d4b7bd8a12896d03f0f088d70a",
-    "index.html": "b7d56736f557a9aba22391867a1c79012222be7efba4d4c012af13016b4b4d93",
+    "index.html": "5b75efb2e57197c452733f95e279d7ebc36fae4a1098f2d1308b894c70c53312",
     "mentor-copy.js": "b87e40882ae9a1407d910a91815f9cb233b83d0e361ce53d4984ac0ad76f58e2",
     "mentor-policy.js": "905517e380a4c4377ae5d141b4e1b4b2ba8fd4c87fc33f339bb841f0e4efd845",
     "mobile.css": "8b49be1a5f3965d4c9064ee551305fcdb0f3babc6092b7ba08c66747af464306",
@@ -59,8 +59,8 @@
     "report-copy.js": "f1f60398ff1ee1726b98b1e3175bb7e2fe9a51d380200ac962f7ee0e44940101",
     "report-mentor.js": "9d906928fd2da3872554abb8fd74298bd09644d7c59def3c64d20338ba51ac9b",
     "report-seed.js": "2cc5e0b9dd1a9c9de45d58fa66562fe767a713e4b09cffc370a04151664b108e",
-    "report.css": "89ca440a2647ea565a3ffa16f2dc78d6cab13758d6f8a5ade6ef712cf0716ab2",
-    "report.js": "8ff095b3c5ea639db5f23bc5af56ce0baf38ddef603aa5878e4c7f2eb6a8ce04",
+    "report.css": "2b491fad1b57d9978aac291f7a9f0407cbe96b7a6841e6aed334a311bb56555e",
+    "report.js": "1119f267befdbd81c20b4b3ceec97371485532457af1e39f6cf319256eed3c49",
     "sky.js": "0839e3db0daf10e9ce3dcac4220419aa401ba8b578d1bd5c2c7b07ee02aa180b",
     "style.css": "b3744d2102d6fb6f9ce40fff7bfb7b21b5bc39bd51b7a84d6eec64099725642e",
     "theme.css": "2bd2d29a9bc01a44d15475df7a25ec48f6480b91ccfd736de0e238fe683cd16f",
@@ -81,6 +81,7 @@
     "assets/report-theme2-green/my-report.svg": "3f3ddd453ee6af2daf64058fb15814334bccbee67621bb34529bd59e892cad5b",
     "assets/report-theme2-green/passed.svg": "f9241fd42360b6a4bdd53a96b881b3d521ddebcde48f5654302b940f15ae9460",
     "assets/report-theme2-green/rail-tab.svg": "2eb58ade02b5020068f06d6d0aea393bd342c5d1503a0108709d4d8ea70882dd",
-    "assets/report-theme2-green/active-card-art.svg": "6b032ad0bd167e8c2d0e59cf3ce6edcfd9ad508477838847670097f531c9e210"
+    "assets/report-theme2-green/active-card-art.svg": "6b032ad0bd167e8c2d0e59cf3ce6edcfd9ad508477838847670097f531c9e210",
+    "report-colors.js": "bd3d1f0b99a5e59a45c4cc17d67fc14b2cb9305b5fdf61fb5aeafb712087763a"
   }
 }

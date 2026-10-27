@@ -88,7 +88,7 @@ test('English review hints override the actual important hiding utility in both 
  const languages=['ko','en'].map(v=>node('reportLanguage',v)),themes=['1','2'].map(v=>node('reportTheme',v));
  const dock={querySelectorAll:s=>s==='[data-report-label]'?texts:s==='[data-report-language]'?languages:themes};
  const context=vm.createContext({I,dock,theme:'1'});
- vm.runInContext(script.slice(script.indexOf(' function labels(){'),script.indexOf(' const themeImages=')),context);
+ vm.runInContext(script.slice(script.indexOf(' function labels(){'),script.indexOf(' function applyTheme(')),context);
  for(const locale of ['ko','en','ko','en'])for(const theme of ['1','2']){
   I.setLanguage(locale);context.theme=theme;vm.runInContext('labels()',context);
   assert.deepEqual(texts.map(n=>n.textContent),['테스트 패널','컬러1','컬러2']);
@@ -340,30 +340,47 @@ test('the independent 처음으로 action resets only report progress and exits 
  vm.runInNewContext(handler,{dock:{addEventListener:(_type,fn)=>fn({target:{closest:s=>s==='[data-report-restart]'?{}:null}})},window:{JeiReportEntry:{restart:()=>restarted++}}});assert.equal(restarted,1);
 });
 
-test('Color 2 follows the green Figma frame, swaps all seven checks, and restores Color 1 without changing learner state',()=>{
- const script=read('report.js'),manifest=JSON.parse(read('assets/report-theme2-green/manifest.json'));
- const root={attrs:new Map(),style:{values:{},setProperty(k,v){this.values[k]=v;}},setAttribute(k,v){this.attrs.set(k,v);},getAttribute(k){return this.attrs.get(k);}};
+function reportColorsHarness(initial='1',{deferred=false,reducedMotion=false}={}){
+ const roots=[],loads=[],waiters=[],motionCalls=[],store=new Map([['report-theme',initial],['ai-math-prototype-diagnosis-v1','saved-learning']]);
+ const root={attrs:new Map(),style:{values:{},setProperty(k,v){this.values[k]=v;}},setAttribute(k,v){this.attrs.set(k,v);if(k==='data-report-theme')roots.push(v);},getAttribute(k){return this.attrs.get(k);}};
  const selectors=['.recommend-arrow','.shortcut-profile-art','.shortcut-report-art','.constellation-art>img','.active-card-art','.passed-card .figma-status-icon','.side-tab-surface','.result-icon>img'];
- const images=new Map(selectors.map(s=>[s,Array.from({length:s.includes('passed-card')?7:1},()=>({src:'',setAttribute(_k,v){this.src=v;}}))]));
- const saved=new Map();const context=vm.createContext({root,window:{JeiTheme:{presetPalette:()=>({'--theme-completed':'#e5f5fd'})}},document:{querySelectorAll:s=>images.get(s)||[]},localStorage:{setItem:(k,v)=>saved.set(k,v)},labels:()=>{},theme:'1'});
- vm.runInContext(script.slice(script.indexOf(' const themeImages='),script.indexOf(' const sources=')),context);
- const h=reportHarness(reportFinalCard());h.document.documentElement=root;const sourceBefore=h.data('state');
+ const images=new Map(selectors.map(s=>[s,Array.from({length:s.includes('passed-card')?7:1},()=>({src:'',getAttribute(){return this.src;},setAttribute(_k,v){this.src=v;},animate(frames,options){const m={frames,options,cancel(){this.cancelled=true;}};motionCalls.push(m);return m;}}))]));
+ class WarmImage{set src(value){loads.push(value);}decode(){return deferred?new Promise(resolve=>waiters.push(resolve)):Promise.resolve();}}
+ const win={JeiTheme:{presetPalette:()=>({'--theme-completed':'#e5f5fd'}),THEMES:{current:{roles:{completed:'#e5f5fd'}}}},matchMedia:()=>({matches:reducedMotion})};
+ const document={documentElement:root,timeline:{currentTime:100},querySelectorAll:s=>images.get(s)||[]};
+ vm.runInNewContext(read('report-colors.js'),{window:win,document,Image:WarmImage,localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)}});
+ return {api:win.JeiReportColors,root,roots,loads,waiters,motionCalls,images,store};
+}
+test('Color 2 follows the green Figma frame, swaps all seven checks, and restores Color 1 without changing learner state',async()=>{
+ const script=read('report.js'),manifest=JSON.parse(read('assets/report-theme2-green/manifest.json')),c=reportColorsHarness();
+ const h=reportHarness(reportFinalCard());h.document.documentElement=c.root;h.context.JeiReportColors=c.api;const sourceBefore=h.data('state');
  for(const theme of ['2','1','2','1']){
-  context.theme=theme;vm.runInContext('applyTheme()',context);
-  assert.equal(root.style.values['--theme-completed'],theme==='2'?'#e5f6f4':'#e5f5fd');
-  for(const [selector,list]of images)for(const img of list){assert(img.src.startsWith(theme==='2'?'assets/report-theme2-green/':'assets/figma-v4-1/'),selector);assert(fs.existsSync(base+img.src));}
+  await c.api.select(theme,{animate:true});
+  assert.equal(c.root.style.values['--theme-completed'],theme==='2'?'#e5f6f4':'#e5f5fd');
+  for(const [selector,name]of c.api.images)for(const img of c.images.get(selector)){
+   assert.equal(img.src,c.api.asset(name));const data=Buffer.from(img.src.split(',')[1],'base64');assert.deepEqual(data,fs.readFileSync(base+'assets/'+(theme==='2'?'report-theme2-green/':'figma-v4-1/')+name+'.svg'));
+  }
   h.evaluate('render()');const markup=h.node('#programs').innerHTML;
-  assert.equal((markup.match(new RegExp('src="assets/'+(theme==='2'?'report-theme2-green':'figma-v4-1')+'/passed.svg"','g'))||[]).length,7);
-  assert(markup.includes('src="assets/'+(theme==='2'?'report-theme2-green':'figma-v4-1')+'/active-card-art.svg"'));
-  assert(h.node('#diagnostic').innerHTML.includes('src="assets/'+(theme==='2'?'report-theme2-green':'figma-v4-1')+'/result-report.svg"'));
+  assert.equal(markup.split('src="'+c.api.asset('passed')+'"').length-1,7);
+  assert(markup.includes('src="'+c.api.asset('active-card-art')+'"'));assert(h.node('#diagnostic').innerHTML.includes('src="'+c.api.asset('result-report')+'"'));
  }
  assert.deepEqual(h.data('state'),sourceBefore,'theme is presentation-only');
  const expected={'active-card-art.svg':[141,159],'recommend-arrow.svg':[18,18],'my-profile.svg':[25,25],'my-report.svg':[17,19],'constellation.svg':[33,27],'rail-tab.svg':[72,144],'rail-report.svg':[25,30],'result-report.svg':[14,18],'passed.svg':[44,44]};
  assert.equal(manifest.assets.length,9);
- for(const a of manifest.assets){const name=a.file.split('/').pop(),rootTag=read('assets/report-theme2-green/'+a.file).split('>')[0]+'>';assert.equal(rootTag,a.root);assert.deepEqual([Number(rootTag.match(/width="([\d.]+)"/)[1]),Number(rootTag.match(/height="([\d.]+)"/)[1])],expected[name],name);}
- assert(read('report.css').includes('html[data-report-theme="2"]{--status-pass-fill:#0ec7ae}'));
- assert(read('report.css').includes('#diagnostic-result-slot>.diagnostic-summary-trigger:hover'));
- assert(!script.includes('https://www.figma.com/api/mcp/asset/'));
+ for(const a of manifest.assets){const name=a.file.split('/').pop(),tag=read('assets/report-theme2-green/'+a.file).split('>')[0]+'>';assert.equal(tag,a.root);assert.deepEqual([Number(tag.match(/width="([\d.]+)"/)[1]),Number(tag.match(/height="([\d.]+)"/)[1])],expected[name],name);}
+ assert(read('report.css').includes('html[data-report-theme="2"]{--status-pass-fill:#0ec7ae}'));assert(!script.includes('https://www.figma.com/api/mcp/asset/'));
+});
+test('saved Color 2 is restored before paint, both SVG sets are decoded before switching and rapid requests cannot flash an obsolete palette',async()=>{
+ const html=read('index.html');assert(html.indexOf('src="report-colors.js"')<html.indexOf('</head>'));assert(html.indexOf('/theme-preview.js')<html.indexOf('src="report-colors.js"'));
+ assert(html.indexOf('JeiReportColors.syncImages()')<html.indexOf('src="catalog.js"'));
+ const saved=reportColorsHarness('2',{deferred:true});assert.equal(saved.api.current,'2');assert.deepEqual(saved.roots,['2']);assert.equal(saved.root.style.values['--theme-completed'],'#e5f6f4');assert.equal(saved.root.style.values['--report-header-color'],'#0ec7ae');
+ assert.equal(saved.loads.length,16);assert(saved.loads.every(src=>src.startsWith('data:image/svg+xml;base64,')));
+ const c=reportColorsHarness('1',{deferred:true});c.api.syncImages();const before=c.images.get('.passed-card .figma-status-icon')[0].src;
+ const stale=c.api.select('2',{animate:true}),latest=c.api.select('1',{animate:true});assert.equal(c.api.current,'1');assert.equal(c.images.get('.passed-card .figma-status-icon')[0].src,before);
+ c.waiters.forEach(resolve=>resolve());await Promise.all([stale,latest]);assert.equal(c.api.current,'1');assert(!c.roots.includes('2'),'superseded preparation never paints');
+ await c.api.select('2',{animate:true});assert.equal(c.api.current,'2');assert.equal(c.motionCalls.length,14);assert(c.motionCalls.every(m=>m.options.duration===240&&m.startTime===100&&!m.frames.some(f=>'transform' in f)));
+ assert.equal(c.store.get('ai-math-prototype-diagnosis-v1'),'saved-learning');
+ const reduced=reportColorsHarness('1',{reducedMotion:true});await reduced.api.select('2',{animate:true});assert.equal(reduced.api.current,'2');assert.equal(reduced.motionCalls.length,0);
 });
 
 function reviewReportLast(h,wrong=false){h.click('failed-card',7);h.click('study-choice-review');h.click('learner-answer',0);h.click('learner-next');h.click('learner-answer',wrong?0:1);h.click('learner-next');}
