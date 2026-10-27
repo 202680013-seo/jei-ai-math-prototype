@@ -1,8 +1,6 @@
 (function(){
  'use strict';
  const key='ai-math-prototype-diagnosis-v1';
- // Explicit review scenarios/checkpoints remain intentional; normal report entries restart.
- if(window.__JEI_REVIEW__?.scenario!=='keep'||window.__JEI_REVIEW__?.restored)return;
  function reset(){
   const s=MathModel.create(),topic=s.grades[3][0];topic.diagnosis='done';topic.programs=MathModel.programs(8,3,0);
   topic.programs.slice(0,7).forEach(p=>{p.status='passed';MathModel.setProgress(p,100);p.wrongFrames=[];});
@@ -10,9 +8,22 @@
   s.ui={diagnosisWelcomeSeen:true,diagnosisIntroSeen:false,passedCardHintSeen:false,failedCardHintSeen:true,diagnosisResultHintSeen:true};
   topic.recent='보고용 V1 · 마지막 학습 시작';localStorage.setItem(key,JSON.stringify(s));
  }
- try{reset();}catch{}
  let away=false,reloading=false;
  const reopen=()=>{if(reloading)return;reloading=true;window.location.reload();};
+ function restart(){
+  if(reloading)return;
+  // Remove an explicitly selected scenario before the new report document starts.
+  if(window.location.href&&window.history?.replaceState){
+    const url=new URL(window.location.href);url.searchParams.delete('scenario');url.searchParams.delete('checkpoint');
+    window.history.replaceState(null,'',url.pathname+url.search+url.hash);
+  }
+  try{reset();}catch{}
+  reopen();
+ }
+ window.JeiReportEntry=Object.freeze({restart});
+ // Explicit review scenarios/checkpoints remain intentional until the operator restarts.
+ if(window.__JEI_REVIEW__?.scenario!=='keep'||window.__JEI_REVIEW__?.restored)return;
+ try{reset();}catch{}
  // A cached browser return does not execute scripts again, so request a fresh entry.
  window.addEventListener?.('pageshow',event=>{if(event.persisted)reopen();});
  // Home-screen web apps can remain alive after closing to the launcher.

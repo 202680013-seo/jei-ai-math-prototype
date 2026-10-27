@@ -1714,8 +1714,16 @@ function openLearning(kind,id){
   if(kind==='diagnosis'&&current().diagnosis==='done'&&current().programs.length)dismissDiagnosisResultHint();else hideDiagnosisResultHint();
   clearPrescribedCardReveal();
   const s=current();if(kind==='diagnosis'&&s.diagnosis!=='done'){s.mentorDiagnosisEntries=(s.mentorDiagnosisEntries||0)+1;}if(kind==='diagnosis'&&s.diagnosis==='done')editing={kind:'diagnosis-result',goal:0,item:0};
-  else{editing={kind,id};if(kind==='diagnosis'){state.ui??={testControls:false};editing.intro=s.diagnosis==='idle'&&!state.ui.diagnosisIntroSeen;if(!editing.intro)startDiagnostic();}
-    else{const p=s.programs.find(x=>x.id===id);markMentorInterrupted(p);editing.showResult=p.progress>=100||['passed','failed'].includes(p.status);editing.resultOnly=editing.showResult;editing.intro=!editing.showResult;daily().timerRunning=false;}}
+  else{editing={kind,id,intro:false};if(kind==='diagnosis')startDiagnostic();
+    else{
+      const p=s.programs.find(x=>x.id===id);markMentorInterrupted(p);editing.showResult=p.progress>=100||['passed','failed'].includes(p.status);editing.resultOnly=editing.showResult;daily().timerRunning=false;
+      if(!editing.showResult){
+        if(!M.canStart(s,p)){editing=null;return;}
+        if(p.status==='idle'){if(!startProgram(p)){editing=null;return;}}
+        else{p.wrongFrames??=[];markLearning();}
+        syncProgramStudyClock(p,false,true);s.recent='맞춤 학습 시작';
+      }
+    }}
   save();render();refreshDialog();if(!$('#learning').open)$('#learning').showModal();
 }
 function refreshDialog(){

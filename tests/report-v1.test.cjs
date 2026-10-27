@@ -50,7 +50,7 @@ test('normal report entries restart the seven-passed/eighth-ready demo and prese
  }
 });
 test('report diagnosis retains the one-answer resume and clean-pass reward/rail handoff',()=>{
- const h=harness(undefined,{appSource:read('app.js'),mathModel:M});h.click('diagnosis');h.click('diagnosis-begin');
+ const h=harness(undefined,{appSource:read('app.js'),mathModel:M});h.click('diagnosis');
  for(let i=0;i<1;i++){h.click('diagnosis-answer',h.evaluate('DEMO['+i+'].correct'));h.click('diagnosis-next');}
  h.click('close-learning');h.click('diagnosis-leave');assert.equal(h.node('#diagnosis-welcome-progress').getAttribute('aria-valuenow'),'50');
  const restored=harness(h.saved(),{appSource:read('app.js'),mathModel:M});assert.equal(restored.node('#diagnosis-welcome-progress').getAttribute('data-progress-stage'),'partial');
@@ -76,7 +76,7 @@ test('English review hints override the actual important hiding utility in both 
   assert(from[property].endsWith('!important'),property+' really is important upstream');assert.equal(to[property],value+'!important',property+' must restore visible English copy');
  }
  const script=read('report.js'),markup=script.match(/dock\.innerHTML=`([^`]+)`;/)[1];
- assert.equal((markup.match(/<button\b/g)||[]).length,4);
+ assert.equal((markup.match(/<button\b/g)||[]).length,5);
  assert(markup.startsWith('<strong class="report-label" data-report-label="테스트 패널"></strong>'));
  assert.equal(I.t('테스트 패널'),'Test panel');
  for(const removed of ['report-identity','report-mark','report-state-toggle','report-scenarios','<svg','<small'])assert(!script.includes(removed),removed+' is removed, not just hidden');
@@ -84,14 +84,14 @@ test('English review hints override the actual important hiding utility in both 
  // The actual labels function keeps the operator copy Korean while the screen
  // locale and each segmented control's pressed state can still change.
  const node=(key,value)=>({dataset:{[key]:value},attrs:{},setAttribute(k,v){this.attrs[k]=v;}});
- const texts=['테스트 패널','테마1','테마2'].map(v=>node('reportLabel',v));
+ const texts=['테스트 패널','컬러1','컬러2'].map(v=>node('reportLabel',v));
  const languages=['ko','en'].map(v=>node('reportLanguage',v)),themes=['1','2'].map(v=>node('reportTheme',v));
  const dock={querySelectorAll:s=>s==='[data-report-label]'?texts:s==='[data-report-language]'?languages:themes};
  const context=vm.createContext({I,dock,theme:'1'});
  vm.runInContext(script.slice(script.indexOf(' function labels(){'),script.indexOf(' const themeImages=')),context);
  for(const locale of ['ko','en','ko','en'])for(const theme of ['1','2']){
   I.setLanguage(locale);context.theme=theme;vm.runInContext('labels()',context);
-  assert.deepEqual(texts.map(n=>n.textContent),['테스트 패널','테마1','테마2']);
+  assert.deepEqual(texts.map(n=>n.textContent),['테스트 패널','컬러1','컬러2']);
   for(const n of languages)assert.equal(n.attrs['aria-pressed'],String(n.dataset.reportLanguage===locale));
   for(const n of themes)assert.equal(n.attrs['aria-pressed'],String(n.dataset.reportTheme===theme));
  }
@@ -173,7 +173,7 @@ function reportHarness(saved,options={}){return harness(saved,{...options,appSou
 function finishReportOutcome(h){h.click('diagnosis-outcome-confirm');for(let i=0;h.evaluate('!!diagnosisOutcomeRun')&&i<20;i++){const timer=h.evaluate('diagnosisOutcomeTimer');assert(timer&&!timer.cancelled);timer.fn();}assert.equal(h.evaluate('diagnosisOutcomeRun'),null);}
 test('all four two-question diagnosis outcomes have matching results, prescriptions and exact rewards',()=>{
  for(const answers of [[0,1],[0,0],[1,1],[1,0]]){
-  const h=reportHarness();h.click('diagnosis');h.click('diagnosis-begin');h.click('diagnosis-next');assert.equal(h.evaluate('current().diagnosticSession.index'),0);
+  const h=reportHarness();h.click('diagnosis');h.click('diagnosis-next');assert.equal(h.evaluate('current().diagnosticSession.index'),0);
   h.click('diagnosis-answer',99);assert.equal(h.evaluate('current().diagnosticSession.answers.length'),0);
   answers.forEach((a,i)=>{assert.equal(h.evaluate('current().diagnosticSession.index'),i);h.click('diagnosis-answer',a);h.click('diagnosis-next');});
   const wrong=Number(answers[0]!==0)+Number(answers[1]!==1);assert.equal(h.evaluate('diagnosisSummary(outcomeResult()).total'),2);assert.equal(h.evaluate('diagnosisSummary(outcomeResult()).wrong'),wrong);
@@ -185,14 +185,14 @@ test('normal learning and completed-card review finish after two answers, preser
  for(const review of [false,true])for(const failed of [false,true]){
   let h=reportHarness();
   if(review){h.seed('passed',true);h.click('completed-card',0);h.click('study-choice-review');}
-  else{h.evaluate("current().diagnosis='done';current().programs=M.programs(2);render()");h.click('program',0);h.click('program-begin');}
+  else{h.evaluate("current().diagnosis='done';current().programs=M.programs(2);render()");h.click('program',0);}
   assert.equal(h.evaluate('current().programs[0].frames.length'),2);
   h.click('learner-answer',0);h.click('learner-next');
   if(review)assert.equal(h.evaluate('current().programs[0].reviewSession.index'),1);else assert.equal(h.evaluate('current().programs[0].progress'),50);
   // Exit/reload on the second question exercises the report's actual model,
   // saved state and completed-card resume route rather than a fresh replay.
   h.click('close-learning');h=reportHarness(h.saved());
-  if(review){h.click('completed-card',0);h.click('study-choice-review');}else{h.click('program',0);h.click('program-begin');}
+  if(review){h.click('completed-card',0);h.click('study-choice-review');}else{h.click('program',0);}
   h.click('learner-answer',failed?0:1);h.click('learner-next');
   assert.equal(h.evaluate('diagnosisSummary(outcomeResult()).total'),2);assert.equal(h.evaluate('diagnosisSummary(outcomeResult()).wrong'),failed?1:0);
   finishReportOutcome(h);assert.equal(h.evaluate('skyState().totalPieces'),failed?1:2);
@@ -240,7 +240,7 @@ function reportFinalCard(){
  vm.runInNewContext(read('report-seed.js'),{MathModel:M,window:{__JEI_REVIEW__:{scenario:'keep'}},localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)}});
  return JSON.parse(store.get(key));
 }
-function solveReportLast(h,wrong=false){h.click('program',7);h.click('program-begin');h.click('learner-answer',0);h.click('learner-next');h.click('learner-answer',wrong?0:1);h.click('learner-next');}
+function solveReportLast(h,wrong=false){h.click('program',7);h.click('learner-answer',0);h.click('learner-next');h.click('learner-answer',wrong?0:1);h.click('learner-next');}
 function reportStep(h){const t=h.evaluate('diagnosisOutcomeTimer');assert(t&&!t.cancelled);t.fn();}
 const reportStage=h=>h.evaluate('diagnosisOutcomeRun?.target.diagnosisOutcome?.stage');
 test('passing the eighth report lesson preserves all cards and introduces D02 through the shared rail handoff',()=>{
@@ -310,4 +310,32 @@ test('standalone foreground and cached-page returns request one new report entry
  let changed=false,registered=false;
  vm.runInNewContext(read('report-seed.js'),{MathModel:M,window:{__JEI_REVIEW__:{scenario:'keep',restored:{}},addEventListener:()=>registered=true},localStorage:{setItem:()=>changed=true}});
  assert.equal(changed,false);assert.equal(registered,false);
+});
+
+test('report diagnosis, prescribed learning and review enter questions directly without an intro and preserve resume',()=>{
+ const h=reportHarness(reportFinalCard());h.click('program',7);
+ assert.equal(h.evaluate('editing.intro'),false);assert.equal(h.evaluate('current().programs[7].status'),'active');assert.equal(h.evaluate('daily().timerRunning'),true);
+ assert(h.node('#learning').innerHTML.includes('동그라미를 골라요.'));assert(!h.node('#learning').innerHTML.includes('data-action="program-begin"'));
+ h.click('learner-answer',0);h.click('learner-next');h.click('close-learning');h.click('program',7);
+ assert.equal(h.evaluate('current().programs[7].progress'),50);assert(h.node('#learning').innerHTML.includes('가장 큰 수를 골라요.'));
+ h.click('close-learning');h.click('completed-card',0);h.click('study-choice-review');assert.equal(h.evaluate('editing.intro'),false);assert(h.node('#learning').innerHTML.includes('동그라미를 골라요.'));h.click('close-learning');
+ h.evaluate('select(3,1)');h.click('diagnosis');assert.equal(h.evaluate('editing.intro'),false);assert.equal(h.evaluate('current().diagnosticSession.index'),0);assert.equal(h.evaluate('daily().timerRunning'),true);
+ assert(h.node('#learning').innerHTML.includes('동그라미를 골라요.'));assert(!h.node('#learning').innerHTML.includes('data-action="diagnosis-begin"'));
+ h.click('diagnosis-answer',0);h.click('diagnosis-next');h.click('close-learning');h.click('diagnosis-leave');h.click('diagnosis');
+ assert.equal(h.evaluate('current().diagnosticSession.index'),1);assert(h.node('#learning').innerHTML.includes('가장 큰 수를 골라요.'));
+});
+test('the independent 처음으로 action resets only report progress and exits explicit scenarios without duplicate reloads',()=>{
+ for(const config of [{scenario:'keep'},{scenario:'4'},{scenario:'keep',restored:{}}]){
+  const key='ai-math-prototype-diagnosis-v1',old=reportFinalCard();old.index=1;
+  const store=new Map([[key,JSON.stringify(old)],['report-language','en'],['report-theme','2']]);let reloads=0,updated;
+  const root={__JEI_REVIEW__:config,location:{href:'https://example.com/report-v1.html?scenario=4&checkpoint=saved&demo=1',reload:()=>reloads++},history:{replaceState:(_a,_b,url)=>updated=url}};
+  vm.runInNewContext(read('report-seed.js'),{MathModel:M,window:root,URL,localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)}});
+  const changed=JSON.parse(store.get(key));changed.index=1;store.set(key,JSON.stringify(changed));
+  root.JeiReportEntry.restart();root.JeiReportEntry.restart();
+  const reset=JSON.parse(store.get(key));assert.equal(reset.grade,3);assert.equal(reset.index,0);assert.equal(reset.grades[3][0].programs[7].status,'idle');assert.equal(reset.grades[3][0].programs.filter(p=>p.status==='passed').length,7);
+  assert.equal(reloads,1);assert.equal(updated,'/report-v1.html?demo=1');assert.equal(store.get('report-language'),'en');assert.equal(store.get('report-theme'),'2');
+ }
+ const script=read('report.js'),markup=script.match(/dock\.innerHTML=`([^`]+)`;/)[1];assert(markup.includes('data-report-label="컬러1"'));assert(markup.includes('data-report-label="컬러2"'));assert(!markup.includes('테마'));assert(markup.endsWith('>처음으로</button>'));
+ const handler=script.slice(script.indexOf(" dock.addEventListener('click'"),script.indexOf(" window.addEventListener('message'"));let restarted=0;
+ vm.runInNewContext(handler,{dock:{addEventListener:(_type,fn)=>fn({target:{closest:s=>s==='[data-report-restart]'?{}:null}})},window:{JeiReportEntry:{restart:()=>restarted++}}});assert.equal(restarted,1);
 });
