@@ -77,7 +77,7 @@ test('English review hints override the actual important hiding utility in both 
  }
  const script=read('report.js'),markup=script.match(/dock\.innerHTML=`([^`]+)`;/)[1];
  assert.equal((markup.match(/<button\b/g)||[]).length,6);
- assert(markup.startsWith('<strong class="report-label" data-report-label="테스트 패널"></strong>'));
+ assert(markup.startsWith('<button type="button" class="report-toggle"'));assert(markup.indexOf('data-report-toggle')<markup.indexOf('class="report-label"'));
  assert.equal(I.t('테스트 패널'),'Test panel');
  for(const removed of ['report-identity','report-mark','report-state-toggle','report-scenarios','<svg','<small'])assert(!script.includes(removed),removed+' is removed, not just hidden');
  assert(script.includes("dock.setAttribute('aria-label','보고용 테스트 컨트롤')"));

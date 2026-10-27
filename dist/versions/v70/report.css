@@ -118,7 +118,7 @@ html[data-report-theme] .mentor-cluster .recommend[data-recommend-state=loading]
 
 /* Collapse the independent test dock to one small labelled handle. */
 #report-dock [hidden]{display:none!important}
-#report-dock .report-toggle{width:34px;min-width:34px;height:32px;min-height:32px;padding:0;margin-left:4px;background:#f1f4f6;color:#758391}
+#report-dock .report-toggle{width:34px;min-width:34px;height:32px;min-height:32px;padding:0;margin-left:0;background:#f1f4f6;color:#758391}
 #report-dock .report-toggle i{display:block;width:7px;height:7px;border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .2s ease}
 #report-dock[data-collapsed=true]{display:flex;gap:0;width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:50%;background:transparent;box-shadow:none;backdrop-filter:none;opacity:.35;cursor:pointer;transition:opacity .18s ease}
 #report-dock[data-collapsed=true] .report-label{display:none}
@@ -127,7 +127,7 @@ html[data-report-theme] .mentor-cluster .recommend[data-recommend-state=loading]
 @media(hover:hover) and (pointer:fine){#report-dock[data-collapsed=true]:hover{opacity:.85}}
 #report-dock[data-collapsed=true]:has(.report-toggle:focus-visible),#report-dock[data-collapsed=true]:active{opacity:1}
 #report-dock[data-panel-moving=true]{overflow:hidden}
-@media(max-width:650px){#report-dock{grid-template-columns:1fr auto auto}#report-dock .report-toggle{grid-column:3;grid-row:1;margin-left:0}#report-dock .report-restart{grid-column:2}}
+@media(max-width:650px){#report-dock{grid-template-columns:auto 1fr auto}#report-dock .report-toggle{grid-column:1;grid-row:1;margin-left:0}#report-dock .report-label{grid-column:2}#report-dock .report-restart{grid-column:3}}
 @media(prefers-reduced-motion:reduce){#report-dock[data-collapsed=true],#report-dock .report-toggle i{transition:none}}
 
 #report-dock[data-panel-interacted=true]{animation:none}
