@@ -134,8 +134,8 @@ html[data-report-theme] .mentor-cluster .recommend[data-recommend-state=loading]
 
 /* Reporting V2: neutral completion surfaces and a centered entry. */
 html[data-report-version="2"],html[data-report-version="2"] body,html[data-report-version="2"] body *{font-family:Pretendard,-apple-system,BlinkMacSystemFont,sans-serif!important}
-html[data-report-version="2"] .grid>.program-card.is-complete{background:transparent;border:2px solid #d4d9df;padding:21px}
-html[data-report-version="2"] .grid>.program-card.is-complete:hover:not(:disabled){background:#f6f7f8;border-color:#b8c1cb}
+html[data-report-version="2"] .grid>.program-card.is-complete{background:transparent;border:3.5px solid #e0e4e9;padding:19.5px}
+html[data-report-version="2"] .grid>.program-card.is-complete:hover:not(:disabled){background:#f6f7f8;border-color:#d0d7df}
 html[data-report-version="2"] #learning-context #diagnostic-result-slot>.diagnostic-summary-trigger{background:#eef0f3;color:#414f62}
 html[data-report-version="2"] #learning-context #diagnostic-result-slot>.diagnostic-summary-trigger:hover:not(:disabled){background:#e2e6eb}
 html[data-report-version="2"] #diagnosis-welcome .welcome-art{display:none!important}
