@@ -168,3 +168,5 @@
 - 보고용 V3 (v72) inherits V2 via explicit shared source URLs, keeping prior reports immutable. Only AI mentor glyphs use red #e6002d; the bubble blends pale rose and mint with a coordinated border. Keep all V2 typography/card/entry and learner flows. /report-v3.html is independent. Shared source references avoid duplicate large catalogs/assets in deployment.
 
 - 보고용 V3.1 keeps the V3 red mentor glyph and replaces only its bubble fill/border/shadow with pale yellow and rose tones, without mint/green. Preserve V3 and all prior versions, working and all flows. Native entry /report-v3-1.html.
+
+- 보고용 V4 uses the supplied #E5303A / #0F2F57 / #2C64C8 / neutral palette: red-tint active cards with crimson actions, navy information, blue completion, white/gray surfaces. Its own semantic palette, warmed recolored SVG banks and scoped CSS keep original geometry and all flows. Color1 white header; Color2 navy header. Preserve every prior report and working. Native /report-v4.html.
