@@ -1,0 +1,5 @@
+/* Report V3: red mentor accent with soft yellow and rose, without green. */
+html[data-report-variant="3"] .ai .mentor-piece,html[data-report-variant="3"] .ai .mentor-core{background:#e6002d}
+html[data-report-variant="3"] .ai .mentor-shadow{background:radial-gradient(ellipse,#e6002d24,transparent 72%)}
+html[data-report-variant="3"] .ai .mentor-bubble{background:linear-gradient(110deg,#fff0f2 0%,#fff3ee 28%,#fff7e7 58%,#fff9dc 82%,#fff5ce 100%);box-shadow:3px 3px 7px #9b64561c}
+html[data-report-variant="3"] .ai .mentor-bubble::before{background:linear-gradient(108deg,#ed9ca9 0%,#efb1aa 28%,#efc69e 56%,#ead494 80%,#e4ce82 100%)}
