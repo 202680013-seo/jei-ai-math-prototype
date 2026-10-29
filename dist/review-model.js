@@ -20,7 +20,7 @@
   const normalizeColor=value=>typeof value==='string'&&/^#[a-f\d]{6}$/i.test(value)?value.toLowerCase():null;
   const normalizeTheme=value=>['current','teal','green'].includes(value)?value:null;
   function normalize(data,params){
-    const left=get(data,params.get('left'))?.id||'working';let right=get(data,params.get('right'))?.id||data.working.basedOn;
+    const left=get(data,params.get('left'))?.id||get(data,data.latestWorkedVersion)?.id||data.versions.at(-1).id;let right=get(data,params.get('right'))?.id||data.working.basedOn;
     if(left===right)right=entries(data).find(item=>item.id!==left).id;
     const theme=normalizeTheme(params.get('theme'))||'current',color=params.has('theme')?null:normalizeColor(params.get('color'));
     return {mode:params.get('view')==='compare'?'compare':'single',left,right,device:Object.hasOwn(devices,params.get('device'))?params.get('device'):'fullhd',zoom:['100','75','50'].includes(params.get('zoom'))?params.get('zoom'):'fit',scenario:['0','3','4','5','6','many','scroll20'].includes(params.get('scenario'))?params.get('scenario'):'keep',color,theme};

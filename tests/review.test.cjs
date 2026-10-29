@@ -41,3 +41,10 @@ test('saving the next design version preserves V1 and rejects an unchanged dupli
     assert.notEqual(run().status,0);const v1=fs.readFileSync(path.join(temp,'dist/versions/v1/index.html'),'utf8');fs.appendFileSync(path.join(temp,'dist/working/style.css'),'\n/* new design */\n');let result=run();assert.equal(result.status,0,result.stderr);const updated=JSON.parse(fs.readFileSync(path.join(temp,'dist/versions.json')));assert.equal(updated.versions.length,data.versions.length+1);assert.equal(updated.versions.at(-1).id,'v'+(1+Math.max(...data.versions.map(v=>Number(v.id.slice(1))))));assert.equal(fs.readFileSync(path.join(temp,'dist/versions/v1/index.html'),'utf8'),v1);assert.notEqual(run().status,0);
   }finally{fs.rmSync(temp,{recursive:true,force:true});}
 });
+
+test("default preview follows last worked version while explicit links stay selectable",()=>{
+ assert.equal(R.normalize(data,new URLSearchParams()).left,data.latestWorkedVersion);
+ assert.equal(R.normalize({...data,latestWorkedVersion:"v1"},new URLSearchParams()).left,"v1");
+ assert.equal(R.normalize(data,new URLSearchParams("left=working")).left,"working");
+ assert.equal(R.normalize(data,new URLSearchParams("left=v1")).left,"v1");
+});

@@ -37,7 +37,7 @@ try{
   for(const name of Object.keys(files)){const target=join(temporary,name);mkdirSync(dirname(target),{recursive:true});copyFileSync(join(working,name),target);}
   writeFileSync(join(temporary,'snapshot.json'),JSON.stringify({id,date,files},null,2)+'\n');
   const label=labelOverride||(family?`${familyVersion.label}.${revision}`:'V'+next);
-  const version={id,label,title,path:`versions/${id}/`,date,createdAt:new Date().toISOString(),changes,...(family?{family,revision}:{})};registry.versions.push(version);Object.assign(registry.working,{basedOn:id,title:`${label} 기준 · 최신 작업본`,date,matchesBaseline:true,changes:[`${label} 시안과 같은 화면이에요.`,'다음 수정은 현재 작업본에서 이어갑니다.']});Review.validate(registry);
+  const version={id,label,title,path:`versions/${id}/`,date,createdAt:new Date().toISOString(),changes,...(family?{family,revision}:{})};registry.versions.push(version);registry.latestWorkedVersion=id;Object.assign(registry.working,{basedOn:id,title:`${label} 기준 · 최신 작업본`,date,matchesBaseline:true,changes:[`${label} 시안과 같은 화면이에요.`,'다음 수정은 현재 작업본에서 이어갑니다.']});Review.validate(registry);
   renameSync(temporary,destination);writeFileSync(registryPath,JSON.stringify(registry,null,2)+'\n');
   const log=join(root,'CHANGELOG.md');writeFileSync(log,readFileSync(log,'utf8')+`\n## 디자인 ${label} — ${title} · ${date}\n\n${changes.map(x=>'- '+x).join('\n')}\n`);
   buildReviewViews(root);

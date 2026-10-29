@@ -170,3 +170,5 @@
 - 보고용 V3.1 keeps the V3 red mentor glyph and replaces only its bubble fill/border/shadow with pale yellow and rose tones, without mint/green. Preserve V3 and all prior versions, working and all flows. Native entry /report-v3-1.html.
 
 - 보고용 V4 uses the supplied #E5303A / #0F2F57 / #2C64C8 / neutral palette: red-tint active cards with crimson actions, navy information, blue completion, white/gray surfaces. Its own semantic palette, warmed recolored SVG banks and scoped CSS keep original geometry and all flows. Color1 white header; Color2 navy header. Preserve every prior report and working. Native /report-v4.html.
+
+- Default review entry follows `versions.json.latestWorkedVersion`, currently v74 (보고용 V4), not preserved working V6.4. On every completed design update, including authorized in-place edits, set this field to the edited version. The save script sets it for new versions. Preserve explicit version/comparison links.
