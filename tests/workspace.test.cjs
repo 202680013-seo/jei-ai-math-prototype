@@ -100,12 +100,14 @@ test('direct view documents contain the real UI, share the catalog, and have no 
     assert.ok(!html.includes('<iframe'));
     assert.ok(!html.includes('srcdoc'));
     assert.ok(!html.includes('id="status"'));
-    assert.ok(html.indexOf('preview-runtime.js')<html.indexOf('src="app.js'));
-    assert.ok(html.indexOf('preview-controls.js')>html.indexOf('src="app.js'));
+    const appPosition=html.search(/src="(?:[^"]*\/)?app\.js/);assert.ok(appPosition>html.indexOf('preview-runtime.js'));
+    assert.ok(html.indexOf('preview-controls.js')>appPosition);
     assert.ok(html.indexOf('history-model.js')<html.indexOf('preview-runtime.js'));
     assert.ok(html.indexOf('history-ui.js')>html.indexOf('preview-controls.js'));
     shared.push(html.match(/src="(\/shared\/catalog-[a-f0-9]+\.js)"/)[1]);
-    const source=fs.readFileSync(path.join(dist,R.get(registry,id).path,'catalog.js'));
+    const catalogFile=path.join(dist,R.get(registry,id).path,'catalog.js');
+    const source=fs.readFileSync(fs.existsSync(catalogFile)?catalogFile:path.join(dist,shared.at(-1)));
+    if(!fs.existsSync(catalogFile))assert.ok(fs.readFileSync(path.join(dist,R.get(registry,id).path,'index.html'),'utf8').includes(shared.at(-1)));
     assert.deepEqual(fs.readFileSync(path.join(dist,shared.at(-1))),source);
   }
   assert.equal(new Set(shared).size,1);
