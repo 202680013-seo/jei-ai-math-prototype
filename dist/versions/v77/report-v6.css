@@ -31,65 +31,16 @@ html body #report-dock .report-controls{display:block;padding:0 22px 22px}
 #report-settings-toggle svg{display:block;width:100%;height:100%}
 #report-settings-toggle[aria-expanded=true]{visibility:hidden}
 @media(max-width:650px){html body #report-dock{inset:12px 12px 12px auto;max-height:calc(100dvh - 24px);width:min(360px,calc(100vw - 24px))}}
-html[data-custom-palette] .ai{background:var(--theme-surface)!important}
-html[data-custom-palette] body{background:var(--theme-page)}
-html[data-custom-palette] .diagnosis-result-hint{background:#202124!important}
-
-/* Reference palette: var(--v6-c-E5303A) / var(--v6-c-0F2F57) / var(--v6-c-2C64C8), on neutral white. */
-html[data-report-variant="4"][data-custom-palette]{--status-pass-fill:var(--v6-c-2c64c8);--status-review-fill:var(--v6-c-0f2f57);--status-lock-surface:var(--v6-c-e8ebef);--status-lock-fill:var(--v6-c-a9aeb6);--navigation-idle:var(--v6-c-a9aeb6)}
-html[data-report-variant="4"][data-custom-palette] .ai .mentor-piece,html[data-report-variant="4"][data-custom-palette] .ai .mentor-core{background:var(--v6-c-e5303a)}
-html[data-report-variant="4"][data-custom-palette] .ai .mentor-shadow{background:radial-gradient(ellipse,var(--v6-c-e5303a24),transparent 72%)}
-html[data-report-variant="4"][data-custom-palette] .ai .mentor-bubble{background:linear-gradient(110deg,var(--v6-c-fde4e0) 0%,var(--v6-c-fff4ee) 48%,var(--v6-c-fff8e5) 100%);box-shadow:2px 3px 8px var(--v6-c-0f2f5710)}
-html[data-report-variant="4"][data-custom-palette] .ai .mentor-bubble::before{background:linear-gradient(110deg,var(--v6-c-f4b8b8),var(--v6-c-f0d1bf) 55%,var(--v6-c-eee1bb))}
-html[data-report-variant="4"][data-custom-palette] .ai::after{background:var(--v6-c-e3e6eb)}
-html[data-report-variant="4"][data-custom-palette] .ai .recommend,html[data-report-variant="4"][data-custom-palette] .ai .top-shortcuts .compact-shortcut{background:var(--v6-c-fff);border-color:var(--v6-c-e3e6eb)}
-html[data-report-variant="4"][data-custom-palette] .ai .recommend{border-color:var(--v6-c-f0c7ca)}
-html[data-report-variant="4"][data-custom-palette] .ai .recommend button,html[data-report-variant="4"][data-custom-palette] .ai .recommend #recommend-copy{color:var(--v6-c-0f2f57)}
-html[data-report-variant="4"][data-custom-palette] .ai .recommend-label{color:var(--v6-c-b81f2e);border-color:var(--v6-c-edb6bc);background:var(--v6-c-fff3f2)}
-html[data-report-variant="4"][data-custom-palette] .ai .recommend button:hover:not(:disabled),html[data-report-variant="4"][data-custom-palette] .ai .top-shortcuts .compact-shortcut:hover{background:var(--v6-c-f3f4f6);border-color:var(--v6-c-cbd2dc)}
-html[data-report-variant="4"][data-custom-palette] .ai .recommend .recommend-loader,html[data-report-variant="4"][data-custom-palette] .ai .recommend .recommend-loader small{color:var(--v6-c-b81f2e)}
-html[data-report-variant="4"][data-custom-palette] .ai .recommend-spinner{filter:none}
-html[data-report-variant="4"][data-custom-palette] .ai .top-shortcuts .constellation-art{left:5px;top:7.742188px}
-html[data-report-variant="4"][data-custom-palette] #grade-badge.grade-label{background:var(--v6-c-e3e8f0);color:var(--v6-c-0f2f57)}
-html[data-report-variant="4"][data-custom-palette] #grade-badge>.grade-topic-number{border-left-color:var(--v6-c-0f2f5733)}
-html[data-report-variant="4"][data-custom-palette] .grid>.program-card:is(.is-ready,.is-current,.is-introduced){background:var(--v6-c-fde4e0);color:var(--v6-c-0f2f57)}
-html[data-report-variant="4"][data-custom-palette] .grid>.program-card:is(.is-ready,.is-current,.is-introduced):hover:not(:disabled){background:var(--v6-c-fddcd6);box-shadow:0 10px 22px var(--v6-c-b81f2e12)}
-html[data-report-variant="4"][data-custom-palette] .grid>.program-card:is(.is-ready,.is-current,.is-introduced)>.program-title{color:var(--v6-c-0f2f57)}
-html[data-report-variant="4"][data-custom-palette] .card-start-box{background:var(--v6-c-d62532);color:var(--v6-c-fff)}
-html[data-report-variant="4"][data-custom-palette] .program-card:hover .card-start-box{background:var(--v6-c-b81f2e);color:var(--v6-c-fff)}
-html[data-report-variant="4"][data-custom-palette] .program-card .card-progress{color:var(--v6-c-b81f2e)}
-html[data-report-variant="4"][data-custom-palette] .program-card .card-progress progress::-webkit-progress-bar{background:var(--v6-c-efc3c4)}
-html[data-report-variant="4"][data-custom-palette] .program-card .card-progress progress::-webkit-progress-value{background:var(--v6-c-e5303a)}
-html[data-report-variant="4"][data-custom-palette] .program-card .card-progress progress::-moz-progress-bar{background:var(--v6-c-e5303a)}
-html[data-report-variant="4"][data-custom-palette] .grid>.program-card.is-complete{background:var(--v6-c-fff);border-color:var(--v6-c-e0e4e9);color:var(--v6-c-383838)}
-html[data-report-variant="4"][data-custom-palette] .grid>.program-card.is-complete:hover:not(:disabled){background:var(--v6-c-f8f9fb);border-color:var(--v6-c-cfd6df)}
-html[data-report-variant="4"][data-custom-palette] .grid>.program-card.is-locked,html[data-report-variant="4"][data-custom-palette] .grid>.program-card.is-locked:hover{background:var(--v6-c-f3f4f6);border-color:var(--v6-c-e5e7eb);color:var(--v6-c-a9aeb6)}
-html[data-report-variant="4"][data-custom-palette] #learning-context #diagnostic-result-slot>.diagnostic-summary-trigger{background:var(--v6-c-f3f4f6);color:var(--v6-c-5e6b80)}
-html[data-report-variant="4"][data-custom-palette] #learning-context #diagnostic-result-slot>.diagnostic-summary-trigger:hover:not(:disabled){background:var(--v6-c-e3e8f0)}
-html[data-report-variant="4"][data-custom-palette] #diagnosis-welcome{background:linear-gradient(110deg,var(--v6-c-fff4f1),var(--v6-c-fff8f3) 58%,var(--v6-c-fff9eb));color:var(--v6-c-0f2f57)}
-html[data-report-variant="4"][data-custom-palette] #diagnosis-welcome-action>.diagnostic-start-button{background:var(--v6-c-d62532);color:var(--v6-c-fff)}
-html[data-report-variant="4"][data-custom-palette] #diagnosis-welcome-action>.diagnostic-start-button:hover:not(:disabled){background:var(--v6-c-b81f2e);box-shadow:0 5px 12px var(--v6-c-b81f2e20)}
-html[data-report-variant="4"][data-custom-palette] .welcome-progress-count{color:var(--v6-c-5e6b80)}
-html[data-report-variant="4"][data-custom-palette] #group-panel{border-color:var(--v6-c-e3e6eb)}
-html[data-report-variant="4"][data-custom-palette] #group-panel .group-item.selected,html[data-report-variant="4"][data-custom-palette] #group-panel .group-item:hover:not(:disabled){background:var(--v6-c-e4eefb);color:var(--v6-c-0f2f57)}
-html[data-report-variant="4"][data-custom-palette] .rail-current-highlight{background:var(--v6-c-e4eefb)}
-html[data-report-variant="4"][data-custom-palette] body[data-diagnosis-advance] #group-panel .group-item.selected{background:transparent}
-html[data-report-variant="4"][data-custom-palette] #group-panel .nav-grade-arrow{background:var(--v6-c-e3e8f0)}
-html[data-report-variant="4"][data-custom-palette] #group-panel .nav-grade-progress{background:var(--v6-c-f3f4f6);border-color:var(--v6-c-e3e6eb);color:var(--v6-c-5e6b80)}
-html[data-report-variant="4"][data-custom-palette] #group-panel .nav-progress-count b{color:var(--v6-c-2c64c8)}
-html[data-report-variant="4"][data-custom-palette] #group-panel .nav-grade-progress progress::-webkit-progress-value{background:var(--v6-c-2c64c8)}
-html[data-report-variant="4"][data-custom-palette] #group-panel .nav-grade-progress progress::-moz-progress-bar{background:var(--v6-c-2c64c8)}
-html[data-report-variant="4"][data-custom-palette] .question-choices>button.answer-selected{background:var(--v6-c-fde4e0);border-color:var(--v6-c-e5303a);color:var(--v6-c-0f2f57)}
-html[data-report-variant="4"][data-custom-palette] .question-choices>button.answer-correct{background:var(--v6-c-e4eefb);border-color:var(--v6-c-2c64c8)}
-html[data-report-variant="4"][data-custom-palette] .question-choices>button.answer-wrong{background:var(--v6-c-e3e8f0);border-color:var(--v6-c-5e6b80)}
-html[data-report-variant="4"][data-custom-palette] :focus-visible{outline-color:var(--v6-c-2c64c8)}
-
-/* Completion copy: one heading and the result metrics, without repeated captions. */
-html[data-report-variant="4"][data-custom-palette] #composition-topic-context,
-html[data-report-variant="4"][data-custom-palette] #composition-message,
-html[data-report-variant="4"][data-custom-palette] .diagnosis-outcome-active .diagnosis-screen-top > span,
-html[data-report-variant="4"][data-custom-palette] .diagnosis-outcome-metric.outcome-time,
-html[data-report-variant="4"][data-custom-palette] .diagnosis-outcome-metric:not(.program-outcome-metrics .diagnosis-outcome-metric) > small {display:none!important;}
-html[data-report-variant="4"][data-custom-palette] .diagnosis-outcome-metrics {grid-template-columns:repeat(2,minmax(0,1fr));}
-html[data-report-variant="4"][data-custom-palette] .program-outcome-metrics {grid-template-columns:minmax(0,1fr);}
-html[data-custom-palette]{--status-pass-fill:#52749a}
+/* Accent-only controls: surfaces, typography and status colors keep their original values. */
+html[data-report-variant="4"][data-custom-palette] .ai .mentor-piece,
+html[data-report-variant="4"][data-custom-palette] .ai .mentor-core{background:var(--v6-accent)}
+html[data-report-variant="4"][data-custom-palette] .ai .mentor-shadow{background:radial-gradient(ellipse,color-mix(in srgb,var(--v6-accent) 14%,transparent),transparent 72%)}
+html[data-report-variant="4"][data-custom-palette] .card-start-box,
+html[data-report-variant="4"][data-custom-palette] #diagnosis-welcome-action>.diagnostic-start-button,
+html[data-report-variant="4"][data-custom-palette] button.primary:not(:disabled){background:var(--v6-primary);color:#fff}
+html[data-report-variant="4"][data-custom-palette] .program-card:hover .card-start-box,
+html[data-report-variant="4"][data-custom-palette] #diagnosis-welcome-action>.diagnostic-start-button:hover:not(:disabled),
+html[data-report-variant="4"][data-custom-palette] button.primary:hover:not(:disabled){background:var(--v6-hover);color:#fff}
+html[data-report-variant="4"][data-custom-palette] .program-card .card-progress progress::-webkit-progress-value{background:var(--v6-accent)}
+html[data-report-variant="4"][data-custom-palette] .program-card .card-progress progress::-moz-progress-bar{background:var(--v6-accent)}
+html[data-report-variant="4"][data-custom-palette] .question-choices>button.answer-selected{border-color:var(--v6-primary)}

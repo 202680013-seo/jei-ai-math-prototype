@@ -9,3 +9,12 @@ test('V6 shares learner flow and uses an independent settings panel while V5 rem
  assert(html.includes('/versions/v74/app.js'));assert(html.includes('/versions/v75/report-v5.css'));assert(source.includes('document.body.append(dock,gear)'));assert(source.includes('dock.hidden=true'));assert(!source.includes("||collapsed){setPanelCollapsed"));
  assert(fs.readFileSync('dist/report-v5.html','utf8').includes('/versions/v71/report.js'));
 });
+test('V6 color changes and reset write only accent variables, never page or card roles',()=>{
+ const vm=require('node:vm'),source=fs.readFileSync('dist/versions/v77/color-panel.js','utf8');
+ const values=new Map([['--theme-page','#ffffff'],['--theme-active','#fde4e0'],['--theme-text','#383838']]);
+ const context={C,chosen:true,values:C.lab('#328472'),palette:null,key:'test',sync(){},localStorage:{setItem(){}},root:{setAttribute(){},removeAttribute(){},style:{setProperty:(k,v)=>values.set(k,v),removeProperty:k=>values.delete(k)}}};
+ vm.createContext(context);vm.runInContext(source.slice(source.indexOf('function apply(){'),source.indexOf('function sync(){')),context);context.apply();
+ assert.equal(values.get('--theme-page'),'#ffffff');assert.equal(values.get('--theme-active'),'#fde4e0');assert.equal(values.get('--theme-text'),'#383838');assert(values.has('--v6-primary'));assert.equal(values.size,6);
+ context.chosen=null;context.apply();assert.equal(values.size,3);
+ const css=fs.readFileSync('dist/versions/v77/report-v6.css','utf8').split('/* Accent-only')[1];assert(!css.includes('mentor-bubble'));assert(!css.includes('--theme-page'));assert(!css.includes('.is-complete'));assert(!css.includes('.is-locked'));
+});
