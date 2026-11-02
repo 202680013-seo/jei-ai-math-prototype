@@ -1309,7 +1309,29 @@
       "changes": [
         "보고용 V4의 구성과 흐름을 유지하고 전체 글꼴을 나눔스퀘어로 변경"
       ]
+    },
+    {
+      "id": "v76",
+      "label": "보고용 V5.1",
+      "title": "복습 안내·완료 아이콘 톤 조정",
+      "path": "versions/v76/",
+      "date": "2026-11-02",
+      "createdAt": "2026-11-02T05:26:31.187Z",
+      "changes": [
+        "복습 안내 차콜 블랙, 완료 체크 차분한 블루"
+      ]
+    },
+    {
+      "id": "v77",
+      "label": "보고용 V6",
+      "title": "OKLCH 컬러 테스트 패널",
+      "path": "versions/v77/",
+      "date": "2026-11-02",
+      "createdAt": "2026-11-02T05:29:32.380Z",
+      "changes": [
+        "톱니바퀴 설정 패널, 컬러 프리셋·직접 입력·OKLCH 조정 및 위계 기반 전체 배색"
+      ]
     }
   ],
-  "latestWorkedVersion": "v75"
+  "latestWorkedVersion": "v77"
 }

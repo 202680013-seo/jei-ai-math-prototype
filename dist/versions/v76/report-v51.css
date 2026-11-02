@@ -1,0 +1,3 @@
+html[data-report-variant="4"]{--status-pass-fill:#52749a}
+html[data-report-variant="4"] .completed-first-tooltip{background:#202124!important;color:#fff}
+html[data-report-variant="4"] .completed-first-tooltip::after{filter:grayscale(1) brightness(.44)}
