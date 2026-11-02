@@ -172,3 +172,5 @@
 - 보고용 V4 uses the supplied #E5303A / #0F2F57 / #2C64C8 / neutral palette: red-tint active cards with crimson actions, navy information, blue completion, white/gray surfaces. Its own semantic palette, warmed recolored SVG banks and scoped CSS keep original geometry and all flows. Color1 white header; Color2 navy header. Preserve every prior report and working. Native /report-v4.html.
 
 - Default review entry follows `versions.json.latestWorkedVersion`, currently v74 (보고용 V4), not preserved working V6.4. On every completed design update, including authorized in-place edits, set this field to the edited version. The save script sets it for new versions. Preserve explicit version/comparison links.
+
+- 2026-11-02: User authorizes in-place report V4/v74 refinement: omit reward/collection screens, preserve silent once-only credit and subsequent prescription/next-set flow, simplify completion copy. Own app.js avoids changing shared v71 and other reports. Refresh hashes and keep default v74.

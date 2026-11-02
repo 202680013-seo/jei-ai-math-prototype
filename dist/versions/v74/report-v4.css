@@ -50,3 +50,12 @@ html[data-report-variant="4"] .completed-first-tooltip::after,html[data-report-v
 html[data-report-variant="4"] #report-dock [data-report-theme="1"] .report-swatch{background:#fde4e0;border-color:#e5303a}
 html[data-report-variant="4"] #report-dock [data-report-theme="2"] .report-swatch{background:#0f2f57;border-color:#0f2f57}
 html[data-report-variant="4"] :focus-visible{outline-color:#2c64c8}
+
+/* Completion copy: one heading and the result metrics, without repeated captions. */
+html[data-report-variant="4"] #composition-topic-context,
+html[data-report-variant="4"] #composition-message,
+html[data-report-variant="4"] .diagnosis-outcome-active .diagnosis-screen-top > span,
+html[data-report-variant="4"] .diagnosis-outcome-metric.outcome-time,
+html[data-report-variant="4"] .diagnosis-outcome-metric:not(.program-outcome-metrics .diagnosis-outcome-metric) > small {display:none!important;}
+html[data-report-variant="4"] .diagnosis-outcome-metrics {grid-template-columns:repeat(2,minmax(0,1fr));}
+html[data-report-variant="4"] .program-outcome-metrics {grid-template-columns:minmax(0,1fr);}
