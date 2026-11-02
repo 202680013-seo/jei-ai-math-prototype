@@ -174,3 +174,5 @@
 - Default review entry follows `versions.json.latestWorkedVersion`, currently v74 (보고용 V4), not preserved working V6.4. On every completed design update, including authorized in-place edits, set this field to the edited version. The save script sets it for new versions. Preserve explicit version/comparison links.
 
 - 2026-11-02: User authorizes in-place report V4/v74 refinement: omit reward/collection screens, preserve silent once-only credit and subsequent prescription/next-set flow, simplify completion copy. Own app.js avoids changing shared v71 and other reports. Refresh hashes and keep default v74.
+
+- Report V5 (v75) inherits V4 and applies official NAVER NanumSquare, NOT NanumSquareRound, in four weights including the test dock. It shares v74 behavior and palette. Typography builder skips the old round font for the explicit square marker. Native /report-v5.html is the default latest version. Preserve prior reports and working.

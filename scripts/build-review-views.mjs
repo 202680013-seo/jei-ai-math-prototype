@@ -18,6 +18,7 @@ export function buildReviewViews(root=defaultRoot){
     // Avoid fetching superseded fonts (e.g. V3's original Pretendard preload).
     html=html.replace(/<link\b(?=[^>]*\brel=["']preload["'])(?=[^>]*\bas=["']font["'])[^>]*>/gi,'');
     html=html.replace(/<link\b(?=[^>]*\bdata-jei-typography\b)[^>]*>/gi,'');
+    if(html.includes('data-report-typography="square"'))return html.replace(/<\/head>/i,'<link data-jei-typography rel="preload" href="https://hangeul.pstatic.net/hangeul_static/webfont/NanumSquare/NanumSquareR.woff" as="font" type="font/woff" crossorigin></head>');
     return html.replace(/<\/head>/i,`<link data-jei-typography rel="preload" href="/shared/fonts/NanumSquareRoundR.woff2" as="font" type="font/woff2" crossorigin><link data-jei-typography rel="stylesheet" href="/shared/typography.css?r=${typographyHash}"></head>`);
   }
   for(const version of Review.entries(registry)){
