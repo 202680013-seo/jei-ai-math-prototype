@@ -5,11 +5,11 @@ let storageError=false;const initial={version:1,current:{mode:'default',hex:'#e5
 const valid=v=>v&&['default','custom'].includes(v.mode)&&E.normalize(v.hex);
 try{const saved=JSON.parse(localStorage.getItem(key));if(saved?.version===1&&valid(saved.current)){state={version:1,current:{mode:saved.current.mode,hex:E.normalize(saved.current.hex)},slots:[0,1,2].map(i=>{const v=saved.slots?.[i];return valid(v)&&typeof v.name==='string'?{mode:v.mode,hex:E.normalize(v.hex),name:v.name.slice(0,32)}:null;})};}}catch{storageError=true;}
 // Retain the exact original red scale for default and reset; generated only for custom themes.
-const brand=['#fff4f1','#fff3f2','#fde4e0','#fddcd6','#f4b8b8','#e5303a','#d62532','#b81f2e','#981b2a','#721524','#480e18'];
+const brand=["#FEF2F2","#FFE2E2","#FFC9C9","#FFA2A2","#FF6467","#FB2C36","#E7000B","#C10007","#9F0712","#82181A","#460809"];
 let tokens={},activePalette={};
 function persist(){try{localStorage.setItem(key,JSON.stringify(state));}catch{storageError=true;}}
 function apply(){const custom=state.current.mode==='custom',p=custom?E.palette(state.current.hex):Object.fromEntries(E.steps.map((s,i)=>[s,{hex:brand[i],oklch:E.css(E.lch(brand[i]))}]));activePalette=p;tokens={};
-for(const s of E.steps)tokens['--accent-'+s]=p[s].hex;
+for(const s of E.steps){tokens['--color-accent-'+s]=p[s].hex;tokens['--accent-'+s]='var(--color-accent-'+s+')';}
 const ref=(n)=>`var(--accent-${n})`;
 Object.assign(tokens,{'--color-primary':ref(600),'--color-primary-hover':ref(700),'--color-primary-active':ref(800),'--color-primary-subtle':ref(200),'--color-on-primary':E.ink(p[600].hex),'--color-on-primary-hover':E.ink(p[700].hex),'--color-on-primary-active':E.ink(p[800].hex),'--color-focus-ring':ref(700),'--theme-primary':'var(--color-primary)','--theme-primary-hover':'var(--color-primary-hover)','--theme-on-primary':'var(--color-on-primary)','--theme-accent':ref(500),'--jei-accent':ref(500),'--theme-soft':'var(--color-primary-subtle)','--theme-soft-strong':ref(300)});
 R.toggleAttribute('data-custom-accent',custom);
