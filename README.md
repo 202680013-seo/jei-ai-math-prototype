@@ -1,3 +1,92 @@
+# 재능스스로AI수학 · 협업 시안
+
+## 보고용 프로토타입
+
+| 버전 | 시안 |
+|---|---|
+| [보고용 V6](https://jeimath-uijeong.lushfinch2.chatgpt.site/report-v6.html) | OKLCH 컬러 테스트 패널 |
+| [보고용 V5.1](https://jeimath-uijeong.lushfinch2.chatgpt.site/report-v5-1.html) | 복습 안내·완료 아이콘 톤 조정 |
+| [보고용 V5](https://jeimath-uijeong.lushfinch2.chatgpt.site/report-v5.html) | 나눔스퀘어 타이포그래피 |
+| [보고용 V4](https://jeimath-uijeong.lushfinch2.chatgpt.site/report-v4.html) | JEI 레드 · 네이비 · 뉴트럴 화이트 |
+| [보고용 V3.1](https://jeimath-uijeong.lushfinch2.chatgpt.site/report-v3-1.html) | 레드 AI 심볼 · 연노랑과 로즈 말풍선 |
+| [보고용 V3](https://jeimath-uijeong.lushfinch2.chatgpt.site/report-v3.html) | 레드 AI 심볼 · 레드와 민트 말풍선 |
+| [보고용 V2](https://jeimath-uijeong.lushfinch2.chatgpt.site/report-v2.html) | Pretendard · 그레이 라인 카드 · 중앙 진단 진입 |
+| [보고용 V1](https://jeimath-uijeong.lushfinch2.chatgpt.site/report-v1.html) | 보고용 · 언어와 테마 비교 |
+
+## 보관한 학습 시안
+
+| 버전 | 시안 |
+|---|---|
+| [V6.4](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v69.html) | 물을 머금는 클로버 |
+| [V6.3](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v68.html) | 실력을 맞추는 퍼즐 |
+| [V6.2.3](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v67.html) | 연결되는 수학두뇌 |
+| [V6.2.2](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v66.html) | 완성되는 실력 퍼즐 |
+| [V6.2.1](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v65.html) | 실력이 보이는 돋보기 |
+| [V6.2](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v64.html) | 가운데 모은 배치와 반복 안내 |
+| [V6.1](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v63.html) | V5.1 가로 배치와 부드러운 순환 안내 |
+| [V6](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v62.html) | 처음은 친절하게, 다음은 간결하게 |
+| [V5.1](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v61.html) | 간결해진 실력알기 시작 화면 |
+| [V5](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v60.html) | 나만의 코스를 여는 실력알기 |
+| [V4.9](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v59.html) | 개별 프로그램 결과 요약과 별 조각 보상 |
+| [V4.8](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v58.html) | 전체 화면 결과 요약과 별자리 보상 모션 |
+| [V4.7](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v57.html) | 기존 돋보기와 맞춤 학습 준비 화면 복구 |
+| [V4.6](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v56.html) | 실력알기 결과 요약과 별 조각 보상 |
+| [V4.5](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v55.html) | 탭 비율과 레일 제목·툴팁 수정 |
+| [V4.4](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v54.html) | 상황별 AI 안내와 레일 동작 개선 |
+| [V4.3](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v53.html) | 아이패드 탭 겹침 수정 |
+| [V4.2](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v52.html) | 상단 배치·문구 잘림 보정 |
+| [V4.1](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v51.html) | 피그마 메인 디자인 반영 |
+| [V4](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v50.html) | SVG 컬러 적용 · 민트와 하늘색 학습 화면 |
+| [V3.9](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v49.html) | 진단 화면 위에서 이어지는 결과 팝업 |
+| [V3.8.2](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v48.html) | 모든 문제 화면의 선택한 답 문구 제거 |
+| [V3.8.1](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v47.html) | 간결한 안내와 부드러운 복습 툴팁 |
+| [V3.8](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v46.html) | 학습 주제에서 맞춤 학습으로 이어지는 구조 |
+| [V3.7.17](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v45.html) | 스크롤 위치에 따라 선명해지는 학습 목차 |
+| [V3.7.16](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v44.html) | 배경에 어울리는 회색 잠금 아이콘 |
+| [V3.7.15](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v43.html) | 상단 아이콘 버튼과 작은 이름표 |
+| [V3.7.14](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v42.html) | 부드러운 복습 안내와 완료 카드 구분 |
+| [V3.7.13](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v41.html) | 내 학습·별자리 아이콘 적용 |
+| [V3.7.12](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v40.html) | 통과 카드와 밝은 학습 완료 |
+| [V3.7.11](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v39.html) | 첫 미통과 카드의 복습 안내 |
+| [V3.7.10](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v38.html) | 상태 아이콘과 미통과 학습 선택 |
+| [V3.7.9](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v37.html) | 조용한 완료 카드와 이어지는 진단 |
+| [V3.7.8](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v36.html) | 간결한 진단 답안 선택 |
+| [V3.7.7](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v35.html) | 고정된 메인과 간결한 학습 목차 |
+| [V3.7.6](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v34.html) | FHD 카드 크기 유지와 넉넉한 좌우 여백 |
+| [V3.7.5](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v33.html) | 카드에서 결과·복습 선택과 FHD 4열 화면 |
+| [V3.7.4](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v32.html) | 완료 카드의 명확한 결과 보기 |
+| [V3.7.3](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v31.html) | 전체 화면 학습 진입과 순차 학습 목차 |
+| [V3.7.2](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v30.html) | 차분한 학습 목차와 상단 고정 |
+| [V3.7.1](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v29.html) | 카드 폭을 지키는 레일과 현재 학습 안내 |
+| [V3.7](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v28.html) | 메인과 함께 보는 학습 목차 |
+| [V3.6](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v27.html) | 현재 컬러·청록·초록 전체 테마 |
+| [V3.5.2](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v26.html) | 추천 강조색과 부드러운 카드 테두리 |
+| [V3.5.1](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v25.html) | 간결한 진행률과 넓은 학습 버튼 |
+| [V3.5](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v24.html) | 학습 진행 카드와 반원 사이드 탭 |
+| [V3.4.10](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v23.html) | 차분한 AI 안내와 완료 학습 복습 |
+| [V3.4.9](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v22.html) | 정돈된 추천 안내와 단원 진행률 |
+| [V3.4.8](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v21.html) | 정돈된 학습 제목과 부드러운 화면 전환 |
+| [V3.4.7](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v20.html) | 자연스러운 멘토 발화와 곡선 사이드 탭 |
+| [V3.4.6](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v19.html) | 상황별 AI 안내와 정돈된 학습 목록 |
+| [V3.4.5](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v18.html) | 부드러운 사이드 화면과 맞춤 학습 공개 |
+| [V3.4.4](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v17.html) | 추천 준비와 둥실 말풍선 |
+| [V3.4.3](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v16.html) | 상단 안내와 학습 영역 분리 |
+| [V3.4.2](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v15.html) | 멘토 옆 추천과 말풍선 라벨 |
+| [V3.4.1](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v14.html) | 추천 활동 위치와 별 조각 배지 |
+| [V3.4](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v13.html) | 가벼운 상단과 펼쳐지는 AI 안내 |
+| [V3.3](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v12.html) | 성취 스탬프와 다음 도전 준비 |
+| [V3.2](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v11.html) | 반복 모션과 명확한 진단 통과 |
+| [V3.1](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v10.html) | 수학 기호로 변하는 AI 멘토 |
+| [V3](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v9.html) | V1 원본 × 부드러운 그린 학습 화면 |
+| [V2.51](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v8.html) | 한 문장씩 이어지는 자동 전환 |
+| [V2.5](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v7.html) | 처방 없이 통과 · 다음 단계 전환 |
+| [V2.4](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v6.html) | 낮은 AI 안내와 별자리 정렬 |
+| [V2.3](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v5.html) | V1 배치의 간결한 AI 멘토 |
+| [V2.2](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v4.html) | AI 안내와 내 학습 바로가기 |
+| [V2.1](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v3.html) | V1 구조의 실력알기 |
+| [V2](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v2.html) | 민트 학습 화면 |
+| [V1](https://jeimath-uijeong.lushfinch2.chatgpt.site/views/v1.html) | 대리님 원본 |
+
 # 재능스스로AI수학 UI·케이스 플로우 검증 프로토타입
 
 목적은 실제 운영이 아니라 UI 디자인 참고와 상태별 화면·전환 확인입니다. 정교한 보상 원장·운영 서버·실제 문제 엔진은 구현하지 않습니다. 샘플 데이터와 테스트 버튼으로 케이스를 재현합니다.
