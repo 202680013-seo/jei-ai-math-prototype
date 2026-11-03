@@ -1,0 +1,14 @@
+/* NAVER NanumSquare (not NanumSquareRound). Official webfont files. */
+@font-face{font-family:'NanumSquare';src:url('/fonts/NanumSquareL.woff') format('woff');font-style:normal;font-weight:300;font-display:swap;}
+@font-face{font-family:'NanumSquare';src:url('/fonts/NanumSquareR.woff') format('woff');font-style:normal;font-weight:400;font-display:swap;}
+@font-face{font-family:'NanumSquare';src:url('/fonts/NanumSquareB.woff') format('woff');font-style:normal;font-weight:700;font-display:swap;}
+@font-face{font-family:'NanumSquare';src:url('/fonts/NanumSquareEB.woff') format('woff');font-style:normal;font-weight:800;font-display:swap;}
+html[data-report-typography="square"],
+html[data-report-typography="square"] body,
+html[data-report-typography="square"] body *,
+html[data-report-typography="square"] #report-dock,
+html[data-report-typography="square"] #report-dock *,
+html[data-report-typography="square"] #jei-history-dialog,
+html[data-report-typography="square"] #jei-history-dialog * {
+ font-family:'NanumSquare','Apple SD Gothic Neo','Malgun Gothic',sans-serif!important;
+}
