@@ -3,7 +3,22 @@
  const I=window.JeiReportI18n,root=document.documentElement;
  let theme=window.JeiReportColors.current;
  const dock=document.createElement('nav');dock.id='report-dock';dock.lang='ko';dock.setAttribute('aria-label','보고용 테스트 컨트롤');
- dock.innerHTML=`<button type="button" class="report-toggle" data-report-toggle aria-expanded="true" aria-controls="report-controls report-restart" aria-label="테스트 패널 접기" title="테스트 패널 접기"><i aria-hidden="true"></i></button><strong class="report-label" data-report-label="테스트 패널"></strong><div class="report-controls" id="report-controls"><div class="report-segment report-language" role="group" aria-label="언어"><button type="button" data-report-language="ko" lang="ko" aria-label="한국어">한</button><button type="button" data-report-language="en" lang="en" aria-label="English">EN</button></div><span class="report-divider"></span><div class="report-segment report-theme" role="group" aria-label="컬러"><button type="button" data-report-theme="1"><i class="report-swatch" aria-hidden="true"></i><span data-report-label="컬러1"></span></button><button type="button" data-report-theme="2"><i class="report-swatch" aria-hidden="true"></i><span data-report-label="컬러2"></span></button></div></div><button type="button" class="report-restart" id="report-restart" data-report-restart title="D등급 01의 첫 시연 상태로 돌아가기" aria-label="D등급 01의 첫 시연 상태로 돌아가기">처음으로</button>`;
+ dock.innerHTML=`<button type="button" class="report-toggle" data-report-toggle aria-expanded="true" aria-controls="report-controls report-restart" aria-label="관리자 도구 접기" title="관리자 도구 접기"><i aria-hidden="true"></i></button><div class="report-controls" id="report-controls"><div class="report-segment report-language" role="group" aria-label="언어"><button type="button" data-report-language="ko" lang="ko" aria-label="한국어">한</button><button type="button" data-report-language="en" lang="en" aria-label="English">EN</button></div></div><button type="button" class="report-restart" id="report-restart" data-report-restart title="첫 시연 상태로 새로고침" aria-label="첫 시연 상태로 새로고침"><svg class="lucide lucide-refresh-cw" aria-hidden="true"
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+  <path d="M21 3v5h-5" />
+  <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+  <path d="M8 16H3v5" />
+</svg></button>`;
  document.body.append(dock);
  let collapsed=false,panelMotion=null;
  function setPanelCollapsed(value,animate=true){
@@ -32,7 +47,7 @@
   sync();return pending.then(sync);
  }
  const sources=new WeakMap(),attrs=new WeakMap();let observer,pending=new Set(),queued=false;
- const skip='script,style,textarea,input,[contenteditable=true],#report-dock,#ai-message,#mentor-measure';
+ const skip='script,style,textarea,input,[contenteditable=true],#report-dock,#color-studio,#color-studio-panel,#design-studio,#design-restore,#design-modal-tools,#ai-message,#mentor-measure';
  function textNode(n){
   if(!n.parentElement||n.parentElement.closest(skip))return;
   const previous=sources.get(n),value=n.nodeValue;

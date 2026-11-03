@@ -1,5 +1,0 @@
-/* Report V3: red mentor accent blended into the existing mint palette. */
-html[data-report-variant="3"] .ai .mentor-piece,html[data-report-variant="3"] .ai .mentor-core{background:#e6002d}
-html[data-report-variant="3"] .ai .mentor-shadow{background:radial-gradient(ellipse,#e6002d24,transparent 72%)}
-html[data-report-variant="3"] .ai .mentor-bubble{background:linear-gradient(110deg,#fff0f1 0%,#fff7f3 27%,#f7fbf4 54%,#e9f9f1 78%,#e0f5ee 100%);box-shadow:3px 3px 7px #536c5c20}
-html[data-report-variant="3"] .ai .mentor-bubble::before{background:linear-gradient(108deg,#ed9ca9 0%,#efb9b3 28%,#ccd9ba 56%,#75c9b6 80%,#38b49f 100%)}
