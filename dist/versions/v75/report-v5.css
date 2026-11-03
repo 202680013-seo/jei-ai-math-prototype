@@ -12,3 +12,10 @@ html[data-report-typography="square"] #jei-history-dialog,
 html[data-report-typography="square"] #jei-history-dialog * {
  font-family:'NanumSquare','Apple SD Gothic Neo','Malgun Gothic',sans-serif!important;
 }
+
+/* The help legend uses the same renderer and asset bank as the topic list. */
+#help .status-help-icon{display:grid;place-items:center;flex:none;width:30px;height:30px}
+#help .status-help-icon img{display:block;width:24px;height:24px;object-fit:contain}
+#help .status-help-icon .rail-failed-icon{display:grid;place-items:center;width:24px;height:24px}
+#help .status-help-icon .rail-failed-icon img{width:24px;height:24px}
+#help .status-help-row:last-child{border-bottom:0}
