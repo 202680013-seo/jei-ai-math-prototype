@@ -1,0 +1,32 @@
+{
+  "fileKey": "QmDlOvkNKFdZJHCY89h0vY",
+  "frame": "74:719",
+  "theme": "테마02",
+  "export": "Unmodified native SVG_STRING exports from the original Figma nodes. No geometry edits.",
+  "assets": [
+    {
+      "file": "recommend-arrow.svg",
+      "nodeId": "74:738",
+      "root": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 18 18\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">",
+      "sha256": "fd2425e0e130ed9442361c5068f721b8b03be42daa39dd29dc5cad3b92d3d4a1"
+    },
+    {
+      "file": "my-profile.svg",
+      "nodeId": "74:743",
+      "root": "<svg width=\"25\" height=\"25\" viewBox=\"0 0 25 25\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">",
+      "sha256": "ee3c82479db9d4058e48f251fede99ff229ec6d227242b8a25117a2cadc4ab16"
+    },
+    {
+      "file": "my-report.svg",
+      "nodeId": "74:746",
+      "root": "<svg width=\"17\" height=\"19\" viewBox=\"0 0 17 19\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">",
+      "sha256": "ee7d34e1b5c653e35353bca1acbb7f7639e509baf52f3d6806c85bb9b619e440"
+    },
+    {
+      "file": "constellation.svg",
+      "nodeId": "74:752",
+      "root": "<svg width=\"33\" height=\"27\" viewBox=\"0 0 33 27\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">",
+      "sha256": "f73820f447a1c276e9292562a316acf6ed215d3fb46c52c18b5b572e2fb8f2d9"
+    }
+  ]
+}

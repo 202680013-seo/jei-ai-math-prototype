@@ -1,0 +1,12 @@
+/* Presentation adapter only. Existing scenario handlers remain unchanged. */
+(function(){'use strict';const panel=document.querySelector('#test-panel'),expanded=new Set();
+function compact(){const old=panel.querySelector('.panel-content');if(!old||old.dataset.compact)return;old.dataset.compact='true';old.querySelectorAll('a').forEach(a=>a.remove());panel.querySelector('.panel-head h2').textContent='시나리오';
+const sections=[];let current={name:'설정',nodes:[]};sections.push(current);for(const node of [...old.children]){if(node.tagName==='H3'){current={name:node.textContent,nodes:[]};sections.push(current);}else if(!node.matches('p,.notice,a'))current.nodes.push(node);}
+const content=document.createElement('div');content.className='panel-content';content.dataset.compact='true';const basics=sections.find(x=>x.name.includes('필수 검증'));const group=sections[0].nodes.find(x=>x.matches('.fields'));if(group)content.append(group);
+if(basics){const names=['진단 전','진단 중','진단 통과','처방 완료','학습 중','전체 통과','미통과 포함','복습 완료','프로그램 1개','프로그램 52개','J등급 · 78그룹'];for(const node of basics.nodes)node.querySelectorAll('button[data-action="preset"]').forEach(b=>b.textContent=names[+b.dataset.id]||b.textContent);const title=document.createElement('h3');title.textContent='학습 상태';content.append(title,...basics.nodes);}
+function disclosure(label,items){if(!items.length)return;const detail=document.createElement('details');detail.className='scenario-section';detail.open=expanded.has(label);const summary=document.createElement('summary');summary.textContent=label;detail.append(summary);for(const s of items){if(items.length>1){const h=document.createElement('h4');h.textContent=s.name.includes('개별 학습')?'학습 결과':s.name.includes('진단 후')?'진단 결과':s.name;detail.append(h);}detail.append(...s.nodes);}detail.addEventListener('toggle',()=>{detail.open?expanded.add(label):expanded.delete(label);});content.append(detail);}
+const by=q=>sections.filter(s=>q.some(x=>s.name.includes(x)));
+disclosure('진단 시작',by(['실력알기 시작']));disclosure('처방·완료 연출',by(['진단 후 전환','개별 학습 완료']));disclosure('진도·프로그램 설정',by(['진단과 처방','개별 프로그램','진행 중 카드']));disclosure('별자리',by(['별자리 화면']));disclosure('멘토·추천',by(['CSV 말풍선']));
+const advanced=by(['데이터 기준','기획 확인','최근 상태']);const extra=sections[0].nodes.filter(n=>n!==group);if(extra.length)advanced.unshift({name:'학습 화면',nodes:extra});disclosure('고급 설정',advanced);
+old.replaceWith(content);}
+new MutationObserver(compact).observe(panel,{childList:true,subtree:true});compact();})();

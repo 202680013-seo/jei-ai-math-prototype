@@ -1,0 +1,17 @@
+/* Theme token bindings; administrator UI lives in design-studio.css. */
+html[data-report-variant="4"] :is(.primary,.card-start-box,#diagnosis-welcome-action>.diagnostic-start-button){color:var(--color-on-primary)}
+html[data-report-variant="4"] :is(.primary,.program-card:hover .card-start-box,#diagnosis-welcome-action>.diagnostic-start-button):hover:not(:disabled){color:var(--color-on-primary-hover)}
+html[data-report-variant="4"] :is(.primary,.card-start-box,#diagnosis-welcome-action>.diagnostic-start-button):active:not(:disabled){background:var(--color-primary-active);color:var(--color-on-primary-active)}
+html[data-report-variant="4"] :focus-visible{outline-color:var(--color-focus-ring)}
+html[data-custom-accent] #group-panel .group-item.selected,html[data-custom-accent] .rail-current-highlight{background:var(--color-primary-subtle)}
+html[data-custom-accent] .question-choices>button.answer-selected:not(.answer-correct):not(.answer-wrong){background:var(--color-primary-subtle);border-color:var(--theme-accent)}
+html[data-custom-accent] .ai .mentor-bubble,html[data-custom-accent] #diagnosis-welcome{background:linear-gradient(110deg,var(--accent-100),#fff)}
+html[data-custom-accent] .ai .recommend-label{color:var(--accent-800);background:var(--accent-50);border-color:var(--accent-300)}
+html[data-custom-accent] .ai .recommend .recommend-loader,html[data-custom-accent] .ai .recommend .recommend-loader small{color:var(--accent-800)}
+html[data-custom-accent] .program-card .card-progress{color:var(--accent-800)}
+html[data-custom-accent] .diagnosis-progress progress{accent-color:var(--theme-accent)}
+html[data-custom-accent] .diagnosis-progress progress::-webkit-progress-value{background:var(--theme-accent)}
+html[data-custom-accent] .diagnosis-progress progress::-moz-progress-bar{background:var(--theme-accent)}
+html[data-custom-accent] .program-card .card-progress progress::-webkit-progress-bar{background:var(--accent-200)}
+html[data-custom-accent] .ai .mentor-bubble::before{background:linear-gradient(110deg,var(--accent-300),var(--accent-100))}
+html[data-custom-accent] .ai .recommend{border-color:var(--accent-200)}
