@@ -499,7 +499,21 @@ const STATUS_ICONS={"locked":"<svg aria-hidden=\"true\" focusable=\"false\" widt
 function statusSVG(status){return STATUS_ICONS[status]||STATUS_ICONS.locked;}
 // Unmodified SVG exports from the supplied Figma component nodes.
 function reportAsset(name){if(window.JeiReportColors)return window.JeiReportColors.asset(name);return '/versions/v70/assets/'+(document.documentElement?.getAttribute('data-report-theme')==='2'?'report-theme2-green/':'figma-v4-1/')+name+'.svg';}
-function figmaStatusIcon(status){const kind=['passed','failed'].includes(status)?status:'locked',size=kind==='locked'?40:44;return `<img class="figma-status-icon" src="${kind==='passed'?reportAsset(kind):'/versions/v70/assets/figma-v4-1/'+kind+'.svg'}" width="${size}" height="${size}" alt="">`;}
+const lockedCardIcon = `<svg class="figma-status-icon" aria-hidden="true" width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+<path d="M27.5 0H12.5C5.59644 0 0 5.59644 0 12.5V27.5C0 34.4036 5.59644 40 12.5 40H27.5C34.4036 40 40 34.4036 40 27.5V12.5C40 5.59644 34.4036 0 27.5 0Z" fill="white"/>
+<path d="M12.9172 31.1858C12.189 31.1858 11.5657 30.9265 11.0472 30.4081C10.5288 29.8896 10.2695 29.2663 10.2695 28.5381V16.8206C10.2695 16.0848 10.5288 15.4548 11.0472 14.931C11.5657 14.4068 12.189 14.1448 12.9172 14.1448H14.3255V12.0605C14.3255 10.4608 14.8736 9.1032 15.9697 7.98783C17.0655 6.8722 18.4035 6.31445 19.9834 6.31445C21.5632 6.31445 22.9023 6.8722 24.0008 7.98783C25.0993 9.1032 25.6486 10.4608 25.6486 12.0605V14.1448H27.057C27.7928 14.1448 28.4228 14.4068 28.9467 14.931C29.4708 15.4548 29.7328 16.0848 29.7328 16.8206V28.5381C29.7328 29.2663 29.4708 29.8896 28.9467 30.4081C28.4228 30.9265 27.7928 31.1858 27.057 31.1858H12.9172ZM21.5222 24.2277C21.9447 23.814 22.1559 23.3167 22.1559 22.7357C22.1559 22.1723 21.9431 21.6606 21.5174 21.2006C21.0917 20.7405 20.58 20.5105 19.9823 20.5105C19.3846 20.5105 18.8745 20.7405 18.452 21.2006C18.0295 21.6606 17.8182 22.1771 17.8182 22.7498C17.8182 23.3225 18.0311 23.8155 18.4568 24.2285C18.8825 24.6416 19.3942 24.8482 19.9918 24.8482C20.5896 24.8482 21.0997 24.6414 21.5222 24.2277ZM16.9732 14.1448H23.0009V12.067C23.0009 11.1895 22.7132 10.4573 22.1376 9.87052C21.5623 9.2837 20.8487 8.99027 19.997 8.99027C19.1453 8.99027 18.4285 9.2837 17.8464 9.87052C17.2643 10.4573 16.9732 11.1895 16.9732 12.067V14.1448Z" fill="var(--status-lock-fill)"/>
+
+
+</svg>`;
+const lockedRailIcon = `<svg class="figma-status-icon" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+<path d="M16.5 0H7.5C3.35786 0 0 3.35786 0 7.5V16.5C0 20.6421 3.35786 24 7.5 24H16.5C20.6421 24 24 20.6421 24 16.5V7.5C24 3.35786 20.6421 0 16.5 0Z" fill="var(--status-lock-surface)"/>
+<path d="M7.75072 18.7099C7.31377 18.7099 6.93978 18.5543 6.62872 18.2433C6.31766 17.9322 6.16211 17.5582 6.16211 17.1213V10.0908C6.16211 9.6493 6.31766 9.27133 6.62872 8.95701C6.93978 8.64253 7.31377 8.48533 7.75072 8.48533H8.59571V7.23471C8.59571 6.2749 8.92455 5.46036 9.58218 4.79113C10.2397 4.12176 11.0425 3.78711 11.9904 3.78711C12.9383 3.78711 13.7418 4.12176 14.4009 4.79113C15.06 5.46036 15.3895 6.2749 15.3895 7.23471V8.48533H16.2346C16.6761 8.48533 17.0541 8.64253 17.3684 8.95701C17.6829 9.27133 17.8401 9.6493 17.8401 10.0908V17.1213C17.8401 17.5582 17.6829 17.9322 17.3684 18.2433C17.0541 18.5543 16.6761 18.7099 16.2346 18.7099H7.75072ZM12.9137 14.5351C13.1672 14.2868 13.2939 13.9885 13.2939 13.6399C13.2939 13.3018 13.1662 12.9948 12.9108 12.7188C12.6554 12.4427 12.3484 12.3047 11.9898 12.3047C11.6311 12.3047 11.3251 12.4427 11.0716 12.7188C10.8181 12.9948 10.6913 13.3047 10.6913 13.6483C10.6913 13.9919 10.819 14.2877 11.0745 14.5355C11.3299 14.7834 11.6369 14.9074 11.9955 14.9074C12.3541 14.9074 12.6602 14.7833 12.9137 14.5351ZM10.1843 8.48533H13.8009V7.23861C13.8009 6.71211 13.6283 6.27283 13.2829 5.92075C12.9378 5.56866 12.5096 5.3926 11.9986 5.3926C11.4876 5.3926 11.0575 5.56866 10.7082 5.92075C10.359 6.27283 10.1843 6.71211 10.1843 7.23861V8.48533Z" fill="var(--status-lock-fill)"/>
+
+
+</svg>`;
+function figmaStatusIcon(status){if(status==='locked')return lockedCardIcon;const kind=['passed','failed'].includes(status)?status:'locked',size=kind==='locked'?40:44;return `<img class="figma-status-icon" src="${kind==='passed'?reportAsset(kind):'/versions/v70/assets/figma-v4-1/'+kind+'.svg'}" width="${size}" height="${size}" alt="">`;}
 function firstCompletedCardHint(topic,program,kind=program.status==='failed'?'failed':'passed'){
   if(state.ui?.[kind+'CardHintSeen'])return false;
   const first=topic.programs.find(p=>p.status===kind&&p.progress>=100&&M.canStudy(topic,p));
@@ -1470,7 +1484,7 @@ function railIconSource(name){return window.JeiReportRailIcons?.[name]||'/versio
 function navigationStatusIcon(status){
   if(status==='failed')return `<span class="rail-failed-icon" aria-hidden="true">${figmaStatusIcon('failed').replace('/versions/v70/assets/figma-v4-1/failed.svg',railIconSource('failed'))}</span>`;
   if(['clean','passed'].includes(status))return `<img src="${railIconSource('rail-passed')}" width="24" height="24" alt="">`;
-  if(['idle','locked'].includes(status))return `<img src="${railIconSource('rail-locked')}" width="24" height="24" alt="">`;
+  if(['idle','locked'].includes(status))return lockedRailIcon;
   return `<img src="${railIconSource('rail-active')}" width="22" height="22" alt="">`;
 }
 function availableRailGrades(){

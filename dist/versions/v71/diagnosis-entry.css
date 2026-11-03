@@ -1,7 +1,7 @@
 /* Figma QmDlOvkNKFdZJHCY89h0vY · 44:6511 / 44:6857 / 44:6510.
    The original SVG exports keep their native dimensions and baked transforms. */
 #diagnosis-welcome{--entry-mint:#e9f7f4;border:0;border-radius:28px;background:var(--entry-mint);color:#414f62}
-#diagnosis-welcome:has([data-art-kind=clover]){background:linear-gradient(180deg,#c7ede6 0%,#e9f7f4 83.589%);color:#222a35}
+#diagnosis-welcome:has([data-art-kind=clover]){background:linear-gradient(180deg,#c7ede6 0%,#e9f7f4 83.589%);color:var(--color-neutral-900)}
 #diagnosis-welcome .welcome-main{position:relative;display:block;width:100%;min-height:329px;margin:0;padding:0}
 #diagnosis-welcome .welcome-copy{position:absolute;z-index:2;left:13.888889%;top:50%;transform:translateY(-50%);width:max-content;max-width:44%;text-align:left}
 #diagnosis-welcome-title{font-size:28px;line-height:1.24;letter-spacing:0;font-weight:800;color:inherit;white-space:nowrap}
@@ -89,7 +89,7 @@ body[data-diagnosis-advance] .nav-grade-progress progress::-webkit-progress-valu
 #composition-message[hidden]{display:none!important}
 [data-completion-static=true] .clover-fill{transition:none!important}
 body[data-diagnosis-advance] #group-panel .group-list{position:relative;isolation:isolate}
-.rail-current-highlight{display:none;position:absolute;top:0;left:0;border-radius:16px;background:#f1f9fd;pointer-events:none;z-index:0;will-change:transform}
+.rail-current-highlight{display:none;position:absolute;top:0;left:0;border-radius:16px;background:var(--color-neutral-50);pointer-events:none;z-index:0;will-change:transform}
 body[data-diagnosis-advance] .rail-current-highlight{display:block}
 body[data-diagnosis-advance] #group-panel .group-item{position:relative;z-index:1}
 body[data-diagnosis-advance] #group-panel .group-item.selected{background:transparent}

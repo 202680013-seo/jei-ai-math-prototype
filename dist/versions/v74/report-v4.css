@@ -8,11 +8,11 @@ html[data-report-variant="4"] .ai .recommend,html[data-report-variant="4"] .ai .
 html[data-report-variant="4"] .ai .recommend{border-color:var(--theme-recommend-border)}
 html[data-report-variant="4"] .ai .recommend button,html[data-report-variant="4"] .ai .recommend #recommend-copy{color:var(--theme-brand)}
 html[data-report-variant="4"] .ai .recommend-label{color:var(--theme-primary-hover,#b81f2e);border-color:var(--theme-recommend-border);background:var(--theme-recommend-bg)}
-html[data-report-variant="4"] .ai .recommend button:hover:not(:disabled),html[data-report-variant="4"] .ai .top-shortcuts .compact-shortcut:hover{background:var(--theme-surface-alt);border-color:#cbd2dc}
+html[data-report-variant="4"] .ai .recommend button:hover:not(:disabled),html[data-report-variant="4"] .ai .top-shortcuts .compact-shortcut:hover{background:var(--theme-surface-alt);border-color:var(--color-neutral-300)}
 html[data-report-variant="4"] .ai .recommend .recommend-loader,html[data-report-variant="4"] .ai .recommend .recommend-loader small{color:var(--theme-primary-hover,#b81f2e)}
 html[data-report-variant="4"] .ai .recommend-spinner{filter:none}
 html[data-report-variant="4"] .ai .top-shortcuts .constellation-art{left:5px;top:7.742188px}
-html[data-report-variant="4"] #grade-badge.grade-label{background:#e3e8f0;color:var(--theme-brand)}
+html[data-report-variant="4"] #grade-badge.grade-label{background:var(--color-neutral-100);color:var(--theme-brand)}
 html[data-report-variant="4"] #grade-badge>.grade-topic-number{border-left-color:#0f2f5733}
 html[data-report-variant="4"] .grid>.program-card:is(.is-ready,.is-current,.is-introduced){background:var(--theme-soft,#fde4e0);color:var(--theme-brand)}
 html[data-report-variant="4"] .grid>.program-card:is(.is-ready,.is-current,.is-introduced):hover:not(:disabled){background:var(--theme-soft-strong,#fddcd6);box-shadow:0 10px 22px #b81f2e12}
@@ -23,27 +23,27 @@ html[data-report-variant="4"] .program-card .card-progress{color:var(--theme-pri
 html[data-report-variant="4"] .program-card .card-progress progress::-webkit-progress-bar{background:#efc3c4}
 html[data-report-variant="4"] .program-card .card-progress progress::-webkit-progress-value{background:var(--theme-accent,#e5303a)}
 html[data-report-variant="4"] .program-card .card-progress progress::-moz-progress-bar{background:var(--theme-accent,#e5303a)}
-html[data-report-variant="4"] .grid>.program-card.is-complete{background:#fff;border-color:#e0e4e9;color:#383838}
-html[data-report-variant="4"] .grid>.program-card.is-complete:hover:not(:disabled){background:#f8f9fb;border-color:#cfd6df}
-html[data-report-variant="4"] .grid>.program-card.is-locked,html[data-report-variant="4"] .grid>.program-card.is-locked:hover{background:var(--theme-surface-alt);border-color:#e5e7eb;color:#a9aeb6}
+html[data-report-variant="4"] .grid>.program-card.is-complete{background:#fff;border-color:var(--color-neutral-200);color:var(--color-neutral-800)}
+html[data-report-variant="4"] .grid>.program-card.is-complete:hover:not(:disabled){background:var(--color-neutral-50);border-color:var(--color-neutral-200)}
+html[data-report-variant="4"] .grid>.program-card.is-locked,html[data-report-variant="4"] .grid>.program-card.is-locked:hover{background:var(--theme-surface-alt);border-color:var(--color-neutral-100);color:var(--color-neutral-400)}
 html[data-report-variant="4"] #learning-context #diagnostic-result-slot>.diagnostic-summary-trigger{background:var(--theme-surface-alt);color:#5e6b80}
-html[data-report-variant="4"] #learning-context #diagnostic-result-slot>.diagnostic-summary-trigger:hover:not(:disabled){background:#e3e8f0}
-html[data-report-variant="4"] #diagnosis-welcome{background:linear-gradient(110deg,#fff4f1,#fff8f3 58%,#fff9eb);color:var(--theme-brand)}
+html[data-report-variant="4"] #learning-context #diagnostic-result-slot>.diagnostic-summary-trigger:hover:not(:disabled){background:var(--color-neutral-100)}
+html[data-report-variant="4"] #diagnosis-welcome{background:linear-gradient(110deg,#fff4f1,var(--color-neutral-50) 58%,#fff9eb);color:var(--theme-brand)}
 html[data-report-variant="4"] #diagnosis-welcome-action>.diagnostic-start-button{background:var(--theme-primary,#d62532);color:#fff}
 html[data-report-variant="4"] #diagnosis-welcome-action>.diagnostic-start-button:hover:not(:disabled){background:var(--theme-primary-hover,#b81f2e);box-shadow:0 5px 12px #b81f2e20}
 html[data-report-variant="4"] .welcome-progress-count{color:#5e6b80}
 html[data-report-variant="4"] #group-panel{border-color:var(--theme-line)}
-html[data-report-variant="4"] #group-panel .group-item.selected,html[data-report-variant="4"] #group-panel .group-item:hover:not(:disabled){background:#e4eefb;color:var(--theme-brand)}
-html[data-report-variant="4"] .rail-current-highlight{background:#e4eefb}
+html[data-report-variant="4"] #group-panel .group-item.selected,html[data-report-variant="4"] #group-panel .group-item:hover:not(:disabled){background:var(--color-neutral-100);color:var(--theme-brand)}
+html[data-report-variant="4"] .rail-current-highlight{background:var(--color-neutral-100)}
 html[data-report-variant="4"] body[data-diagnosis-advance] #group-panel .group-item.selected{background:transparent}
-html[data-report-variant="4"] #group-panel .nav-grade-arrow{background:#e3e8f0}
+html[data-report-variant="4"] #group-panel .nav-grade-arrow{background:var(--color-neutral-100)}
 html[data-report-variant="4"] #group-panel .nav-grade-progress{background:var(--theme-surface-alt);border-color:var(--theme-line);color:#5e6b80}
-html[data-report-variant="4"] #group-panel .nav-progress-count b{color:#2c64c8}
-html[data-report-variant="4"] #group-panel .nav-grade-progress progress::-webkit-progress-value{background:#2c64c8}
-html[data-report-variant="4"] #group-panel .nav-grade-progress progress::-moz-progress-bar{background:#2c64c8}
+html[data-report-variant="4"] #group-panel .nav-progress-count b{color:var(--status-pass-fill)}
+html[data-report-variant="4"] #group-panel .nav-grade-progress progress::-webkit-progress-value{background:var(--status-pass-fill)}
+html[data-report-variant="4"] #group-panel .nav-grade-progress progress::-moz-progress-bar{background:var(--status-pass-fill)}
 html[data-report-variant="4"] .question-choices>button.answer-selected{background:var(--theme-soft,#fde4e0);border-color:var(--theme-accent,#e5303a);color:var(--theme-brand)}
-html[data-report-variant="4"] .question-choices>button.answer-correct{background:#e4eefb;border-color:#2c64c8}
-html[data-report-variant="4"] .question-choices>button.answer-wrong{background:#e3e8f0;border-color:#5e6b80}
+html[data-report-variant="4"] .question-choices>button.answer-correct{background:var(--color-neutral-100);border-color:var(--status-correct)}
+html[data-report-variant="4"] .question-choices>button.answer-wrong{background:var(--color-neutral-100);border-color:var(--status-wrong)}
 html[data-report-variant="4"] .completed-first-tooltip,html[data-report-variant="4"] #diagnosis-result-hint.diagnosis-result-hint{background:var(--theme-brand)!important;color:#fff}
 html[data-report-variant="4"] .completed-first-tooltip::after,html[data-report-variant="4"] .diagnosis-result-hint::after{filter:brightness(.6) saturate(1.6)}
 html[data-report-variant="4"] #report-dock [data-report-theme="1"] .report-swatch{background:var(--theme-soft,#fde4e0);border-color:var(--theme-accent,#e5303a)}

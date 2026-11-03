@@ -3,41 +3,41 @@
 @font-face{font-family:NanumSquareRound;src:url('/fonts/NanumSquareRoundEB.woff') format('woff');font-weight:800;font-display:swap}
 :root{--status-correct:#2c64c8;--status-wrong:#5e6b80}
 #design-studio,#design-studio *{box-sizing:border-box;font-family:'NanumSquare',sans-serif!important;letter-spacing:0}
-#design-studio{position:fixed;z-index:2147483005;top:12px;right:12px;bottom:104px;width:336px;max-width:calc(100vw - 24px);overflow:auto;overscroll-behavior:contain;background:#fff;color:#263445;border:1px solid #e0e4eb;border-radius:18px;box-shadow:0 12px 50px #14243c22;font-size:13px;line-height:1.5}
+#design-studio{position:fixed;z-index:2147483005;top:12px;right:12px;bottom:104px;width:336px;max-width:calc(100vw - 24px);overflow:auto;overscroll-behavior:contain;background:#fff;color:#263445;border:1px solid var(--color-neutral-200);border-radius:18px;box-shadow:0 12px 50px #14243c22;font-size:13px;line-height:1.5}
 #design-studio[hidden],#design-highlight[hidden]{display:none!important}
 #design-studio .ds-head{display:flex;align-items:center;justify-content:space-between;padding:17px 16px 12px;border:0;background:#fff}
 #design-studio h2{font-size:15px;font-weight:800;color:#263445;margin:0}
 #design-studio .ds-head>div{display:flex;gap:3px}
-#design-studio button,#design-studio .ds-file{display:inline-flex;align-items:center;justify-content:center;min-height:32px;margin:0;padding:5px 9px;border:1px solid #dfe4ec;border-radius:7px;background:#fff;color:#4b596d;font-size:12px;line-height:1.3;cursor:pointer}
+#design-studio button,#design-studio .ds-file{display:inline-flex;align-items:center;justify-content:center;min-height:32px;margin:0;padding:5px 9px;border:1px solid var(--color-neutral-200);border-radius:7px;background:#fff;color:#4b596d;font-size:12px;line-height:1.3;cursor:pointer}
 #design-studio button:disabled{opacity:.35;cursor:default}
 #design-studio .ds-head button{border:0;width:29px;min-height:29px;padding:0;font-size:19px;background:transparent}
-#design-studio .ds-tabs{display:flex;gap:0;margin:0 16px;border-bottom:1px solid #e7ebf0}
+#design-studio .ds-tabs{display:flex;gap:0;margin:0 16px;border-bottom:1px solid var(--color-neutral-100)}
 #design-studio .ds-tabs button{flex:1;padding:10px;border:0;border-bottom:2px solid transparent;border-radius:0;background:none;color:#8490a0}
 #design-studio .ds-tabs button[aria-selected=true]{border-bottom-color:#32496f;color:#243b60;font-weight:800}
 #design-studio #ds-content{padding:16px}
 #design-studio .ds-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:210px;color:#7a8798;gap:12px}
-#design-studio .ds-empty>span{font-size:30px;color:#b0bac8}#design-studio .ds-empty p{margin:0;font-size:12px}
-#design-studio .ds-selection{display:flex;align-items:center;justify-content:space-between;background:#f4f6f9;border-radius:8px;padding:10px 12px;margin-bottom:15px}
+#design-studio .ds-empty>span{font-size:30px;color:var(--color-neutral-300)}#design-studio .ds-empty p{margin:0;font-size:12px}
+#design-studio .ds-selection{display:flex;align-items:center;justify-content:space-between;background:var(--color-neutral-50);border-radius:8px;padding:10px 12px;margin-bottom:15px}
 #design-studio .ds-selection button{border:0;min-height:25px;padding:3px 8px;background:transparent}
 #design-studio label{font-size:12px;color:#5d6a7c}
-#design-studio input,#design-studio select{box-sizing:border-box;min-width:0;padding:7px;border:1px solid #dce2eb;border-radius:7px;background:#fff;color:#344259;font:12px/1.4 sans-serif}
+#design-studio input,#design-studio select{box-sizing:border-box;min-width:0;padding:7px;border:1px solid var(--color-neutral-200);border-radius:7px;background:#fff;color:#344259;font:12px/1.4 sans-serif}
 #design-studio .ds-select-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
 #design-studio .ds-select-row select{width:177px}
-#design-studio .ds-font-row{padding-bottom:16px;border-bottom:1px solid #e7ebf0;margin-bottom:8px}
+#design-studio .ds-font-row{padding-bottom:16px;border-bottom:1px solid var(--color-neutral-100);margin-bottom:8px}
 #design-studio .ds-color-row{display:flex;align-items:center;justify-content:space-between;gap:5px;min-height:43px}
 #design-studio .ds-field{display:flex;align-items:center;gap:5px}
 #design-studio input[type=color]{width:29px;height:29px;padding:3px;border-radius:6px;cursor:pointer}
 #design-studio .ds-hex{width:82px;font-family:monospace!important;text-transform:uppercase}
 #design-studio .ds-reset{padding:0;width:23px;min-height:25px;border:0;color:#97a2b1;background:transparent;font-size:14px}
 #design-studio input[aria-invalid=true]{border-color:#c9685f}
-#design-studio .ds-dimensions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid #e7ebf0}
+#design-studio .ds-dimensions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--color-neutral-100)}
 #design-studio .ds-dimensions label{display:flex;flex-direction:column;gap:7px}
 #design-studio .ds-dimensions input,#design-studio .ds-dimensions select{width:100%}
-#design-studio .ds-role-group{border-bottom:1px solid #e7ebf0;padding:12px 0}
+#design-studio .ds-role-group{border-bottom:1px solid var(--color-neutral-100);padding:12px 0}
 #design-studio .ds-role-group summary{color:#35435b;font-size:12px;font-weight:800;cursor:pointer;list-style:none;display:flex;justify-content:space-between;margin-bottom:6px}
 #design-studio .ds-role-group summary::after{content:'+';color:#9aa5b4;font-weight:400}
 #design-studio .ds-role-group[open] summary::after{content:'−'}
-#design-studio .ds-plan{border:1px solid #e3e8ef;border-radius:10px;padding:12px;margin-bottom:12px}
+#design-studio .ds-plan{border:1px solid var(--color-neutral-100);border-radius:10px;padding:12px;margin-bottom:12px}
 #design-studio .ds-plan>input{width:100%;border:0;padding:3px 0 10px;font-size:13px}
 #design-studio .ds-plan>div{display:flex;gap:5px;justify-content:flex-end}
 #design-studio .ds-plan-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:20px}
@@ -50,11 +50,11 @@ html[data-design-editing] #learning-workspace *,html[data-design-editing] dialog
 html[data-design-picking] #learning-workspace,html[data-design-picking] #group-panel,html[data-design-picking] dialog{cursor:crosshair}
 #report-dock{min-height:58px;gap:8px;padding:8px 10px;border-radius:19px;white-space:nowrap;max-width:calc(100vw - 24px)}
 #report-dock .report-controls{gap:8px;flex-wrap:nowrap}
-#report-dock .report-modes{gap:3px;background:#f1f4f6}
+#report-dock .report-modes{gap:3px;background:var(--color-neutral-50)}
 #report-dock .report-modes button{font-size:12px;padding:0 11px}
 #report-dock #report-restart{min-width:32px;width:32px;padding:0;color:#68778d}
 #report-dock .report-label,#color-studio,#color-studio-panel,#design-restore,#design-modal-tools{display:none!important}
-#test-panel .scenario-section{border-top:1px solid #e3e7ed;margin-top:16px;padding-top:14px}
+#test-panel .scenario-section{border-top:1px solid var(--color-neutral-100);margin-top:16px;padding-top:14px}
 #test-panel .scenario-section summary{font-size:14px;font-weight:700;cursor:pointer;color:#34445d;padding:3px 0 10px}
 #test-panel .scenario-section h4{font-size:12px;margin:12px 0 8px;color:#7d8797}
 #test-panel .panel-content>h3{margin:22px 0 12px;font-size:13px;color:#7d8797}
@@ -66,7 +66,7 @@ html[data-design-picking] #learning-workspace,html[data-design-picking] #group-p
 #report-dock{display:flex}#report-dock .report-restart{margin-left:0}
 :root{--theme-recommend-bg:#ffffff;--theme-recommend-border:#f0c7ca;--theme-mentor-text:var(--theme-title);--theme-mentor-border:#f4b8b8;--theme-mentor-bg:#fff4f1}
 #design-studio .ds-field{gap:4px}
-#design-studio .ds-swatch{position:relative;display:block;flex:none;width:25px;height:28px;overflow:hidden;border:1px solid #dce2eb;border-radius:5px;background:repeating-conic-gradient(#d8dee7 0 25%,#fff 0 50%) 0/8px 8px}
+#design-studio .ds-swatch{position:relative;display:block;flex:none;width:25px;height:28px;overflow:hidden;border:1px solid var(--color-neutral-200);border-radius:5px;background:repeating-conic-gradient(var(--color-neutral-200) 0 25%,#fff 0 50%) 0/8px 8px}
 #design-studio .ds-swatch::after{content:'';position:absolute;inset:2px;border-radius:3px;background:var(--ds-color);pointer-events:none}
 #design-studio .ds-swatch input[type=color]{position:absolute;inset:0;width:100%;height:100%;padding:0;opacity:0;cursor:pointer}
 #design-studio .ds-hex{width:78px;padding:6px 5px}
@@ -74,7 +74,33 @@ html[data-design-picking] #learning-workspace,html[data-design-picking] #group-p
 #design-studio .ds-alpha input{width:37px;padding:6px 3px;text-align:right;appearance:textfield;-moz-appearance:textfield}
 #design-studio .ds-alpha input::-webkit-inner-spin-button,#design-studio .ds-alpha input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 #design-studio .ds-reset{width:20px}
-#design-studio .ds-border-width{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #e7ebf0;margin-top:13px;padding-top:14px}
+#design-studio .ds-border-width{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--color-neutral-100);margin-top:13px;padding-top:14px}
 #design-studio .ds-border-width>span{display:flex;align-items:center;gap:6px;font-size:11px;color:#98a3b1}
 #design-studio .ds-border-width input{width:64px}
 #report-restart .lucide{width:18px;height:18px;flex:none}
+.ds-primary{padding:12px;border:1px solid var(--color-neutral-100);border-radius:12px;margin-bottom:14px}
+.ds-primary h3{margin:0 0 8px;font-size:14px}
+.ds-primary .ds-alpha{display:none}
+.ds-ramp{display:grid;grid-template-columns:repeat(11,1fr);height:22px;overflow:hidden;border-radius:5px;margin-top:8px}
+.ds-presets{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.ds-presets button{display:inline-flex;align-items:center;gap:4px;padding:5px 7px;font-size:12px;border:1px solid var(--color-neutral-200);border-radius:8px;background:white;color:#243955}
+.ds-presets button span{width:12px;height:12px;border-radius:50%}
+#design-studio .ds-presets button{width:28px;height:28px;min-width:28px;padding:0;border-radius:50%;background:var(--preset-color);border:1px solid #0002}
+#design-studio .ds-presets button:focus-visible{outline:2px solid #243955;outline-offset:2px}
+#design-studio .ds-presets{gap:8px}
+#design-studio .ds-presets button{width:24px;height:24px;min-width:24px;border-radius:4px}
+#design-studio .ds-presets button[aria-pressed="true"]{outline:2px solid var(--color-neutral-800);outline-offset:2px}
+
+#design-studio,html[data-report-variant="4"] #test-panel {
+  position:fixed;inset:0 0 0 auto;height:100dvh;max-height:none;
+  border-radius:0;border-block:0;border-right:0;overscroll-behavior:contain;
+}
+html[data-report-variant="4"] #group-panel {border-radius:0;}
+#design-studio .ds-head button {
+  width:auto;min-height:32px;padding:0 7px;font-size:12px;
+  border:1px solid var(--color-neutral-200);border-radius:4px;
+}
+#design-studio .ds-head #ds-close {font-size:20px;}
+#design-studio .ds-tabs {gap:4px;padding:4px;background:var(--color-neutral-100);border:0;border-radius:4px;}
+#design-studio .ds-tabs button {border:1px solid transparent;border-radius:4px;color:var(--color-neutral-700);}
+#design-studio .ds-tabs button[aria-selected="true"] {background:#fff;border-color:var(--color-neutral-300);color:var(--color-neutral-950);}

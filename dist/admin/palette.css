@@ -11,17 +11,6 @@
   --color-accent-800: #9F0712;
   --color-accent-900: #82181A;
   --color-accent-950: #460809;
-  --color-secondary-50: #f3f7fc;
-  --color-secondary-100: #e8effa;
-  --color-secondary-200: #d1dff3;
-  --color-secondary-300: #b3c9e7;
-  --color-secondary-400: #8fadd6;
-  --color-secondary-500: #6e91c0;
-  --color-secondary-600: #5676a1;
-  --color-secondary-700: #415c80;
-  --color-secondary-800: #2f435e;
-  --color-secondary-900: #1e2c3f;
-  --color-secondary-950: #101924;
   --color-neutral-50: #f6f7f9;
   --color-neutral-100: #eceef3;
   --color-neutral-200: #dadee7;
@@ -79,15 +68,15 @@
   --color-danger-950: #2f0a0b;
 }
 html[data-report-variant="4"] {
-  --theme-brand: var(--color-secondary-800);
-  --theme-title: var(--color-secondary-900);
+  --theme-brand: var(--color-neutral-800);
+  --theme-title: var(--color-neutral-900);
   --theme-text: var(--color-neutral-900);
   --theme-muted: var(--color-neutral-600);
   --theme-line: var(--color-neutral-200);
   --theme-surface-alt: var(--color-neutral-50);
   --theme-recommend-bg: var(--color-accent-50);
   --theme-recommend-border: var(--color-accent-200);
-  --theme-mentor-text: var(--color-secondary-900);
+  --theme-mentor-text: var(--color-neutral-900);
   --theme-mentor-bg: var(--color-accent-50);
   --theme-mentor-border: var(--color-accent-200);
   --status-pass-fill: var(--color-info-600);
@@ -98,7 +87,7 @@ html[data-report-variant="4"] {
   --status-lock-fill: var(--color-neutral-400);
   --status-lock-surface: var(--color-neutral-100);
 }
-body:has(#help[open]) #report-dock { display:none !important; }
+body:has(dialog[open]:not([hidden])) > #report-dock { display:none !important; }
 #help .dialog-top .help-close {
   display:grid; place-items:center; width:44px; height:44px; padding:0;
   border:0; border-radius:8px; background:transparent; color:var(--theme-muted);
@@ -110,3 +99,50 @@ html[data-report-variant="4"] .status-help-row { border-color:var(--theme-line);
 html[data-report-variant="4"] .grid>.program-card.is-complete { border-color:var(--theme-line); color:var(--theme-text); }
 .ds-palette { margin-top:10px; }
 .ds-palette summary { cursor:pointer; padding:8px 0; }
+
+/* Shared neutral roles for learner surfaces and navigation. */
+html[data-report-variant="4"] { --theme-disabled: var(--color-neutral-600) !important; }
+html[data-report-variant="4"] .ai::after { background: var(--theme-line); }
+html[data-report-variant="4"] #group-panel .nav-grade-progress,
+html[data-report-variant="4"] #group-panel .group-item { border-color: var(--theme-line); }
+html[data-report-variant="4"] .grid > .program-card:is(.is-complete,.is-locked),
+html[data-report-variant="4"] .grid > .program-card:is(.is-complete,.is-locked):hover { border-color: var(--theme-line); }
+html[data-report-variant="4"] #group-panel .group-item .nav-topic-copy strong,
+html[data-report-variant="4"] .grid > .program-card > .program-title { color: var(--theme-text); }
+html[data-report-variant="4"] #group-panel .nav-grade-progress,
+html[data-report-variant="4"] #group-panel .nav-topic-number,
+html[data-report-variant="4"] .welcome-progress-count { color: var(--theme-muted); }
+html[data-report-variant="4"] #group-panel .group-item:disabled .nav-topic-copy strong,
+html[data-report-variant="4"] #group-panel .group-item:disabled .nav-topic-number,
+html[data-report-variant="4"] .grid > .program-card.is-locked > .program-title { color: var(--theme-disabled); }
+html[data-report-variant="4"] .status-help-icon > svg { width:24px; height:24px; }
+
+html[data-report-variant="4"] { --theme-page:#ffffff; }
+html[data-report-variant="4"] body,
+html[data-report-variant="4"] #learning-workspace { background-color:#ffffff !important; }
+
+html[data-report-variant="4"] #group-panel > .panel-content,
+html[data-report-variant="4"] #programs > .program-card:not(:is(.is-ready,.is-current,.is-introduced)),
+html[data-report-variant="4"] #programs > .program-card:not(:is(.is-ready,.is-current,.is-introduced)):hover,
+html[data-report-variant="4"] #learning-workspace > main > .ai,
+html[data-report-variant="4"] #learning-workspace .ai .recommend,
+html[data-report-variant="4"] #learning-workspace .ai .compact-shortcut {
+  background:#ffffff !important;
+}
+html[data-report-variant="4"] {
+  --mentor-bg-middle:#fff4ee;
+  --mentor-bg-end:#fff8e5;
+  --mentor-border-middle:#f0d1bf;
+  --mentor-border-end:#eee1bb;
+}
+html[data-report-variant="4"] #mentor-bubble {
+  background:linear-gradient(110deg,var(--theme-mentor-bg),var(--mentor-bg-middle) 48%,var(--mentor-bg-end)) !important;
+}
+html[data-report-variant="4"] #mentor-bubble::before {
+  background:linear-gradient(110deg,var(--theme-mentor-border),var(--mentor-border-middle) 55%,var(--mentor-border-end)) !important;
+}
+
+:root {
+  --color-white:#ffffff;
+  --color-black:#000000;
+}

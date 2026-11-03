@@ -4,26 +4,26 @@
 :root{--report-dock-clearance:108px}
 .settings-trigger{display:none!important}
 body{padding-bottom:var(--report-dock-clearance)}
-#report-dock{position:fixed;z-index:2147483000;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;align-items:center;width:max-content;max-width:calc(100vw - 32px);min-height:72px;padding:10px 12px;border:1px solid #e3e8ec;border-radius:24px;background:#fffffff5;color:#414f62;box-shadow:0 8px 32px #25374721,0 2px 6px #2537470a;font-size:14px;line-height:1.3;backdrop-filter:blur(18px);isolation:isolate;opacity:1;animation:report-dock-in .45s cubic-bezier(.22,.61,.36,1) both;white-space:nowrap}
+#report-dock{position:fixed;z-index:2147483000;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;align-items:center;width:max-content;max-width:calc(100vw - 32px);min-height:72px;padding:10px 12px;border:1px solid var(--color-neutral-100);border-radius:24px;background:#fffffff5;color:#414f62;box-shadow:0 8px 32px #25374721,0 2px 6px #2537470a;font-size:14px;line-height:1.3;backdrop-filter:blur(18px);isolation:isolate;opacity:1;animation:report-dock-in .45s cubic-bezier(.22,.61,.36,1) both;white-space:nowrap}
 #report-dock[hidden]{display:none}
 #report-dock .report-label{flex:none;margin:0 18px 0 8px;color:#414f62;font-size:14px;font-weight:800}
 #report-dock .report-controls{display:flex;align-items:center;gap:14px}
-#report-dock .report-divider{display:block;flex:none;width:1px;height:30px;background:#e6ebee}
-#report-dock .report-segment{display:flex;align-items:center;gap:3px;padding:4px;border-radius:14px;background:#f1f4f6}
+#report-dock .report-divider{display:block;flex:none;width:1px;height:30px;background:var(--color-neutral-100)}
+#report-dock .report-segment{display:flex;align-items:center;gap:3px;padding:4px;border-radius:14px;background:var(--color-neutral-50)}
 #report-dock button{display:flex;align-items:center;justify-content:center;gap:6px;flex:none;width:auto;min-width:44px;height:40px;min-height:40px;padding:0 13px;border:0;border-radius:10px;background:transparent;color:#7b8895;font:800 13px/1.2 NanumSquareRound,sans-serif;box-shadow:none;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease}
 /* Both segmented controls share the same states. Hover must not override the
    selected palette; touch devices must not retain a simulated hover tint. */
-@media(hover:hover) and (pointer:fine){#report-dock button[aria-pressed=false]:hover:not(:disabled){background:#e5ebee;color:#414f62;transform:translateY(-1px)}}
+@media(hover:hover) and (pointer:fine){#report-dock button[aria-pressed=false]:hover:not(:disabled){background:var(--color-neutral-100);color:#414f62;transform:translateY(-1px)}}
 #report-dock button[aria-pressed=true]{background:#fff;color:#263b4b;box-shadow:0 1px 4px #263b4b16}
 #report-dock .report-language button{font-size:16px}
 #report-dock button:focus-visible{outline:2px solid #84b5ff;outline-offset:3px}
-#report-dock .report-swatch{display:block;width:12px;height:12px;border-radius:50%;border:1px solid #d9e2e7;background:#fff}
+#report-dock .report-swatch{display:block;width:12px;height:12px;border-radius:50%;border:1px solid var(--color-neutral-200);background:#fff}
 #report-dock [data-report-theme="2"] .report-swatch{background:#0ec7ae;border-color:#0ec7ae}
 html[data-report-theme="2"] .ai{padding-bottom:85px;background:transparent;isolation:isolate}
 html[data-report-theme="2"] .ai::before{content:'';position:absolute;z-index:-1;inset:0 0 auto;height:129px;background:#0ec7ae;box-shadow:0 0 0 100vmax #0ec7ae;clip-path:inset(0 -100vmax);pointer-events:none}
 html[data-report-theme="2"] .ai::after{display:none}
-html[data-report-theme="2"] .ai .mentor-piece,html[data-report-theme="2"] .ai .mentor-core{background:#f1fcfa}
-html[data-report-theme="2"] .ai .mentor-bubble{background:linear-gradient(99.258786314deg,#dfe9f3 .33441%,#ecfef9 30.128%,#f3f3dd 99.666%)}
+html[data-report-theme="2"] .ai .mentor-piece,html[data-report-theme="2"] .ai .mentor-core{background:var(--color-neutral-50)}
+html[data-report-theme="2"] .ai .mentor-bubble{background:linear-gradient(99.258786314deg,var(--color-neutral-100) .33441%,#ecfef9 30.128%,#f3f3dd 99.666%)}
 html[data-report-theme="2"] .ai .mentor-bubble::before{background:#84b5ff}
 html[data-report-theme="2"] .ai .recommend,html[data-report-theme="2"] .ai .top-shortcuts .compact-shortcut{background:#0cad98;border-color:#0cad98}
 html[data-report-theme="2"] .ai .recommend button,html[data-report-theme="2"] .ai .recommend #recommend-copy,html[data-report-theme="2"] .ai .recommend .recommend-loader,html[data-report-theme="2"] .ai .recommend .recommend-loader small{color:#fff}
@@ -84,8 +84,8 @@ body[data-report-set-advance=true][data-diagnosis-advance-paused=true] #programs
 @media(prefers-reduced-motion:reduce){body[data-report-set-advance=true] #programs{transition:none}}
 
 /* Small, independent operator action at the dock's right edge. */
-#report-dock .report-restart{margin-left:12px;height:32px;min-height:32px;padding:0 10px;border-radius:8px;background:#f1f4f6;color:#586b85;font-size:12px;font-weight:600}
-@media(hover:hover) and (pointer:fine){#report-dock .report-restart:hover{background:#e5ebee;color:#263b4b}}
+#report-dock .report-restart{margin-left:12px;height:32px;min-height:32px;padding:0 10px;border-radius:8px;background:var(--color-neutral-50);color:#586b85;font-size:12px;font-weight:600}
+@media(hover:hover) and (pointer:fine){#report-dock .report-restart:hover{background:var(--color-neutral-100);color:#263b4b}}
 @media(max-width:650px){
  :root{--report-dock-clearance:132px}
  #report-dock{display:grid;grid-template-columns:1fr auto;row-gap:6px;column-gap:12px}
@@ -118,7 +118,7 @@ html[data-report-theme] .mentor-cluster .recommend[data-recommend-state=loading]
 
 /* Keep translucency on the collapsed glyph, never on the independent dock. */
 #report-dock [hidden]{display:none!important}
-#report-dock .report-toggle{width:34px;min-width:34px;height:32px;min-height:32px;padding:0;margin-left:0;background:#f1f4f6;color:#758391}
+#report-dock .report-toggle{width:34px;min-width:34px;height:32px;min-height:32px;padding:0;margin-left:0;background:var(--color-neutral-50);color:#758391}
 #report-dock .report-toggle i{display:block;width:7px;height:7px;border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;transform:translateY(-2px) rotate(45deg);opacity:1;transition:transform .2s ease,opacity .18s ease}
 #report-dock[data-collapsed=true]{display:flex;gap:0;left:calc(12px + env(safe-area-inset-left,0px));transform:none;width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:50%;background:transparent;box-shadow:none;backdrop-filter:none;cursor:pointer}
 #report-dock[data-collapsed=true] .report-label{display:none}
@@ -134,10 +134,10 @@ html[data-report-theme] .mentor-cluster .recommend[data-recommend-state=loading]
 
 /* Reporting V2: neutral completion surfaces and a centered entry. */
 html[data-report-version="2"],html[data-report-version="2"] body,html[data-report-version="2"] body *{font-family:Pretendard,-apple-system,BlinkMacSystemFont,sans-serif!important}
-html[data-report-version="2"] .grid>.program-card.is-complete{background:transparent;border:3.5px solid #e0e4e9;padding:19.5px}
-html[data-report-version="2"] .grid>.program-card.is-complete:hover:not(:disabled){background:#f6f7f8;border-color:#d0d7df}
-html[data-report-version="2"] #learning-context #diagnostic-result-slot>.diagnostic-summary-trigger{background:#eef0f3;color:#414f62}
-html[data-report-version="2"] #learning-context #diagnostic-result-slot>.diagnostic-summary-trigger:hover:not(:disabled){background:#e2e6eb}
+html[data-report-version="2"] .grid>.program-card.is-complete{background:transparent;border:3.5px solid var(--color-neutral-200);padding:19.5px}
+html[data-report-version="2"] .grid>.program-card.is-complete:hover:not(:disabled){background:var(--color-neutral-50);border-color:var(--color-neutral-200)}
+html[data-report-version="2"] #learning-context #diagnostic-result-slot>.diagnostic-summary-trigger{background:var(--color-neutral-100);color:#414f62}
+html[data-report-version="2"] #learning-context #diagnostic-result-slot>.diagnostic-summary-trigger:hover:not(:disabled){background:var(--color-neutral-200)}
 html[data-report-version="2"] #diagnosis-welcome .welcome-art{display:none!important}
 html[data-report-version="2"] #diagnosis-welcome .welcome-main{display:flex;align-items:center;justify-content:center;min-height:329px;padding:40px 24px}
 html[data-report-version="2"] #diagnosis-welcome .welcome-copy{position:relative;left:auto;top:auto;transform:none;width:100%;max-width:100%;text-align:center}
