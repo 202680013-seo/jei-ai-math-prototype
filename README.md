@@ -1,12 +1,18 @@
 # JEI Math · 최종 프로토타입
 
-V5 디자인 스튜디오 최종 작업본(d6da76c). 이 브랜치는 해당 프로토타입의 소스, 실행에 필요한 자산과 테스트만 포함합니다.
+`main` 브랜치에는 공동 작업한 프로토타입의 소스와 실행에 필요한 자산 및 테스트가 포함되어 있습니다.
 
-## 바로 실행
+## 최신 작업 미리보기 (의정)
 
-[▶ 최종 프로토타입 실행하기](https://jei-math-color-studio.hyesuchae.chatgpt.site)
+[▶ AI 수학 프로토타입 미리보기 열기](https://jei-v5-editor-euijeong.lushfinch2.chatgpt.site)
 
-현재 배포된 최종 작업본입니다. 사이트 접근 권한에 따라 ChatGPT 로그인이 필요할 수 있습니다. GitHub 코드 변경은 이 실행 링크에 자동 배포되지 않습니다.
+의정이 공유한 ChatGPT Work 미리보기 링크입니다. 사이트 접근 권한에 따라 ChatGPT 로그인이 필요할 수 있습니다. **GitHub `main` 브랜치의 코드 변경사항은 이 링크에 자동 반영되지 않습니다.**
+
+## 이전 디자인 스튜디오 미리보기 (혜수 V5)
+
+[▶ V5 디자인 스튜디오 실행하기](https://jei-math-color-studio.hyesuchae.chatgpt.site)
+
+기존 V5 디자인 스튜디오 작업본(d6da76c)의 배포 링크입니다. 최신 `main` 코드와 화면이 다를 수 있습니다.
 
 ## 내 PC에서 실행
 
