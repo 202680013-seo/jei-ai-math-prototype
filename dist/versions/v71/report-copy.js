@@ -2,7 +2,7 @@
   'use strict';
   const pairs=`학습 상태 확인|Learning status
 학습 내용을 잘 알고 있어요.|You understand the learning content well.
-부족한 부분이 있었지만 공부해서 잘 알게 되었어요.|You have learned and understood the parts you needed to practice.
+필요한 학습을 마쳤어요.|You finished the lessons you needed.
 현재 학습을 진행하고 있어요.|You are currently learning.
 부족한 부분이 있어서 다시 학습해야 해요.|You need to study some parts again.
 앞으로 진행할 학습이에요.|This learning is coming up next.

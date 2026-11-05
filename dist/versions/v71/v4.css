@@ -112,7 +112,7 @@ body.has-long-learning-list .ai::before{content:none;box-shadow:none}
 #group-panel .nav-topic-copy strong,#group-panel .group-item[data-state=idle] .nav-topic-copy strong{display:block;color:inherit;font-size:16px;font-weight:700;line-height:22.4px;white-space:nowrap;overflow-wrap:normal;word-break:normal}
 #group-panel .nav-topic-status{display:grid;place-items:center;flex:none;width:24px;height:24px}
 #group-panel .rail-failed-icon{display:grid;place-items:center;width:24px;height:24px}
-#group-panel .rail-failed-icon img{transform:scale(.545454545);transform-origin:center;grid-area:1/1}
+#group-panel .rail-failed-icon img{display:block;width:24px;height:24px;object-fit:contain;grid-area:1/1}
 #group-panel .nav-grade-progress{margin:0;padding:24px 20px calc(44px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--color-neutral-100);background:var(--color-neutral-50);color:#586b85;line-height:19.6px}
 #group-panel .nav-progress-heading>span:first-child{font-size:14px;font-weight:800}
 #group-panel .nav-progress-count{font-size:12px;font-weight:700;color:#586b85}
