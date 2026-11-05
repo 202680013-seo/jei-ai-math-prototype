@@ -18,7 +18,8 @@
     window.history.replaceState(null,'',url.pathname+url.search+url.hash);
   }
   try{reset();}catch{}
-  reopen();
+  reloading=true;
+  window.location.assign('/');
  }
  window.JeiReportEntry=Object.freeze({restart});
  // Explicit review scenarios/checkpoints remain intentional until the operator restarts.
