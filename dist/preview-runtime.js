@@ -15,6 +15,7 @@
     removeItem(key){key=String(key);memory.delete(key);try{native?.removeItem(prefix+key);}catch{}},
     clear(){for(const key of keys())this.removeItem(key);},key(index){return keys()[index]??null;},get length(){return keys().length;}
   };Object.defineProperty(window,'localStorage',{configurable:true,value:scoped});
+  if (document.currentScript.hasAttribute('data-entry-only')) return;
   // Restore a pinned design's checkpoint before the original application reads its state.
   const checkpoint=new URLSearchParams(location.search).get('checkpoint');
   if(checkpoint){

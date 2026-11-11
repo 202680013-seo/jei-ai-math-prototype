@@ -12,14 +12,13 @@
  const reopen=()=>{if(reloading)return;reloading=true;window.location.reload();};
  function restart(){
   if(reloading)return;
-  // Remove an explicitly selected scenario before the new report document starts.
-  if(window.location.href&&window.history?.replaceState){
-    const url=new URL(window.location.href);url.searchParams.delete('scenario');url.searchParams.delete('checkpoint');
-    window.history.replaceState(null,'',url.pathname+url.search+url.hash);
-  }
-  try{reset();}catch{}
   reloading=true;
-  window.location.assign('/');
+  try {
+   for (const storageKey of [key, key+':trial', key+':member', 'jei-prototype-member-entry']) {
+    localStorage.removeItem(storageKey);
+   }
+  } catch {}
+  window.location.replace('/');
  }
  window.JeiReportEntry=Object.freeze({restart});
  // Explicit review scenarios/checkpoints remain intentional until the operator restarts.

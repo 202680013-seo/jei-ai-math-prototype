@@ -1,3 +1,23 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>재능스스로AI수학</title><link rel="stylesheet" href="/entry/motion.css"><link rel="stylesheet" href="/entry/style.css"></head><body>
-<section id="splash" aria-label="재능스스로AI수학 시작 화면"><img class="splash-logo" src="/entry/logo.png" alt="재능스스로AI수학"><footer>재능교육 ｜ 대표자 : 백규태 ｜ 사업자 등록번호 : 204-81-03990 ｜ 주소 : 서울특별시 종로구 창경궁로 293 ｜ 대표전화 : 1566-1132 <u>개인정보처리방침</u></footer></section>
-<main id="login" inert><button class="back" aria-label="시작 화면으로 돌아가기"><img src="/entry/back.png" alt=""></button><form><img class="brand" src="/entry/logo.png" alt="재능스스로AI수학"><input id="user-id" aria-label="아이디" placeholder="아이디를 입력해 주세요." autocomplete="username" required><input id="password" type="password" aria-label="비밀번호" placeholder="비밀번호를 입력해 주세요." autocomplete="current-password" required><p class="login-error" role="alert" aria-live="polite"></p><button class="submit">로그인</button></form><div class="banners"><div><img src="/entry/member.png" alt="재능회원 가입 안내"></div><button id="trial"><img src="/entry/trial.png" alt="가입 없이 7일 무료 체험 가능. 무료 체험 시작하기"></button></div></main><script src="/entry/entry.js"></script></body></html>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>재능스스로AI수학</title><link rel="stylesheet" href="/entry/motion.css"><link rel="stylesheet" href="/entry/style.css?r=94651d6b1f4c96cd"></head><body>
+<section id="splash" aria-label="재능스스로AI수학 시작 화면"><img class="splash-logo" src="/entry/logo.png" alt="재능스스로AI수학"><div id="member-start" hidden><button type="button" class="submit">시작하기</button><button type="button" class="member-logout">로그아웃</button></div><footer>재능교육 ｜ 대표자 : 백규태 ｜ 사업자 등록번호 : 204-81-03990 ｜ 주소 : 서울특별시 종로구 창경궁로 293 ｜ 대표전화 : 1566-1132 <u>개인정보처리방침</u></footer></section>
+<main id="login" inert><button class="back" aria-label="시작 화면으로 돌아가기"><img src="/entry/back.png" alt=""></button><form><img class="brand" src="/entry/logo.png" alt="재능스스로AI수학"><input id="user-id" aria-label="회원 번호" placeholder="회원 번호(8자리)를 입력해 주세요." autocomplete="username" required><input id="password" type="text" aria-label="회원 이름" placeholder="회원 이름을 입력해 주세요." autocomplete="off" required><p class="login-error" role="alert" aria-live="polite"></p><button class="submit">로그인</button></form><div class="banners"><button id="member" aria-haspopup="dialog"><img src="/entry/figma-yellow-member.png" alt="재능회원 가입 안내"></button><button id="trial" aria-haspopup="dialog"><img src="/entry/figma-yellow-trial.png" alt="가입 없이 7일 무료 체험 가능. 무료 체험 시작하기"></button></div></main><dialog id="entry-dialog" aria-labelledby="entry-title"></dialog><link rel="stylesheet" href="/entry/trial.css?r=40d907b32bae976e"><link rel="stylesheet" href="/admin/palette.css">
+<style>#login .banners img{filter:url(#login-banner-purple)}</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="login-banner-purple" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
+    <feColorMatrix in="SourceGraphic" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -5 5 0 0 0" result="greenOverRed"/>
+    <feColorMatrix in="SourceGraphic" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -4 0 4 0 0" result="blueOverRed"/>
+    <feComposite in="greenOverRed" in2="blueOverRed" operator="in" result="blueMask"/>
+    <feColorMatrix in="SourceGraphic" values=".38 .62 0 0 0  .84 .16 0 0 0  0 0 .96 0 0  0 0 0 1 0" result="purple"/>
+    <feComposite in="purple" in2="blueMask" operator="in" result="purpleBlues"/>
+    <feComposite in="purpleBlues" in2="SourceGraphic" operator="atop"/>
+  </filter>
+</svg>
+<link rel="stylesheet" href="/admin/design-studio.css">
+<div id="report-dock" hidden><div id="report-controls"></div></div>
+<script src="/preview-runtime.js" data-version="v75" data-entry-only></script>
+<script src="/admin/color-engine.js"></script>
+<script src="/admin/theme-controller.js"></script>
+<script src="/admin/design-colors.js"></script>
+<script src="/admin/design-store.js"></script>
+<script src="/admin/design-studio.js"></script>
+<script src="/entry/trial.js?r=680c2c38de90b1ba"></script><script src="/entry/entry.js?r=03eadac804d1ff91"></script></body></html>

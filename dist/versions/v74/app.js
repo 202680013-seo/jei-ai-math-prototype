@@ -1,7 +1,15 @@
-const M=MathModel,$=s=>document.querySelector(s),key='ai-math-prototype-diagnosis-v1';
+const entryParams = new URLSearchParams(location.search);
+const trialGradeParam = entryParams.get('trialGrade');
+const trialGrade=/^[0-9]$/.test(trialGradeParam??'')?Number(trialGradeParam):null;
+let trialWelcomePending=trialGrade!==null&&new URLSearchParams(location.search).get('trialWelcome')==='1'&&!history.state?.trialWelcomeConsumed;
+const memberEntryMode = entryParams.get('memberEntry');
+const memberEntry = ['new', 'return', 'return-later'].includes(memberEntryMode);
+const memberLearning = trialGrade === null && (memberEntry || entryParams.get('member') === '1');
+const M=MathModel,$=s=>document.querySelector(s),key='ai-math-prototype-diagnosis-v1'+(trialGrade!==null?':trial':memberLearning?':member':'');
 let composing=null,composeTimers=[],reveal=false,cardRevealTimer=null,cardRevealGeneration=0;
 const compositionElement=$('#composition');
 let state=M.create(),panel=null,browseGrade=3,editing=null,presetIndex=null,animTimer=null,thinkTimer=null,lastMessage='',aiState='대기';
+const initialState = state;
 try{const saved=JSON.parse(localStorage.getItem(key));if(saved&&saved.schema==='diagnosis-v1'&&saved.grades?.length===10&&saved.grades.every((a,i)=>a.length>=M.COUNTS[i]&&a.length<=Math.max(78,M.COUNTS[i]))&&saved.policy&&saved.grade>=0&&saved.grade<10&&saved.index>=0&&saved.index<saved.grades[saved.grade].length)state=saved;}catch{}M.ReportQuestions.prepare(state);browseGrade=state.grade;
 for(const topics of state.grades)for(const topic of topics)for(const p of topic.programs)for(const clock of Object.values(p.studyTiming||{}))clock.runningSince=null;
 let diagnosisResultHintRun=null,diagnosisResultHintTimer=null;
@@ -129,6 +137,8 @@ if(activityKind==='completed-study'){
 }
 if(activityKind==='diagnosis-guide'){title='실력알기 안내';content=`<div class="welcome-help-copy">${diagnosisWelcomeTipsHTML(true)}<div class="actions"><button class="primary" data-action="welcome-help-start">${s.diagnosis==='active'?'실력알기 이어하기':'실력알기 시작하기'}</button></div></div>`;}
 if(activityKind==='settings'){title='학습 설정';content=`<label>학습자 이름<input id="user-name" value="${esc(state.profile.name)}"></label><div class="actions"><button data-action="save-user">저장</button><button data-action="goal">목표 시간 변경</button></div>`;}
+if(activityKind==='member-goal-intro'){title='목표 학습 시간';content='<p>하루에 공부할 시간을 정해 봐요.</p><div class="actions"><button class="primary" data-action="member-goal-next">확인</button></div>';}
+if(activityKind==='member-goal'){title='목표 학습 시간';content=`<label for="goal-minutes">하루 학습 시간 <output id="member-goal-value">20분</output></label><input id="goal-minutes" type="range" min="10" max="30" step="5" value="20" aria-label="목표 학습 시간(분)"><div class="actions"><button class="primary" data-action="save-goal">확인</button></div>`;}
 if(activityKind==='goal'){title='오늘의 목표 학습 시간';content=`<p>오늘은 얼마나 공부해 볼까요?</p><div class="actions">${[10,15,20,30,45].map(n=>`<button data-action="goal-option" data-id="${n}">${n}분</button>`).join('')}</div><label>목표 시간(분)<input id="goal-minutes" type="number" min="5" max="120" value="${d.target||20}"></label><div class="actions"><button class="primary" data-action="save-goal">목표 정하기</button></div>`;}
 if(activityKind==='answers'&&!d.unreadAnswers){title='도와줘요';content='<p>선생님께 최근 요청한 도움이 없어요.</p>';}else if(activityKind==='answers'){title='도와줘요 답변';content=`<p>분모가 다른 분수는 어떻게 더하나요?</p><div class="learning-info">분모를 같게 바꾼 다음 분자끼리 더해 보세요. 예를 들어 1/2 + 1/4은 2/4 + 1/4이므로 3/4입니다.</div><button data-action="answer-read">답변 확인했어요</button>`;}
 if(activityKind==='wrongnotes'){title='오답노트';const a=M.wrongEntries(state);content=`<p>미통과 학습 ${a.length}개</p><div class="wrong-list">${a.map(x=>`<button data-action="wrong-entry" data-g="${x.grade}" data-set="${x.index}" data-id="${x.id}"><strong>${esc(x.name)}</strong><small>${grade(x.grade)}등급 · ${esc(x.groupName)}</small></button>`).join('')||'<p>다시 학습할 항목이 없어요.</p>'}</div>`;}
@@ -140,6 +150,7 @@ function draftAction(act,b){const d=daily(),s=current(),id=Number(b.dataset.id);
 if(diagnosisWelcomeAction(act))return true;if(rewardsAction(act,b))return true;if(['goal','report','constellation'].includes(act)){if(act==='report')reportDate=todayKey();openActivity(act);return true;}
 if(act==='close-activity'&&activityKind==='completed-study'){dismissCompletedCard();return true;}
 if(act==='close-activity'){if(activityKind==='constellation')skyExit();else{closeSurface('#activity');activityKind=null;reportDate=null;}return true;}
+if(act==='member-goal-next'){activityKind='member-goal';renderActivity();$('#goal-minutes').focus();return true;}
 if(act==='goal-option'){$('#goal-minutes').value=id;return true;}
 if(act==='save-goal'){d.target=Math.max(5,Math.min(120,Number($('#goal-minutes').value)||20));closeSurface('#activity');activityKind=null;notify('오늘 목표 '+d.target+'분 설정');return true;}
 if(act==='answer-read'){d.unreadAnswers=0;closeSurface('#activity');activityKind=null;notify('도와줘요 답변 확인');return true;}
@@ -785,12 +796,23 @@ function syncLearningContext(topic){
 }
 // Short guidance combines the original carousel rules with the two learning benefits.
 const DIAGNOSIS_WELCOME_TIPS=[
-  {key:'focus',label:'집중해서<br>스스로 풀어요',title:'혼자 힘으로 집중하기',detail:'차분히 집중해서 스스로 문제를 풀어요.',icon:'<path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m8 0h3a2 2 0 0 0 2-2v-3"/><circle cx="12" cy="12" r="4"/>'},
-  {key:'resume',label:'잠깐 나가도<br>이어서 풀어요',title:'쉬었다 이어서 풀기',detail:'중간에 나가도 이어서 할 수 있어요.',icon:'<path d="M20 7V3m0 4h-4M20 7a9 9 0 1 0 1 8"/><path d="M10 9v6m4-6v6"/>'},
-  {key:'personal',label:'마치면<br>맞춤 학습을 만나요',title:'나에게 맞는 학습 만나기',detail:'실력알기를 마치면 나에게 맞는 학습을 준비해요.',icon:'<rect x="4" y="6" width="13" height="15" rx="3"/><path d="M8 11h5m-5 4h3m6-12 1.2 2.8L21 7l-2.8 1.2L17 11l-1.2-2.8L13 7l2.8-1.2L17 3Z"/>'}
+  {key:'focus',trialCopy:'집중해서 스스로 풀어요',label:'집중해서<br>스스로 풀어요',title:'혼자 힘으로 집중하기',detail:'차분히 집중해서 스스로 문제를 풀어요.',icon:'<path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m8 0h3a2 2 0 0 0 2-2v-3"/><circle cx="12" cy="12" r="4"/>'},
+  {key:'resume',trialCopy:'쉬었다 이어서 풀 수 있어요',label:'잠깐 나가도<br>이어서 풀어요',title:'쉬었다 이어서 풀기',detail:'중간에 나가도 이어서 할 수 있어요.',icon:'<path d="M20 7V3m0 4h-4M20 7a9 9 0 1 0 1 8"/><path d="M10 9v6m4-6v6"/>'},
+  {key:'personal',trialCopy:'나에게 맞는 학습을 만나요',label:'마치면<br>맞춤 학습을 만나요',title:'나에게 맞는 학습 만나기',detail:'실력알기를 마치면 나에게 맞는 학습을 준비해요.',icon:'<rect x="4" y="6" width="13" height="15" rx="3"/><path d="M8 11h5m-5 4h3m6-12 1.2 2.8L21 7l-2.8 1.2L17 11l-1.2-2.8L13 7l2.8-1.2L17 3Z"/>'}
 ];
+function diagnosisWelcomeTipIcon(tip){
+  return `<span class="welcome-tip-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${tip.icon}</svg></span>`;
+}
 function diagnosisWelcomeTipsHTML(expanded=false){
-  return `<ul class="welcome-tips${expanded?' is-expanded':''}" aria-label="실력알기 이용 안내">${DIAGNOSIS_WELCOME_TIPS.map(tip=>`<li data-welcome-tip="${tip.key}"><span class="welcome-tip-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${tip.icon}</svg></span><span class="welcome-tip-copy">${expanded?`<strong>${tip.title}</strong><span>${tip.detail}</span>`:tip.label}</span></li>`).join('')}</ul>`;
+  return `<ul class="welcome-tips${expanded?' is-expanded':''}" aria-label="실력알기 이용 안내">${DIAGNOSIS_WELCOME_TIPS.map(tip=>`<li data-welcome-tip="${tip.key}">${diagnosisWelcomeTipIcon(tip)}<span class="welcome-tip-copy">${expanded?`<strong>${tip.title}</strong><span>${tip.detail}</span>`:tip.label}</span></li>`).join('')}</ul>`;
+}
+function syncTrialGuide(visible){
+  const guide=$('#trial-diagnosis-guide');
+  if(!guide)return;
+  guide.hidden=!visible;
+  $('#diagnosis-welcome').classList.toggle('trial-guide-visible',visible);
+  if(!visible||guide.hasChildNodes())return;
+  guide.innerHTML=DIAGNOSIS_WELCOME_TIPS.map(tip=>`<li><span class="trial-guide-row">${diagnosisWelcomeTipIcon(tip)}<span>${tip.trialCopy}</span></span></li>`).join('');
 }
 // V6.2 keeps its content together and softly repeats guidance without carousel UI.
 const WELCOME_GUIDE_HOLD=4800,WELCOME_GUIDE_FADE=240;
@@ -916,22 +938,30 @@ function syncDiagnosisWelcome(topic){
   observeDiagnosisWelcomeVisit();
   const visible=isDiagnosisWelcomeTopic(topic),host=$('#diagnosis-welcome'),button=$('#diagnostic');
   host.hidden=!visible;$('#diagnosis-slot').hidden=visible;
-  if(!visible){button.classList.remove('diagnostic-start-button');if(button.getAttribute('aria-describedby')==='diagnosis-welcome-guide')button.removeAttribute('aria-describedby');return;}
+  if(!visible){button.classList.remove('diagnostic-start-button');if(['diagnosis-welcome-guide','trial-diagnosis-intro'].includes(button.getAttribute('aria-describedby')))button.removeAttribute('aria-describedby');return;}
   const completing=completedCloverTopic(topic)||completedCloverScene()&&diagnosisOutcomeRun.target===topic;
-  const active=!completing&&topic.diagnosis==='active',label=completing?'실력알기 완료':active?'실력알기 이어하기':'실력알기 시작하기';
+  const active=!completing&&topic.diagnosis==='active';
+  const showEntryGuide=trialWelcomePending&&state.grade===trialGrade&&state.index===0&&!completing;
+  const label=completing?'실력알기 완료':active&&!showEntryGuide?'실력알기 이어하기':'실력 알아보기';
   if(!active&&mainResumeOverviewVisible()&&!state.ui?.diagnosisWelcomeSeen){
     diagnosisWelcomeFirstTopic=topic;state.ui??={testControls:false};state.ui.diagnosisWelcomeSeen=true;save();
   }
   const first=!active&&diagnosisWelcomeFirstTopic===topic;
   host.setAttribute('data-welcome-first',String(first));host.setAttribute('data-diagnosis-state',completing?'done':topic.diagnosis);
   const guide=$('#diagnosis-welcome-guide');guide.hidden=true;
-  $('#diagnosis-welcome-title').textContent=completing?'클로버를 완성했어요!':active?'풀던 문제부터 이어가요':'나의 실력을 알아볼까요?';
+  $('#diagnosis-welcome-title').textContent=completing?'클로버를 완성했어요!':active&&!showEntryGuide?'풀던 문제부터 이어가요':'나의 실력을 알아볼까요?';
+  const trialIntro=$('#trial-diagnosis-intro');
+  const showTrialIntro=trialGrade!==null&&!completing&&!showEntryGuide&&!active;
+  trialIntro.hidden=!showTrialIntro;
+  if(showTrialIntro)trialIntro.textContent='몇 가지 문제를 풀어보면 내 실력에 맞는 학습을 시작할 수 있어요.';
   const progress=diagnosisWelcomeProgress(topic),sheet=$('#diagnosis-welcome-progress');sheet.hidden=false;
   syncDiagnosisArtProgress(progress);
   button.classList.add('diagnostic-start-button');button.setAttribute('aria-label',label);
   button.removeAttribute('aria-describedby');
+  if(showTrialIntro)button.setAttribute('aria-describedby','trial-diagnosis-intro');
   button.disabled=completing&&completedCloverScene();
-  const markup=`<span>${completing?(completedCloverScene()?'실력알기 완료':'결과 확인'):active?'이어서 알아보기':'실력 알아보기'}</span>`;
+  syncTrialGuide(showEntryGuide);
+  const markup=`<span>${completing?(completedCloverScene()?'실력알기 완료':'결과 확인'):active&&!showEntryGuide?'이어서 알아보기':'실력 알아보기'}</span>`;
   if(button.innerHTML!==markup)button.innerHTML=markup;
   if(!$('#diagnosis-welcome-action').contains(button))$('#diagnosis-welcome-action').append(button);
   syncWelcomeGuideClock();
@@ -1757,6 +1787,10 @@ return false;}
 function startDiagnostic(){if(diagnosisOutcomeRun)return;const s=current();state.ui??={testControls:false};state.ui.diagnosisIntroSeen=true;editing.intro=false;if(s.diagnosis==='idle'){s.attempts=(s.attempts||0)+1;s.diagnosis='active';}s.diagnosticSession??={index:0,answers:[],started:Date.now(),notes:''};markLearning();save();render();refreshDialog();}
 function openLearning(kind,id){
   if(diagnosisOutcomeRun)return;
+  if(kind==='diagnosis'&&trialWelcomePending&&state.grade===trialGrade&&state.index===0){
+    trialWelcomePending=false;
+    history.replaceState({...history.state,trialWelcomeConsumed:true},'');
+  }
   if(current().diagnosisOutcome&&resumeDiagnosisOutcome())return;
   if(kind==='program'&&!M.canStudy(current(),current().programs.find(p=>p.id===id)))return;
   if(kind==='diagnosis'&&current().diagnosis==='done'&&current().programs.length)dismissDiagnosisResultHint();else hideDiagnosisResultHint();
@@ -1788,7 +1822,7 @@ function normalize(p,st){p.status=st;M.setProgress(p,['passed','failed'].include
 function count(input){const n=Number(input?.value);return Number.isFinite(n)?Math.max(1,Math.min(52,Math.round(n))):8;}
 function resize(n){const s=current();s.diagnosis='done';s.programs=M.programs(n,state.grade,state.index).map((p,i)=>s.programs[i]||p);}
 function select(g,i){const pendingOutcome=!!diagnosisOutcomeRun;cancelDiagnosisOutcome(isCleanPassAdvance());if(pendingOutcome){editing=null;closeSurface('#learning');}mentorEntry++;cancelComposition();state.grade=g;state.index=i;presetIndex=null;editing=null;save();render();if(current().diagnosisOutcome)resumeDiagnosisOutcome();}
-document.addEventListener('click',e=>{if(skyWasDragged&&e.target.closest('.sky-canvas')){skyWasDragged=false;return;}skyWasDragged=false;const b=e.target.closest('[data-action]');if(!b||b.disabled)return;const act=b.dataset.action,id=Number(b.dataset.id),s=current();if(diagnosisOutcomeRun&&!['diagnosis-outcome-confirm','preset','draft-preset','reset-current','reset-all','replay-first','replay-repeat','replay-clean-pass','replay-composition','replay-program-pass','replay-program-fail','replay-resume-scroll','welcome-preview-first','welcome-preview-compact','welcome-preview-progress'].includes(act))return;if(act==='mentor-repeat'){animateMessage(true);return;}if(act==='mentor-read-back'||act==='mentor-read-next'){moveMentorReading(act==='mentor-read-next'?1:-1);return;}if(act==='pass-next'){continueCleanPass();return;}if(act==='pass-begin'){beginCleanPassNext();return;}if(act==='pass-summary'){if(isCleanPass(current())){current().cleanPassStage='celebrate';editing={kind:'diagnosis',complete:true,passStage:'celebrate'};save();refreshDialog();}return;}if(act==='pass-details'){if(isCleanPass(current())){editing={kind:'diagnosis-result',goal:0,item:0};refreshDialog();}return;}if(act==='failed-card'||act==='completed-card'){openCompletedCard(id);return;}if(act==='study-choice-review'||act==='study-choice-result'){chooseCompletedCard(act==='study-choice-review');return;}if(act==='card-review'){openCardReview(id);return;}if(!['preset','draft-preset','reset-current','reset-all','replay-first','replay-repeat','replay-clean-pass','replay-composition','replay-program-pass','replay-program-fail','replay-resume-scroll','welcome-preview-first','welcome-preview-compact','welcome-preview-progress'].includes(act)&&learningAction(act,b))return;if(draftAction(act,b))return;if(act==='test')openPanel('test');else if(act==='groups'){if(panel==='groups')closePanel();else openPanel('groups');}else if(act==='close-panel')closePanel();else if(act==='prev-grade'||act==='next-grade'){const grades=availableRailGrades(),next=grades[grades.indexOf(browseGrade)+(act==='prev-grade'?-1:1)];if(next!==undefined&&next!==browseGrade){browseGrade=next;renderPanel();alignRailToCurrent(true);syncRailOverflow();revealGroupPanel();focusNavigationAction(act);}}else if(act==='select-group'){if(!canNavigateTopic(state.grades[browseGrade]?.[id]))return;clearGroupPanelReveal();select(browseGrade,id);focusNavigationAction('select-group',id);}else if(act==='help')showHelp();else if(act==='close-help')closeSurface('#help');else if(act==='diagnosis')openLearning('diagnosis');else if(act==='program')openLearning('program',id);else if(act==='close-learning'){closeLearning();}else if(act==='recommend'){if(isCleanPass(current())){continueCleanPass();return;}const r=M.recommend(state);if(r.kind==='today')followRecommendation(M.learningRecommend(state));else if(['goal','answers','wrongnotes','report'].includes(r.kind))openActivity(r.kind);else followRecommendation(r);}else if(act==='preset'){loadValidationScenario(id);}else if(act==='replay-resume-scroll'){replayValidationResumeScroll();}else if(act==='resize'){resize(count($('#prescription-count')));notify('처방 프로그램 수 변경: '+s.programs.length);}else if(act==='all-pass'){if(!s.programs.length)resize(M.sourceCount(state.grade,state.index));s.programs.forEach(p=>{p.status='passed';M.setProgress(p,100);});notify('모든 프로그램 통과');}else if(act==='make-fail'){if(!s.programs.length)resize(M.sourceCount(state.grade,state.index));normalize(s.programs[0],'failed');notify('첫 프로그램 미통과 생성');}else if(act==='review-all'||act==='review-one'){s.programs.filter(p=>p.status==='failed'&&(act==='review-all'||p.id===id)).forEach(p=>{p.status='passed';M.setProgress(p,100);p.reviewed=true;s.reviewHistory=true;});notify('미통과 프로그램 복습 후 통과');}else if(act==='reset-current'){loadValidationScenario(0);}else if(act==='reset-all'){resetValidationSurfaces();state=M.create();browseGrade=state.grade;resetValidationHints(true);if(panel)closePanel();notify('전체 데이터와 정책 초기화');}else if(act==='diag-start'){markLearning();s.attempts=(s.attempts||0)+1;s.diagnosis='active';s.programs=[];notify('실력알기 시작');}else if(act==='diag-prescribe'){beginDiagnosisOutcome(validationDiagnosisResult(false),{count:count($('#diag-count')),preview:true});}else if(act==='diag-clean'){replayValidationCleanPass();}else if(act==='replay-program-pass'||act==='replay-program-fail'){replayValidationProgram(act==='replay-program-pass');}else if(act==='replay-clean-pass'){replayValidationCleanPass();}else if(['replay-composition','replay-first','replay-repeat'].includes(act)){replayValidationPrescription(act==='replay-first'?'first':act==='replay-repeat'?'repeat':undefined);}else if(act.startsWith('program-')){const p=s.programs.find(x=>x.id===editing?.id);if(!p||!M.canStudy(s,p))return;if(act==='program-retry'){if(M.currentProgram(s)?.id!==p.id)return;const k=s.groupId+':'+p.programId+':'+(p.completedFrames||0);daily().frameAttempts[k]=(daily().frameAttempts[k]||0)+1;notify('현재 프레임 반복 시도');return;}if(act==='program-frame'){if(M.currentProgram(s)?.id!==p.id)return;M.setProgress(p,((p.completedFrames||0)+1)/(p.frames.length||1)*100);if(p.progress>=100){daily().timerRunning=false;}notify('프레임 완료: '+p.completedFrames+' / '+p.frames.length);return;}if(act==='program-start'){if(!M.canStart(s,p))return;editing.intro=false;markLearning();s.attempts=(s.attempts||0)+1;editing.reviewing=p.status==='failed'||p.reviewed;normalize(p,'active');M.setProgress(p,0);}if(act==='program-pass'){daily().timerRunning=false;normalize(p,'passed');if(editing.reviewing){p.reviewed=true;s.reviewHistory=true;}}if(act==='program-fail'){daily().timerRunning=false;normalize(p,'failed');}if(act==='program-review'){p.status='passed';M.setProgress(p,100);p.reviewed=true;s.reviewHistory=true;}notify(p.name+' · '+M.labels[p.status]);}else if(act==='export'){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ai-math-test-state.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}});
+document.addEventListener('click',e=>{if(skyWasDragged&&e.target.closest('.sky-canvas')){skyWasDragged=false;return;}skyWasDragged=false;const b=e.target.closest('[data-action]');if(!b||b.disabled)return;const act=b.dataset.action,id=Number(b.dataset.id),s=current();if(diagnosisOutcomeRun&&!['diagnosis-outcome-confirm','preset','draft-preset','reset-current','reset-all','replay-first','replay-repeat','replay-clean-pass','replay-composition','replay-program-pass','replay-program-fail','replay-resume-scroll','welcome-preview-first','welcome-preview-compact','welcome-preview-progress'].includes(act))return;if(act==='mentor-repeat'){animateMessage(true);return;}if(act==='mentor-read-back'||act==='mentor-read-next'){moveMentorReading(act==='mentor-read-next'?1:-1);return;}if(act==='pass-next'){continueCleanPass();return;}if(act==='pass-begin'){beginCleanPassNext();return;}if(act==='pass-summary'){if(isCleanPass(current())){current().cleanPassStage='celebrate';editing={kind:'diagnosis',complete:true,passStage:'celebrate'};save();refreshDialog();}return;}if(act==='pass-details'){if(isCleanPass(current())){editing={kind:'diagnosis-result',goal:0,item:0};refreshDialog();}return;}if(act==='failed-card'||act==='completed-card'){openCompletedCard(id);return;}if(act==='study-choice-review'||act==='study-choice-result'){chooseCompletedCard(act==='study-choice-review');return;}if(act==='card-review'){openCardReview(id);return;}if(!['preset','draft-preset','reset-current','reset-all','replay-first','replay-repeat','replay-clean-pass','replay-composition','replay-program-pass','replay-program-fail','replay-resume-scroll','welcome-preview-first','welcome-preview-compact','welcome-preview-progress'].includes(act)&&learningAction(act,b))return;if(draftAction(act,b))return;if(act==='test')openPanel('test');else if(act==='groups'){if(panel==='groups')closePanel();else openPanel('groups');}else if(act==='close-panel')closePanel();else if(act==='prev-grade'||act==='next-grade'){const grades=availableRailGrades(),next=grades[grades.indexOf(browseGrade)+(act==='prev-grade'?-1:1)];if(next!==undefined&&next!==browseGrade){browseGrade=next;renderPanel();alignRailToCurrent(true);syncRailOverflow();revealGroupPanel();focusNavigationAction(act);}}else if(act==='select-group'){if(!canNavigateTopic(state.grades[browseGrade]?.[id]))return;clearGroupPanelReveal();select(browseGrade,id);focusNavigationAction('select-group',id);}else if(act==='help')showHelp();else if(act==='close-help')closeSurface('#help');else if(act==='diagnosis')openLearning('diagnosis');else if(act==='program')openLearning('program',id);else if(act==='close-learning'){closeLearning();}else if(act==='recommend'){if(isCleanPass(current())){continueCleanPass();return;}const r=M.recommend(state);if(r.kind==='today')followRecommendation(M.learningRecommend(state));else if(['goal','answers','wrongnotes','report'].includes(r.kind))openActivity(r.kind);else followRecommendation(r);}else if(act==='preset'){loadValidationScenario(id);}else if(act==='replay-resume-scroll'){replayValidationResumeScroll();}else if(act==='resize'){resize(count($('#prescription-count')));notify('처방 프로그램 수 변경: '+s.programs.length);}else if(act==='all-pass'){if(!s.programs.length)resize(M.sourceCount(state.grade,state.index));s.programs.forEach(p=>{p.status='passed';M.setProgress(p,100);});notify('모든 프로그램 통과');}else if(act==='make-fail'){if(!s.programs.length)resize(M.sourceCount(state.grade,state.index));normalize(s.programs[0],'failed');notify('첫 프로그램 미통과 생성');}else if(act==='review-all'||act==='review-one'){s.programs.filter(p=>p.status==='failed'&&(act==='review-all'||p.id===id)).forEach(p=>{p.status='passed';M.setProgress(p,100);p.reviewed=true;s.reviewHistory=true;});notify('미통과 프로그램 복습 후 통과');}else if(act==='reset-current'){loadValidationScenario(0);}else if(act==='reset-all'){window.JeiReportEntry.restart();}else if(act==='diag-start'){markLearning();s.attempts=(s.attempts||0)+1;s.diagnosis='active';s.programs=[];notify('실력알기 시작');}else if(act==='diag-prescribe'){beginDiagnosisOutcome(validationDiagnosisResult(false),{count:count($('#diag-count')),preview:true});}else if(act==='diag-clean'){replayValidationCleanPass();}else if(act==='replay-program-pass'||act==='replay-program-fail'){replayValidationProgram(act==='replay-program-pass');}else if(act==='replay-clean-pass'){replayValidationCleanPass();}else if(['replay-composition','replay-first','replay-repeat'].includes(act)){replayValidationPrescription(act==='replay-first'?'first':act==='replay-repeat'?'repeat':undefined);}else if(act.startsWith('program-')){const p=s.programs.find(x=>x.id===editing?.id);if(!p||!M.canStudy(s,p))return;if(act==='program-retry'){if(M.currentProgram(s)?.id!==p.id)return;const k=s.groupId+':'+p.programId+':'+(p.completedFrames||0);daily().frameAttempts[k]=(daily().frameAttempts[k]||0)+1;notify('현재 프레임 반복 시도');return;}if(act==='program-frame'){if(M.currentProgram(s)?.id!==p.id)return;M.setProgress(p,((p.completedFrames||0)+1)/(p.frames.length||1)*100);if(p.progress>=100){daily().timerRunning=false;}notify('프레임 완료: '+p.completedFrames+' / '+p.frames.length);return;}if(act==='program-start'){if(!M.canStart(s,p))return;editing.intro=false;markLearning();s.attempts=(s.attempts||0)+1;editing.reviewing=p.status==='failed'||p.reviewed;normalize(p,'active');M.setProgress(p,0);}if(act==='program-pass'){daily().timerRunning=false;normalize(p,'passed');if(editing.reviewing){p.reviewed=true;s.reviewHistory=true;}}if(act==='program-fail'){daily().timerRunning=false;normalize(p,'failed');}if(act==='program-review'){p.status='passed';M.setProgress(p,100);p.reviewed=true;s.reviewHistory=true;}notify(p.name+' · '+M.labels[p.status]);}else if(act==='export'){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ai-math-test-state.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}});
 document.addEventListener('change',e=>{if(diagnosisOutcomeRun)return;const t=e.target,s=current(),d=daily();if(t.id==='diagnosis-notes'){s.diagnosticSession.notes=t.value;save();}else if(t.id==='test-controls'){state.ui.testControls=t.checked;save();refreshDialog();renderPanel();}else if(t.id==='mentor-member'){state.profile.memberType=t.value==='trial'?'trial':'member';notify('말풍선 회원 유형 변경');}else if(t.id==='mentor-birthday'){state.profile.birthday=t.value;save();}else if(t.id==='learner-name'){state.profile.name=t.value.trim().slice(0,20)||'재능';notify('학습자 이름 변경');}else if(t.id==='daily-target'){d.target=Math.max(0,Math.min(120,Number(t.value)||0))||null;notify('목표시간 변경');}else if(t.id==='daily-minutes'){d.minutes=Math.max(0,Math.min(600,Number(t.value)||0));notify('학습시간 변경');}else if(t.id==='daily-answers'){d.unreadAnswers=Math.max(0,Math.min(99,Number(t.value)||0));notify('미확인 답변 수 변경');}else if(t.id==='group-attempts'){s.mentorDiagnosisEntries=Math.max(0,Number(t.value)||0);notify('실력알기 진입 횟수 변경');}else if(t.id==='clean-streak'){d.cleanStreak=Math.max(0,Number(t.value)||0);notify('연속 처방 없이 통과 횟수 변경');}else if(t.id==='test-grade')select(Number(t.value),0);else if(t.id==='test-group')select(state.grade,Number(t.value));else if(t.id==='diagnosis-state'){s.reviewHistory=false;if(t.value==='prescribed'){resize(s.programs.length||M.sourceCount(state.grade,state.index));}else{s.diagnosis=t.value==='clean'?'done':t.value;s.programs=[];}notify('진단 상태 직접 변경');}else if(t.dataset.programState!==undefined){normalize(s.programs[Number(t.dataset.programState)],t.value);notify('개별 프로그램 상태 변경');}else if(t.dataset.programProgress!==undefined){M.setProgress(s.programs[Number(t.dataset.programProgress)],Number(t.value));notify('개별 프로그램 진행률 변경');}else if(t.id==='learning-progress'){const p=s.programs.find(p=>p.id===editing?.id);if(!p||M.currentProgram(s)?.id!==p.id||p.progress>=100)return;M.setProgress(p,Number(t.value));if(p.progress>=100){d.timerRunning=false;}notify('학습 진행률 변경: '+t.value+'%');}else if(t.id.startsWith('policy-')){state.policy[t.id.slice(7)]=t.value;notify('프로토타입 가정 정책 변경');}});
 $('#overlay').addEventListener('click',()=>{if(panel==='test')closePanel();});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel&&!diagnosisOutcomeRun&&!$('#learning').open&&!$('#help').open&&!$('#activity').open)closePanel();if(e.key==='Tab'&&panel==='test'&&!$('#learning').open&&!$('#help').open&&!$('#activity').open){const items=[...$('#'+(panel==='groups'?'group':'test')+'-panel').querySelectorAll('button:not(:disabled),select,input:not(:disabled),a,summary')];if(e.shiftKey&&document.activeElement===items[0]){e.preventDefault();items.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===items.at(-1)){e.preventDefault();items[0].focus();}}});$('#learning').addEventListener('cancel',e=>{if(editing?.kind==='diagnosis'){e.preventDefault();learningAction('close-learning',{dataset:{}});}});$('#learning').addEventListener('close',()=>{if(!$('#learning').open){if(diagnosisOutcomeRun&&!isCleanPassAdvance())cancelDiagnosisOutcome();if(editing?.kind==='program'){const p=current().programs.find(x=>x.id===editing.id);markMentorInterrupted(p);}if(composing?.surface==='learning')cancelComposition();if(!guidanceClosing)holdGuidanceAfterClose();daily().timerRunning=false;recordProgram();save();editing=null;render();}});document.addEventListener('input',e=>{if(e.target.id==='diagnosis-notes'&&current().diagnosticSession){current().diagnosticSession.notes=e.target.value;save();}});const wasVisited=state.everVisited;daily();if(wasVisited&&!state.daily.started)state.daily.entry='today';save();if(current().diagnosisOutcome||state.diagnosisAdvance)resumeDiagnosisOutcome();setInterval(()=>{const d=daily();if(d.timerRunning&&document.visibilityState==='visible'&&(current().diagnosis==='active'||M.currentProgram(current())||activeReview())){d.minutes++;save();render();if(activityKind&&!skyBusy)renderActivity();}},60000);if(speechPolicy)setInterval(()=>{if(mainGuidanceVisible()){observeSpeech();if(bubblePhase==='rest')animateMessage();}},15000);render();
 
@@ -1815,6 +1849,26 @@ $('#diagnosis-clover-fill').addEventListener('animationend',event=>{
   if(event.animationName==='clover-fill-arrive')$('#diagnosis-welcome-progress').setAttribute('data-fill-arrival','false');
 });
 const welcomeGuideElement=$('#diagnosis-welcome-guide');
+if(trialGrade!==null&&!history.state?.trialGuideShown){
+  state.profile??={};
+  state.profile.memberType='trial';
+  state.ui??={};
+  state.ui.diagnosisWelcomeSeen=true;
+  select(trialGrade,0);
+  const entryUrl = new URL(location.href);
+  if (entryUrl.searchParams.has('entryScenario')) {
+    entryUrl.searchParams.delete('entryScenario');
+    openPanel('test');
+    history.replaceState({...history.state,trialGuideShown:true},'',entryUrl);
+  } else if (!$('#diagnosis-welcome').hidden) {
+    const welcome = $('#diagnosis-welcome');
+    welcome.classList.add('trial-diagnosis-arrival');
+    welcome.querySelector('.welcome-copy').addEventListener('animationend', () => {
+      welcome.classList.remove('trial-diagnosis-arrival');
+    }, {once:true});
+  }
+  history.replaceState({...history.state,trialGuideShown:true},'');
+}
 welcomeGuideElement.addEventListener('pointerenter',event=>{if(event.pointerType==='touch')return;welcomeGuideHover=true;syncWelcomeGuideClock();});
 welcomeGuideElement.addEventListener('pointerleave',()=>{welcomeGuideHover=false;syncWelcomeGuideClock();});
 $('#diagnosis-welcome').addEventListener('focusin',()=>{welcomeGuideFocus=true;syncWelcomeGuideClock();});
@@ -1825,3 +1879,25 @@ window.addEventListener?.('pageshow',()=>{welcomeGuideSuspended=false;observeDia
 $('#activity').addEventListener('close',()=>{
   if(activityKind==='diagnosis-guide'){activityKind=null;render();$('#diagnosis-help-trigger').focus({preventScroll:true});}
 });
+
+document.addEventListener('input', event => {
+  if (activityKind === 'member-goal' && event.target.id === 'goal-minutes') {
+    $('#member-goal-value').textContent = event.target.value + '분';
+  }
+});
+const memberEntryUrl = new URL(location.href);
+if (memberLearning && memberEntry) {
+  memberEntryUrl.searchParams.set('member', '1');
+  memberEntryUrl.searchParams.delete('memberEntry');
+  history.replaceState(history.state, '', memberEntryUrl);
+  state.profile ??= {name: '재능'};
+  state.profile.memberType = 'member';
+  state.ui ??= {};
+  if ((memberEntryMode === 'new' || state === initialState) && current().diagnosis !== 'done') {
+    openLearning('diagnosis');
+  } else if (memberEntryMode === 'return-later' && !state.ui.memberGoalIntroSeen) {
+    state.ui.memberGoalIntroSeen = true;
+    save();
+    openActivity('member-goal-intro');
+  }
+}

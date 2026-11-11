@@ -6,6 +6,23 @@
 #diagnosis-welcome .welcome-copy{position:absolute;z-index:2;left:13.888889%;top:50%;transform:translateY(-50%);width:max-content;max-width:44%;text-align:left}
 #diagnosis-welcome-title{font-size:28px;line-height:1.24;letter-spacing:0;font-weight:800;color:inherit;white-space:nowrap}
 #diagnosis-welcome-action{margin-top:28px}
+#diagnosis-welcome #trial-diagnosis-intro{max-width:40ch;margin:12px auto 0;color:inherit;font-size:clamp(14px,1.6vw,17px);line-height:1.55;text-align:center;text-wrap:balance;word-break:keep-all}
+#diagnosis-welcome #trial-diagnosis-intro[hidden]{display:none}
+#diagnosis-welcome #trial-diagnosis-intro:not([hidden]) ~ #diagnosis-welcome-action{margin-top:20px}
+#trial-diagnosis-guide{box-sizing:border-box;width:min(100%,368px);margin:20px auto 0;padding:8px clamp(16px,2.4vw,24px);list-style:none;border:1px solid #27334a0b;border-radius:18px;background:#fff;text-align:left;color:inherit;font-size:15px;line-height:1.45}
+#trial-diagnosis-guide[hidden],#diagnosis-welcome.trial-guide-visible :is(.welcome-help,.welcome-progress-count){display:none}
+#diagnosis-welcome.trial-guide-visible .welcome-copy{right:auto;bottom:auto}
+#diagnosis-welcome.trial-guide-visible #diagnosis-welcome-title{font-size:clamp(19px,2.25vw,23px);line-height:1.35;letter-spacing:-.02em}
+#trial-diagnosis-guide>li{display:list-item;padding-inline-start:3px}
+.trial-guide-row{display:inline-flex;width:100%;align-items:center;vertical-align:middle;gap:11px;min-height:38px;padding-block:4px;font-weight:600;word-break:keep-all}
+#trial-diagnosis-guide .welcome-tip-icon{width:22px;height:22px;color:#a6384d}
+#trial-diagnosis-guide .welcome-tip-icon svg{width:19px;height:19px}
+#diagnosis-welcome.trial-guide-visible #diagnosis-welcome-action{margin-top:20px}
+#diagnosis-welcome.trial-guide-visible #diagnosis-welcome-action>.diagnostic-start-button{min-width:min(192px,100%);min-height:52px;height:auto;border-radius:14px}
+@media (prefers-reduced-motion:no-preference){
+  #diagnosis-welcome.trial-diagnosis-arrival:not([hidden]) .welcome-copy{animation:trial-diagnosis-in .28s ease-out both}
+}
+@keyframes trial-diagnosis-in{from{opacity:0;translate:0 5px}to{opacity:1;translate:0 0}}
 #diagnosis-welcome-action>.diagnostic-start-button{min-width:0;min-height:44px;height:44px;padding:13px 30px;border-radius:12px;background:#0c9f8b;color:#fff;font-size:17px;font-weight:800;line-height:18px;box-shadow:none;gap:0;white-space:nowrap}
 #diagnosis-welcome-action>.diagnostic-start-button:hover:not(:disabled){background:#078d7e;transform:translateY(-2px);box-shadow:0 5px 12px #0c9f8b20}
 .welcome-progress-count{display:block;margin:0 0 12px;color:#46746d;font-size:14px;line-height:20px;font-weight:700;font-variant-numeric:tabular-nums}
