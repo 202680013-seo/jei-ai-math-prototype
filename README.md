@@ -4,9 +4,9 @@
 
 ## 최신 작업 미리보기 (의정)
 
-[▶ AI 수학 프로토타입 미리보기 열기](https://jei-v5-editor-euijeong.lushfinch2.chatgpt.site)
+[▶ AI 수학 프로토타입 미리보기 열기](https://jei-ai-math-main-preview.lushfinch2.chatgpt.site)
 
-의정이 공유한 ChatGPT Work 미리보기 링크입니다. 사이트 접근 권한에 따라 ChatGPT 로그인이 필요할 수 있습니다. **GitHub `main` 브랜치의 코드 변경사항은 이 링크에 자동 반영되지 않습니다.**
+의정이 공유한 ChatGPT Work 미리보기 링크입니다. 현재 미리보기는 소유자 전용입니다. **GitHub `main` 브랜치의 코드 변경사항은 이 링크에 자동 반영되지 않습니다.**
 
 ## 이전 디자인 스튜디오 미리보기 (혜수 V5)
 
